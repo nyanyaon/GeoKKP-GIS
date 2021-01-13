@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/plugins/geokkp" >
+        <file>images/icon.png</file>
+        <file>images/azimuth.png</file>
+    </qresource>
+</RCC>
