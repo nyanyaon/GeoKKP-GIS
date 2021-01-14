@@ -39,13 +39,13 @@
     </rect>
    </property>
    <property name="placeholderText">
-    <string>X (Lon), Y (Lat)</string>
+    <string>Y (Lat), X (Lon)</string>
    </property>
    <property name="qgisRelation" stdset="0">
     <string notr="true"/>
    </property>
   </widget>
-  <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidget">
+  <widget class="QgsProjectionSelectionWidget" name="selectProj">
    <property name="geometry">
     <rect>
      <x>30</x>

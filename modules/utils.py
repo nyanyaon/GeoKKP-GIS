@@ -14,43 +14,58 @@ from qgis.core import (
 
 from qgis.gui import QgsRubberBand
 
-def __init__(self, iface):
-    self.iface = iface
-    self.canvas = iface.mapCanvas()
-    self.crossRb = QgsRubberBand(self.canvas, QgsWkbTypes.LineGeometry)
-    self.crossRb.setColor(Qt.red)
+epsg4326 = QgsCoordinateReferenceSystem('EPSG:4326')
+
+class Utilities:
+    """
+
+    Collection of utilities for GeoKKP GIS
+
+    """
+    def __init__(self, iface):
+        self.iface = iface
+        self.canvas = iface.mapCanvas()
+        
+        self.crossRb = QgsRubberBand(self.canvas, QgsWkbTypes.LineGeometry)
+        self.crossRb.setColor(Qt.red)
 
 
-def zoomTo(self, src_crs, lat, lon):
-    canvas_crs = self.canvas.mapSettings().destinationCrs()
-    transform = QgsCoordinateTransform(src_crs, canvas_crs, QgsProject.instance())
-    x, y = transform.transform(float(lon), float(lat))
+    def zoomTo(self, src_crs, lat, lon):
+        canvas_crs = self.canvas.mapSettings().destinationCrs()
+        transform = QgsCoordinateTransform(src_crs, canvas_crs, QgsProject.instance())
+        x, y = transform.transform(float(lon), float(lat))
 
-    rect = QgsRectangle(x, y, x, y)
-    self.canvas.setExtent(rect)
+        rect = QgsRectangle(x, y, x, y)
+        self.canvas.setExtent(rect)
+        print("rect")
 
-    pt = QgsPointXY(x, y)
-    self.highlight(pt)
-    self.canvas.refresh()
-    return pt
+        pt = QgsPointXY(x, y)
+        #self.highlight(pt)
+        self.cetak("dd")
+        self.canvas.refresh()
+        #return pt
+    
+    def cetak(self, teks):
+        print(teks)
 
-def highlight(self, point):
-    currExt = self.canvas.extent()
+    def highlight(self, point):
 
-    leftPt = QgsPoint(currExt.xMinimum(), point.y())
-    rightPt = QgsPoint(currExt.xMaximum(), point.y())
+        currExt = self.canvas.extent()
 
-    topPt = QgsPoint(point.x(), currExt.yMaximum())
-    bottomPt = QgsPoint(point.x(), currExt.yMinimum())
+        leftPt = QgsPoint(currExt.xMinimum(), point.y())
+        rightPt = QgsPoint(currExt.xMaximum(), point.y())
 
-    horizLine = QgsGeometry.fromPolyline([leftPt, rightPt])
-    vertLine = QgsGeometry.fromPolyline([topPt, bottomPt])
+        topPt = QgsPoint(point.x(), currExt.yMaximum())
+        bottomPt = QgsPoint(point.x(), currExt.yMinimum())
 
-    self.crossRb.reset(QgsWkbTypes.LineGeometry)
-    self.crossRb.addGeometry(horizLine, None)
-    self.crossRb.addGeometry(vertLine, None)
+        horizLine = QgsGeometry.fromPolyline([leftPt, rightPt])
+        vertLine = QgsGeometry.fromPolyline([topPt, bottomPt])
 
-    QTimer.singleShot(700, self.resetRubberbands)
+        self.crossRb.reset(QgsWkbTypes.LineGeometry)
+        self.crossRb.addGeometry(horizLine, None)
+        self.crossRb.addGeometry(vertLine, None)
 
-def resetRubberbands(self):
-    self.crossRb.reset()
+        QTimer.singleShot(700, self.resetRubberbands)
+
+    def resetRubberbands(self):
+        self.crossRb.reset()

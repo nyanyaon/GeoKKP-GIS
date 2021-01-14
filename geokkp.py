@@ -182,19 +182,88 @@ class GeoKKP:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
+        # Add Interface: Docked Main Panel GeoKKP
         icon_path = ':/plugins/geokkp/images/icon.png'
-        self.add_action(
-            icon_path,
-            text=self.tr(u'Panel GeoKKP'),
-            callback=self.run,
-            parent=self.iface.mainWindow())
+        self.add_action(icon_path,text=self.tr(u'Panel GeoKKP'), 
+            callback=self.run,parent=self.iface.mainWindow())
+        
+        # Add Interface: Login Dialog
+        icon_path = ':/plugins/geokkp/images/login.png'
+        self.add_action(icon_path, text=self.tr(u'Login Pengguna'),
+            callback=self.gotoxy, parent=self.iface.mainWindow())
 
+        # Add Interface: Download Parcel GeoKKP Database Dialog
+        icon_path = ':/plugins/geokkp/images/getparcel.png'
+        self.add_action(icon_path, text=self.tr(u'Unduh Bidang Tanah'), 
+            callback=self.gotoxy, parent=self.iface.mainWindow())
+
+        self.toolbar.addSeparator()
+
+        # Add Interface: Draw Polygon
+        icon_path = ':/plugins/geokkp/images/drawpoly.png'
+        self.add_action(icon_path, text=self.tr(u'Gambar Bidang Tanah'), 
+            callback=self.gotoxy, parent=self.iface.mainWindow())
+
+        # Add Interface: Trilateration
+        icon_path = ':/plugins/geokkp/images/trilateration.png'
+        self.add_action(icon_path, text=self.tr(u'Gambar dengan Trilaterasi'), 
+            callback=self.gotoxy, parent=self.iface.mainWindow())
+
+        # Add Interface: Distance and Azimuth
         icon_path = ':/plugins/geokkp/images/azimuth.png'
-        self.add_action(
-            icon_path,
-            text=self.tr(u'Azimuth'),
-            callback=self.gotoxy,
-            parent=self.iface.mainWindow())
+        self.add_action(icon_path, text=self.tr(u'Gambar dengan Sudut dan Jarak'), 
+            callback=self.gotoxy, parent=self.iface.mainWindow())
+
+        # Add Interface: Triangulation
+        icon_path = ':/plugins/geokkp/images/triangulation.png'
+        self.add_action(icon_path, text=self.tr(u'Gambar dengan Triangulasi'), 
+            callback=self.gotoxy, parent=self.iface.mainWindow())
+
+        # Add Interface: Parcel Dimension
+        icon_path = ':/plugins/geokkp/images/dimension.png'
+        self.add_action(icon_path, text=self.tr(u'Gambar Dimensi'), 
+            callback=self.gotoxy, parent=self.iface.mainWindow())
+        
+        self.toolbar.addSeparator()
+
+        # Add Interface: Topology
+        icon_path = ':/plugins/geokkp/images/topology.png'
+        self.add_action(icon_path, text=self.tr(u'Cek Topologi'), 
+            callback=self.gotoxy, parent=self.iface.mainWindow())
+
+        # Add Interface: Layout
+        icon_path = ':/plugins/geokkp/images/layout.png'
+        self.add_action(icon_path, text=self.tr(u'Layout Peta'), 
+            callback=self.gotoxy, parent=self.iface.mainWindow())
+
+        self.toolbar.addSeparator()
+
+        # Add Interface: Coordinate Transformation
+        icon_path = ':/plugins/geokkp/images/conversion.png'
+        self.add_action(icon_path, text=self.tr(u'Transformasi Koordinat'), 
+            callback=self.gotoxy, parent=self.iface.mainWindow())
+
+        # Add Interface: Zoom To
+        icon_path = ':/plugins/geokkp/images/zoomto.png'
+        self.add_action(icon_path, text=self.tr(u'Zoom Ke XY'), 
+            callback=self.gotoxy, parent=self.iface.mainWindow())
+
+        # Add Interface: Change Basemap
+        icon_path = ':/plugins/geokkp/images/basemap.png'
+        self.add_action(icon_path, text=self.tr(u'Ganti Basemap'), 
+            callback=self.gotoxy, parent=self.iface.mainWindow())
+
+        # Add Interface: OAM
+        icon_path = ':/plugins/geokkp/images/openaerialmap.png'
+        self.add_action(icon_path, text=self.tr(u'OpenAerialMap'), 
+            callback=self.gotoxy, parent=self.iface.mainWindow())
+
+        self.toolbar.addSeparator()
+
+        # Add Interface: Settings
+        icon_path = ':/plugins/geokkp/images/settings.png'
+        self.add_action(icon_path, text=self.tr(u'Pengaturan'), 
+            callback=self.gotoxy, parent=self.iface.mainWindow())
 
     #--------------------------------------------------------------------------
 
@@ -261,7 +330,7 @@ class GeoKKP:
         if self.gotoxyaction == None:
                 # Create the dockwidget (after translation) and keep reference
                 self.gotoxyaction = GotoXYDialog()
-        self.gotoxyaction.mQgsProjectionSelectionWidget.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
+        self.gotoxyaction.selectProj.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
 
             # connect to provide cleanup on closing of dockwidget
         #self.gotoxyaction.closingPlugin.connect(self.onClosePlugin)
@@ -273,6 +342,7 @@ class GeoKKP:
 
 
 #--------------------------------------------------------------------------
+# Methods for GeoKKP Dock Widget
     
     def selectLocation(self):
         """ what to do when user clicks location selection """
