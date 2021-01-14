@@ -77,7 +77,10 @@ class GeoKKP:
         self.toolbar = self.iface.addToolBar(u'GeoKKP')
         self.toolbar.setObjectName(u'GeoKKP')
 
-        #print "** INITIALIZING GeoKKP"
+        #change title, for fun
+        title = self.iface.mainWindow().windowTitle()
+        new_title = title.replace('QGIS', 'GeoKKP-GIS')
+        self.iface.mainWindow().setWindowTitle(new_title)
 
         self.pluginIsActive = False
 
@@ -324,7 +327,7 @@ class GeoKKP:
 
             # detect actions
             self.dockwidget.buttonSelectLocation.clicked.connect(self.selectLocation)
-            self.dockwidget.buttonSaveInitialization.clicked.connect(self.nextTab)
+           # self.dockwidget.buttonSaveInitialization.clicked.connect(self.nextTab)
 
     def gotoxy(self):
         if self.gotoxyaction == None:

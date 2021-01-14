@@ -15,5 +15,6 @@
         <file>images/triangulation.png</file>
         <file>images/trilateration.png</file>
         <file>images/zoomto.png</file>
+        <file>images/logoatrbpn.png</file>
     </qresource>
 </RCC>

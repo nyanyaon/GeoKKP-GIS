@@ -23,7 +23,7 @@ from qgis.utils import iface
 
 
 #using utils
-from .utils import Utilities, epsg4326
+from .utils import  epsg4326
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -41,7 +41,7 @@ class GotoXYDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface = iface
         self.canvas = iface.mapCanvas()
         super(GotoXYDialog, self).__init__(parent)
-        self.utils = Utilities        
+        #self.utils = Utilities        
         self.crossRb = QgsRubberBand(self.canvas, QgsWkbTypes.LineGeometry)
         self.crossRb.setColor(Qt.red)
 
