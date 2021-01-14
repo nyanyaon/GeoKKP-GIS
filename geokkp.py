@@ -21,11 +21,11 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, pyqtSignal
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtWidgets import QAction,QMessageBox
 
-from qgis.core import QgsVectorLayer, QgsProject, QgsRasterLayer
+from qgis.core import QgsVectorLayer, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
 # Initialize Qt resources from file resources.py
 from .resources import *
 
@@ -33,10 +33,10 @@ from .resources import *
 # Import the code for the DockWidget
 import os.path
 import json
-
 from .geokkp_dockwidget import GeoKKPDockWidget
-from .gotoxy import GotoXYDialog
 
+# Modules
+from .modules.gotoxy import GotoXYDialog
 
 
 class GeoKKP:
@@ -80,8 +80,13 @@ class GeoKKP:
         #print "** INITIALIZING GeoKKP"
 
         self.pluginIsActive = False
+
+        #self.canvasClicked = pyqtSignal('QgsPointXY')
+
         #self.dockwidget = None
         self.dockwidget = GeoKKPDockWidget()
+        self.gotoxyaction = GotoXYDialog()
+
 
 
     # noinspection PyMethodMayBeStatic
@@ -188,7 +193,7 @@ class GeoKKP:
         self.add_action(
             icon_path,
             text=self.tr(u'Azimuth'),
-            callback=self.run,
+            callback=self.gotoxy,
             parent=self.iface.mainWindow())
 
     #--------------------------------------------------------------------------
@@ -252,16 +257,29 @@ class GeoKKP:
             self.dockwidget.buttonSelectLocation.clicked.connect(self.selectLocation)
             self.dockwidget.buttonSaveInitialization.clicked.connect(self.nextTab)
 
+    def gotoxy(self):
+        if self.gotoxyaction == None:
+                # Create the dockwidget (after translation) and keep reference
+                self.gotoxyaction = GotoXYDialog()
+        self.gotoxyaction.mQgsProjectionSelectionWidget.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
+
+            # connect to provide cleanup on closing of dockwidget
+        #self.gotoxyaction.closingPlugin.connect(self.onClosePlugin)
+
+        # show the dialog
+        #self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+        self.gotoxyaction.show()
+        
+
+
+#--------------------------------------------------------------------------
     
     def selectLocation(self):
         """ what to do when user clicks location selection """
 
-
         urlWithParams = "http://mt0.google.com/vt/lyrs%3Ds%26hl%3Den%26x%3D%7Bx%7D%26y%3D%7By%7D%26z%3D%7Bz%7D"
         self.loadXYZ(urlWithParams, 'Google Basemap')
         self.delIfLayerExist('Google Basemap')
-
-
 
         selectedLocation = json.dumps(self.dockwidget.loadLocation())
         self.delIfLayerExist('Wilayah Kerja')
@@ -273,7 +291,6 @@ class GeoKKP:
         wilkerLayer.renderer().symbol().symbolLayer(0).setStrokeColor(QColor(255,0,0))
         wilkerLayer.renderer().symbol().symbolLayer(0).setStrokeWidth(1)
         wilkerLayer.triggerRepaint()        
-
         #self.project.instance().addMapLayer(wilkerLayer)
     
     def loadXYZ(self, url, name):
@@ -293,6 +310,8 @@ class GeoKKP:
                 print('existing not deleting,', layer.name())
 
 
+
+
     #--------------------------------------------------------------------------
 
     def nextTab(self):
@@ -300,17 +319,7 @@ class GeoKKP:
         print("current tab:", curr)
         self.dockwidget.tabGeoKKP.setCurrentIndex(curr+1)
 
-    def gotoxy(self):
-        if self.gotoxyaction == None:
-                # Create the dockwidget (after translation) and keep reference
-                self.gotoxyaction = GotoXYDialog()
 
-            # connect to provide cleanup on closing of dockwidget
-        self.gotoxyaction.closingPlugin.connect(self.onClosePlugin)
-
-        # show the dialog
-        #self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
-        self.gotoxyaction.show()
 
 
     
