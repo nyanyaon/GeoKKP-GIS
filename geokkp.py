@@ -39,6 +39,7 @@ from .geokkp_dockwidget import GeoKKPDockWidget
 # Modules
 from .modules.gotoxy import GotoXYDialog
 from .modules.plotcoord import PlotCoordinateDialog
+from .modules.login import LoginDialog
 
 
 class GeoKKP:
@@ -92,6 +93,7 @@ class GeoKKP:
         self.dockwidget = GeoKKPDockWidget()
         self.gotoxyaction = GotoXYDialog()
         self.plotxyaction = PlotCoordinateDialog()
+        self.loginaction = LoginDialog()
 
 
 
@@ -198,7 +200,7 @@ class GeoKKP:
         # Add Interface: Login Dialog
         icon_path = ':/plugins/geokkp/images/login.png'
         self.add_action(icon_path, text=self.tr(u'Login Pengguna'),
-            callback=self.gotoxy, parent=self.iface.mainWindow())
+            callback=self.loginGeoKKP, parent=self.iface.mainWindow())
 
         # Add Interface: Download Parcel GeoKKP Database Dialog
         icon_path = ':/plugins/geokkp/images/getparcel.png'
@@ -360,6 +362,13 @@ class GeoKKP:
         #self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.plotxyaction.show()
 
+    def loginGeoKKP(self):
+        if self.loginaction == None:
+            self.loginaction = LoginDialog()
+        self.loginaction.show()
+        
+    
+
 
         
 
@@ -434,13 +443,13 @@ class GeoKKP:
 
     def setDimensionStyle(self):
         print("dimension")
-        uri = ":/plugins/geokkp/styles/dimension.qml"
-        layer = self.iface.activeLayer()
-        print(layer.name())
-        layer.loadNamedStyle(uri) 
+        #uri = 'https://raw.githubusercontent.com/danylaksono/GeoKKP-GIS/main/styles/dimension.qml'
+        #layer = self.iface.activeLayer()
+        #print(layer.name())
+        #layer.loadNamedStyle(uri) 
+        #layer.triggerRepaint()
         #for layer in self.project.instance().mapLayers().values():
         #    if (layer.name == "Bidang Tanah"):
-        
         
         
 

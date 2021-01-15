@@ -89,7 +89,12 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
         prov.addFeatures([feat])
         layer.setCrs(source_crs)
         layer.updateExtents()
+        uri = os.path.join(os.path.dirname(__file__), '../styles/dimension.qml')
+        layer.loadNamedStyle(uri)
+        #layer = self.iface.activeLayer()
+        print(layer.name())
         self.project.instance().addMapLayers([layer])
+        layer.triggerRepaint()
         extent = layer.extent()
         self.canvas.setExtent(tr.transform(extent))
 
