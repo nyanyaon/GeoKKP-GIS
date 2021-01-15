@@ -230,7 +230,7 @@ class GeoKKP:
         # Add Interface: Parcel Dimension
         icon_path = ':/plugins/geokkp/images/dimension.png'
         self.add_action(icon_path, text=self.tr(u'Gambar Dimensi'), 
-            callback=self.gotoxy, parent=self.iface.mainWindow())
+            callback=self.setDimensionStyle, parent=self.iface.mainWindow())
         
         self.toolbar.addSeparator()
 
@@ -431,6 +431,18 @@ class GeoKKP:
         self.project.instance().addMapLayer(rasterLyr)
         self.iface.messageBar().pushMessage("Sukses", "Berhasil menambahkan layer Bidang Tanah", level=Qgis.Success, duration=4)
         #self.delIfLayerExist('Bidang Tanah')
+
+    def setDimensionStyle(self):
+        print("dimension")
+        uri = ":/plugins/geokkp/styles/dimension.qml"
+        layer = self.iface.activeLayer()
+        print(layer.name())
+        layer.loadNamedStyle(uri) 
+        #for layer in self.project.instance().mapLayers().values():
+        #    if (layer.name == "Bidang Tanah"):
+        
+        
+        
 
 
 
