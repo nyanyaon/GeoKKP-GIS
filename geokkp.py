@@ -24,19 +24,21 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, pyqtSignal
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtWidgets import QAction,QMessageBox
+from qgis.core import Qgis, QgsVectorLayer, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
 
-from qgis.core import QgsVectorLayer, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
+
 # Initialize Qt resources from file resources.py
 from .resources import *
-
 
 # Import the code for the DockWidget
 import os.path
 import json
+import re
 from .geokkp_dockwidget import GeoKKPDockWidget
 
 # Modules
 from .modules.gotoxy import GotoXYDialog
+from .modules.plotcoord import PlotCoordinateDialog
 
 
 class GeoKKP:
@@ -89,6 +91,7 @@ class GeoKKP:
         #self.dockwidget = None
         self.dockwidget = GeoKKPDockWidget()
         self.gotoxyaction = GotoXYDialog()
+        self.plotxyaction = PlotCoordinateDialog()
 
 
 
@@ -187,6 +190,8 @@ class GeoKKP:
 
         # Add Interface: Docked Main Panel GeoKKP
         icon_path = ':/plugins/geokkp/images/icon.png'
+        icon = QIcon(icon_path)
+        self.iface.mainWindow().setWindowIcon(icon)
         self.add_action(icon_path,text=self.tr(u'Panel GeoKKP'), 
             callback=self.run,parent=self.iface.mainWindow())
         
@@ -198,14 +203,14 @@ class GeoKKP:
         # Add Interface: Download Parcel GeoKKP Database Dialog
         icon_path = ':/plugins/geokkp/images/getparcel.png'
         self.add_action(icon_path, text=self.tr(u'Unduh Bidang Tanah'), 
-            callback=self.gotoxy, parent=self.iface.mainWindow())
+            callback=self.addWMSParcel, parent=self.iface.mainWindow())
 
         self.toolbar.addSeparator()
 
         # Add Interface: Draw Polygon
         icon_path = ':/plugins/geokkp/images/drawpoly.png'
         self.add_action(icon_path, text=self.tr(u'Gambar Bidang Tanah'), 
-            callback=self.gotoxy, parent=self.iface.mainWindow())
+            callback=self.plotxy, parent=self.iface.mainWindow())
 
         # Add Interface: Trilateration
         icon_path = ':/plugins/geokkp/images/trilateration.png'
@@ -327,7 +332,7 @@ class GeoKKP:
 
             # detect actions
             self.dockwidget.buttonSelectLocation.clicked.connect(self.selectLocation)
-           # self.dockwidget.buttonSaveInitialization.clicked.connect(self.nextTab)
+            self.dockwidget.buat_basisdata.clicked.connect(self.createDb)
 
     def gotoxy(self):
         if self.gotoxyaction == None:
@@ -341,6 +346,21 @@ class GeoKKP:
         # show the dialog
         #self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.gotoxyaction.show()
+
+    def plotxy(self):
+        if self.plotxyaction == None:
+                # Create the dockwidget (after translation) and keep reference
+                self.plotxyaction = PlotCoordinateDialog()
+        self.plotxyaction.listCoordsProj.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
+
+            # connect to provide cleanup on closing of dockwidget
+        #self.gotoxyaction.closingPlugin.connect(self.onClosePlugin)
+
+        # show the dialog
+        #self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+        self.plotxyaction.show()
+
+
         
 
 
@@ -352,10 +372,10 @@ class GeoKKP:
 
         urlWithParams = "http://mt0.google.com/vt/lyrs%3Ds%26hl%3Den%26x%3D%7Bx%7D%26y%3D%7By%7D%26z%3D%7Bz%7D"
         self.loadXYZ(urlWithParams, 'Google Basemap')
-        self.delIfLayerExist('Google Basemap')
+        #self.delIfLayerExist('Google Basemap')
 
         selectedLocation = json.dumps(self.dockwidget.loadLocation())
-        self.delIfLayerExist('Wilayah Kerja')
+        #self.delIfLayerExist('Wilayah Kerja')
 
         wilkerLayer = self.iface.addVectorLayer(selectedLocation, '' , 'ogr')
         wilkerLayer.setName('Wilayah Kerja')
@@ -368,7 +388,7 @@ class GeoKKP:
     
     def loadXYZ(self, url, name):
         rasterLyr = QgsRasterLayer("type=xyz&zmin=0&zmax=21&url=" + url, name, "wms")
-        QgsProject.instance().addMapLayer(rasterLyr)
+        self.project.instance().addMapLayer(rasterLyr)
 
     def delIfLayerExist(self, layername):
         for layer in QgsProject.instance().mapLayers().values():
@@ -382,15 +402,36 @@ class GeoKKP:
             else:
                 print('existing not deleting,', layer.name())
 
-
-
-
     #--------------------------------------------------------------------------
 
-    def nextTab(self):
-        curr = self.dockwidget.tabGeoKKP.currentIndex()
-        print("current tab:", curr)
-        self.dockwidget.tabGeoKKP.setCurrentIndex(curr+1)
+    def createDb(self):
+        projectName = self.dockwidget.nama_kegiatan.text().lower()
+        userName = self.dockwidget.nama_pelaksana.text().lower()
+        projectName = self.properify(projectName)
+        userName = self.properify(userName)
+        uri = 'geopackage:/plugins/geokkp/projects/' + userName + '.gpkg?projectName='+ projectName
+        print(self.project.instance().write(uri))
+        #curr = self.dockwidget.tabGeoKKP.currentIndex()
+        #print("current tab:", curr)
+        #self.dockwidget.tabGeoKKP.setCurrentIndex(curr+1)
+
+
+    def properify(self, text):
+        # Remove all non-word characters (everything except numbers and letters)
+        text = re.sub(r"[^\w\s]", '', text)
+
+        # Replace all runs of whitespace with a single dash
+        text = re.sub(r"\s+", '_', text)
+
+        return text
+
+    def addWMSParcel(self):
+        wms_url= "url=https://103.123.13.78/geoserver/umum/wms&format=image/png&layers=PersilHak&styles=&crs=EPSG:4326"
+        rasterLyr = QgsRasterLayer(wms_url, "Bidang Tanah", "wms")
+        self.project.instance().addMapLayer(rasterLyr)
+        self.iface.messageBar().pushMessage("Sukses", "Berhasil menambahkan layer Bidang Tanah", level=Qgis.Success, duration=4)
+        #self.delIfLayerExist('Bidang Tanah')
+
 
 
 
