@@ -45,7 +45,7 @@
     <string notr="true"/>
    </property>
   </widget>
-  <widget class="QgsProjectionSelectionWidget" name="selectProj">
+  <widget class="QgsProjectionSelectionWidget" name="selectProj" native="true">
    <property name="geometry">
     <rect>
      <x>30</x>
@@ -58,14 +58,14 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QgsFilterLineEdit</class>
-   <extends>QLineEdit</extends>
-   <header>qgsfilterlineedit.h</header>
-  </customwidget>
-  <customwidget>
    <class>QgsProjectionSelectionWidget</class>
    <extends>QWidget</extends>
    <header>qgsprojectionselectionwidget.h</header>
+  </customwidget>
+  <customwidget>
+   <class>QgsFilterLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>qgsfilterlineedit.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

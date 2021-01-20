@@ -34,3 +34,5 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
+
+        

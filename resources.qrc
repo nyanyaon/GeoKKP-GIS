@@ -16,5 +16,12 @@
         <file>images/trilateration.png</file>
         <file>images/zoomto.png</file>
         <file>images/logoatrbpn.png</file>
+        <file>images/manualedit.png</file>
+        <file>images/plotcoordinate.png</file>
+        <file>images/importcsv.png</file>
+        <file>images/autoadjust.png</file>
+        <file>images/editattribute.png</file>       
+        <file>images/georef.png</file>
+        <file>images/help.png</file>        
     </qresource>
 </RCC>

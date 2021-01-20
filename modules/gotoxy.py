@@ -44,6 +44,8 @@ class GotoXYDialog(QtWidgets.QDialog, FORM_CLASS):
         #self.utils = Utilities        
         self.crossRb = QgsRubberBand(self.canvas, QgsWkbTypes.LineGeometry)
         self.crossRb.setColor(Qt.red)
+        uri = os.path.join(os.path.dirname(__file__), '../images/icon.png')
+        self.setWindowIcon(QtGui.QIcon(uri))
 
         self._currentcrs = None
 
@@ -57,7 +59,7 @@ class GotoXYDialog(QtWidgets.QDialog, FORM_CLASS):
     
     def set_crs(self):
         self._currentcrs = self.selectProj.crs()
-        print(self._currentcrs.description())
+        #print(self._currentcrs.description())
 
     def zoomtodialog(self):
         text = self.mLineEditXY.text().strip()
@@ -65,7 +67,7 @@ class GotoXYDialog(QtWidgets.QDialog, FORM_CLASS):
         coords = re.split(r'[\s,;:]+', text, 1)
         lat = float(coords[0])
         lon = float(coords[1])
-        print("lat:", lat, " long:", lon)
+        #print("lat:", lat, " long:", lon)
         self.zoomTo(self._currentcrs, lat, lon)
         #except Exception:
         #   pass

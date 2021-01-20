@@ -25,12 +25,29 @@
 import os
 import requests
 import json
+import re
 
 from PyQt5.QtWidgets import QLineEdit
 
 from qgis.PyQt import QtGui, QtWidgets, uic
-from qgis.PyQt.QtCore import pyqtSignal
+from qgis.PyQt.QtCore import pyqtSignal, QVariant
+from qgis.utils import iface
+from qgis.core import (Qgis,
+                    QgsField,
+                    QgsCoordinateReferenceSystem,
+                    QgsCoordinateTransform,
+                    QgsRectangle,
+                    QgsPoint,
+                    QgsPointXY,
+                    QgsGeometry,
+                    QgsWkbTypes,
+                    QgsVectorLayer,
+                    QgsFeature,
+                    QgsVectorFileWriter,
+                    QgsProject, QgsApplication)
 
+
+# TODO: Compile all UI to py
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'geokkp_dockwidget_base.ui'))
 
@@ -47,12 +64,17 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # self.<objectname>, and you can use autoconnect slots - see
         # http://doc.qt.io/qt-5/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
+        self.iface = iface
+        self.canvas = iface.mapCanvas()
         self.setupUi(self)
+        self.project = QgsProject
+
         
 
         self._province = None
         self._district = None
         self._kantahid = None
+        self._projectCRS = None
         
 
         # Populate the select province combobox
@@ -62,6 +84,8 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         # Populate the select kab based on province selection
         self.comboBoxKanwil.currentIndexChanged.connect(self.setKabupaten)
+        self.buat_basisdata.clicked.connect(self.createDb)
+        self.projectCRS.crsChanged.connect(self.set_crs)
         #print(self.getKabupaten(32))
 
 
@@ -77,7 +101,7 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         response = requests.get(url=province_url)
         response_json = response.json()['provinsi']
         return response_json
-        #print(_province)
+        # print(_province)
 
     def setProvince(self):
         self.comboBoxKanwil.clear()
@@ -136,6 +160,91 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         response_json = response.json()
         #print(response_json)
         return response_json
+
+    # -------------------------------------------------------------
+
+    def set_crs(self):
+        self._projectCRS = self.projectCRS.crs()
+        self.project.instance().setCrs(self._projectCRS)
+        print(self._projectCRS)
+
+
+    def createDb(self):
+        projectName = self.nama_kegiatan.text().lower()
+        userName = self.nama_pelaksana.text().lower()
+        projectName = self.properify(projectName)
+        userName = self.properify(userName)
+        defaultDirectory = 'C:/GeoKKP-Projects/'
+        path = os.path.join(defaultDirectory, userName)
+        try: 
+            os.makedirs(path, exist_ok = True) 
+            print("Directory '%s' created successfully" % userName) 
+        except OSError as error: 
+            print("Directory '%s' can not be created" % userName) 
+
+        uri = 'geopackage:C:/GeoKKP-Projects/'+userName+'/project2.gpkg'
+        projectUri = uri + '?projectName='+ projectName
+        self.project.instance().write(projectUri)
+
+        # populate the project with layers and their attributes
+        self.populateGpkg(uri, self._projectCRS)
+
+
+    
+    def populateGpkg(self, uri, crs):
+        """
+        Populate Project's GPKG with layers:
+        - Bidang Tanah (Polygon)
+        - Titik Batas Bidang (Point)
+        - Transportasi (Polygon, Polyline)
+        - Hidrologi (Polygon, Polyline)
+        - Administrasi (Polygon)
+        - Titik Dasar Teknik (Point)
+        """
+
+        # Initiate layer as memory
+        bidangTanah = QgsVectorLayer("Polygon?crs=epsg:" + str(crs.postgisSrid()), "Bidang Tanah", "memory")
+        titikBatas = QgsVectorLayer("Point?crs=epsg:" + str(crs.postgisSrid()), "Titik Batas Bidang", "memory")
+        transportasi = QgsVectorLayer("Polygon?crs=epsg:" + str(crs.postgisSrid()), "Transportasi", "memory")
+        hidrologi = QgsVectorLayer("Polygon?crs=epsg:" + str(crs.postgisSrid()), "Hidrology", "memory")
+        administrasi = QgsVectorLayer("Polygon?crs=epsg:" + str(crs.postgisSrid()), "Administrasi", "memory")
+        titikDasarTeknik = QgsVectorLayer("Point?crs=epsg:" + str(crs.postgisSrid()), "Titik Dasar Teknik", "memory")
+
+        # Populate layers' fields
+        # - Bidang Tanah
+        pr = bidangTanah.dataProvider()
+        pr.addAttributes([QgsField("NIB", QVariant.String),
+                 QgsField("Jenis Hak",  QVariant.Int),
+                 QgsField("Pemilik", QVariant.Double)])
+        bidangTanah.updateFields()
+
+
+        # TODO: set symbology
+        self.set_symbology(bidangTanah, 'dimension.qml')
+        
+        
+        # add all to legend
+        self.project.instance().addMapLayers([bidangTanah, titikBatas, \
+            transportasi, hidrologi, administrasi, titikDasarTeknik])
+        
+    def set_symbology(self, layer, qml):
+        uri = os.path.join(os.path.dirname(__file__), 'styles/'+qml)
+        layer.loadNamedStyle(uri)
+
+        
+
+    def properify(self, text):
+        """
+        Filter text for OS's friendly directory format
+
+        Remove all non-word characters (everything except numbers and letters) and 
+        replace all runs of whitespace with a single dash
+
+        """
+        text = re.sub(r"[^\w\s]", '', text)
+        text = re.sub(r"\s+", '_', text)
+
+        return text
 
         
 

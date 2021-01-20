@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>505</width>
-    <height>568</height>
+    <width>480</width>
+    <height>495</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -29,7 +29,7 @@
    <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
   </property>
   <property name="windowTitle">
-   <string>GeoKKP-GIS</string>
+   <string>Panel GeoKKP-GIS</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <property name="sizePolicy">
@@ -41,18 +41,27 @@
    <layout class="QHBoxLayout" name="horizontalLayout_6">
     <item>
      <widget class="QFrame" name="frame">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
       <property name="frameShape">
        <enum>QFrame::StyledPanel</enum>
       </property>
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
+      <property name="lineWidth">
+       <number>0</number>
+      </property>
       <widget class="QGroupBox" name="groupBox">
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>200</y>
-         <width>461</width>
+         <x>0</x>
+         <y>170</y>
+         <width>431</width>
          <height>111</height>
         </rect>
        </property>
@@ -64,8 +73,8 @@
          <rect>
           <x>10</x>
           <y>20</y>
-          <width>441</width>
-          <height>185</height>
+          <width>411</width>
+          <height>91</height>
          </rect>
         </property>
         <layout class="QFormLayout" name="formLayout">
@@ -128,10 +137,10 @@
       <widget class="QGroupBox" name="groupBox_2">
        <property name="geometry">
         <rect>
-         <x>10</x>
-         <y>320</y>
-         <width>461</width>
-         <height>161</height>
+         <x>0</x>
+         <y>290</y>
+         <width>431</width>
+         <height>141</height>
         </rect>
        </property>
        <property name="title">
@@ -142,8 +151,8 @@
          <rect>
           <x>10</x>
           <y>20</y>
-          <width>441</width>
-          <height>131</height>
+          <width>411</width>
+          <height>105</height>
          </rect>
         </property>
         <layout class="QFormLayout" name="formLayout_2">
@@ -160,12 +169,15 @@
          <item row="0" column="1">
           <widget class="QLineEdit" name="nama_kegiatan"/>
          </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="label_4">
+         <item row="1" column="0">
+          <widget class="QLabel" name="label_12">
            <property name="text">
-            <string>Lokasi Basisdata:</string>
+            <string>Nama Pelaksana:</string>
            </property>
           </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QLineEdit" name="nama_pelaksana"/>
          </item>
          <item row="3" column="1">
           <widget class="QPushButton" name="buat_basisdata">
@@ -175,21 +187,14 @@
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QgsFileWidget" name="lokasi_db">
-           <property name="fullUrl">
-            <bool>true</bool>
-           </property>
-          </widget>
+          <widget class="QgsProjectionSelectionWidget" name="projectCRS"/>
          </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_12">
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_13">
            <property name="text">
-            <string>Nama Pelaksana:</string>
+            <string>Sistem Proyeksi Default:</string>
            </property>
           </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="nama_kegiatan_2"/>
          </item>
         </layout>
        </widget>
@@ -198,9 +203,9 @@
        <property name="geometry">
         <rect>
          <x>0</x>
-         <y>10</y>
-         <width>171</width>
-         <height>171</height>
+         <y>30</y>
+         <width>131</width>
+         <height>131</height>
         </rect>
        </property>
        <property name="autoFillBackground">
@@ -225,8 +230,8 @@
       <widget class="QLabel" name="label_6">
        <property name="geometry">
         <rect>
-         <x>180</x>
-         <y>20</y>
+         <x>150</x>
+         <y>30</y>
          <width>151</width>
          <height>31</height>
         </rect>
@@ -246,8 +251,8 @@
       <widget class="QLabel" name="label_7">
        <property name="geometry">
         <rect>
-         <x>180</x>
-         <y>50</y>
+         <x>150</x>
+         <y>60</y>
          <width>151</width>
          <height>31</height>
         </rect>
@@ -266,8 +271,8 @@
       <widget class="QLabel" name="label_8">
        <property name="geometry">
         <rect>
-         <x>180</x>
-         <y>80</y>
+         <x>150</x>
+         <y>90</y>
          <width>291</width>
          <height>31</height>
         </rect>
@@ -285,8 +290,8 @@
       <widget class="QLabel" name="label_9">
        <property name="geometry">
         <rect>
-         <x>180</x>
-         <y>100</y>
+         <x>150</x>
+         <y>110</y>
          <width>291</width>
          <height>31</height>
         </rect>
@@ -304,8 +309,8 @@
       <widget class="QLabel" name="label_10">
        <property name="geometry">
         <rect>
-         <x>180</x>
-         <y>120</y>
+         <x>150</x>
+         <y>130</y>
          <width>291</width>
          <height>31</height>
         </rect>
@@ -320,26 +325,6 @@
         <string>Badan Pertanahan Nasional (ATR/BPN)</string>
        </property>
       </widget>
-      <widget class="QLabel" name="label_11">
-       <property name="geometry">
-        <rect>
-         <x>180</x>
-         <y>140</y>
-         <width>291</width>
-         <height>31</height>
-        </rect>
-       </property>
-       <property name="font">
-        <font>
-         <family>Calibri</family>
-         <pointsize>11</pointsize>
-         <italic>true</italic>
-        </font>
-       </property>
-       <property name="text">
-        <string>@2021</string>
-       </property>
-      </widget>
      </widget>
     </item>
    </layout>
@@ -347,9 +332,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QgsFileWidget</class>
+   <class>QgsProjectionSelectionWidget</class>
    <extends>QWidget</extends>
-   <header>qgsfilewidget.h</header>
+   <header>qgsprojectionselectionwidget.h</header>
   </customwidget>
  </customwidgets>
  <resources>

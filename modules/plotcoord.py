@@ -39,6 +39,9 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
         super(PlotCoordinateDialog, self).__init__(parent)
         self.project = QgsProject
 
+        uri = os.path.join(os.path.dirname(__file__), '../images/icon.png')
+        self.setWindowIcon(QtGui.QIcon(uri))
+
         self._currentcrs = None
 
         self.setupUi(self)       
@@ -51,7 +54,7 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
     
     def set_crs(self):
         self._currentcrs = self.listCoordsProj.crs()
-        print(self._currentcrs.description())
+        #print(self._currentcrs.description())
 
     def startplot(self):
 
