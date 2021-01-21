@@ -23,7 +23,7 @@ from qgis.utils import iface
 
 
 #using utils
-from .utils import epsg4326
+from .utils import epsg4326, activate_editing
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/plot_coordinate.ui'))
@@ -33,7 +33,7 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=iface.mainWindow()):
         self.iface = iface
         self.canvas = iface.mapCanvas()
         super(PlotCoordinateDialog, self).__init__(parent)
@@ -85,18 +85,19 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
                 
         print(list_coordinates)
 
-        layer = QgsVectorLayer('Polygon', 'Bidang Tanah' , 'memory')
-        prov = layer.dataProvider()
+        #layer = QgsVectorLayer('Polygon', 'Bidang Tanah' , 'memory')
+        layer = self.project.instance().mapLayersByName('Persil')[0]
         feat = QgsFeature()
         feat.setGeometry(QgsGeometry.fromPolygonXY([list_coordinates]))
+        prov = layer.dataProvider()
         prov.addFeatures([feat])
-        layer.setCrs(source_crs)
+        #layer.setCrs(source_crs)
         layer.updateExtents()
-        uri = os.path.join(os.path.dirname(__file__), '../styles/dimension.qml')
-        layer.loadNamedStyle(uri)
+        #uri = os.path.join(os.path.dirname(__file__), '../styles/dimension.qml')
+        #layer.loadNamedStyle(uri)
         #layer = self.iface.activeLayer()
-        print(layer.name())
-        self.project.instance().addMapLayers([layer])
+        #print(layer.name())
+        #self.project.instance().addMapLayers([layer])
         layer.triggerRepaint()
         extent = layer.extent()
         self.canvas.setExtent(tr.transform(extent))

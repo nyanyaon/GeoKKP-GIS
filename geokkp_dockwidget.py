@@ -47,6 +47,8 @@ from qgis.core import (Qgis,
                     QgsProject, QgsApplication)
 
 
+from .modules.utils import activate_editing, edit_by_identify
+
 # TODO: Compile all UI to py
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'geokkp_dockwidget_base.ui'))
@@ -56,7 +58,7 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=iface.mainWindow()):
         """Constructor."""
         super(GeoKKPDockWidget, self).__init__(parent)
         # Set up the user interface from Designer.
@@ -182,6 +184,8 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         except OSError as error: 
             print("Directory '%s' can not be created" % userName) 
 
+
+        # TODO: fix save project to database (PostGIS/GPKG)
         uri = 'geopackage:C:/GeoKKP-Projects/'+userName+'/project2.gpkg'
         projectUri = uri + '?projectName='+ projectName
         self.project.instance().write(projectUri)
@@ -196,17 +200,17 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         Populate Project's GPKG with layers:
         - Bidang Tanah (Polygon)
         - Titik Batas Bidang (Point)
-        - Transportasi (Polygon, Polyline)
-        - Hidrologi (Polygon, Polyline)
+        - Transportasi (Polyline)
+        - Hidrologi (Polyline)
         - Administrasi (Polygon)
         - Titik Dasar Teknik (Point)
         """
 
         # Initiate layer as memory
-        bidangTanah = QgsVectorLayer("Polygon?crs=epsg:" + str(crs.postgisSrid()), "Bidang Tanah", "memory")
-        titikBatas = QgsVectorLayer("Point?crs=epsg:" + str(crs.postgisSrid()), "Titik Batas Bidang", "memory")
-        transportasi = QgsVectorLayer("Polygon?crs=epsg:" + str(crs.postgisSrid()), "Transportasi", "memory")
-        hidrologi = QgsVectorLayer("Polygon?crs=epsg:" + str(crs.postgisSrid()), "Hidrology", "memory")
+        bidangTanah = QgsVectorLayer("Polygon?crs=epsg:" + str(crs.postgisSrid()), "Persil", "memory")
+        titikBatas = QgsVectorLayer("Point?crs=epsg:" + str(crs.postgisSrid()), "Titik Batas Persil", "memory")
+        transportasi = QgsVectorLayer("Linestring?crs=epsg:" + str(crs.postgisSrid()), "Transportasi", "memory")
+        hidrologi = QgsVectorLayer("Linestring?crs=epsg:" + str(crs.postgisSrid()), "Hidrologi", "memory")
         administrasi = QgsVectorLayer("Polygon?crs=epsg:" + str(crs.postgisSrid()), "Administrasi", "memory")
         titikDasarTeknik = QgsVectorLayer("Point?crs=epsg:" + str(crs.postgisSrid()), "Titik Dasar Teknik", "memory")
 
@@ -221,11 +225,22 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         # TODO: set symbology
         self.set_symbology(bidangTanah, 'dimension.qml')
+        self.set_symbology(titikDasarTeknik, 'TDT.qml')
+        self.set_symbology(administrasi, 'administrasi.qml')
+        self.set_symbology(titikBatas, 'bataspersil.qml')
+        self.set_symbology(hidrologi, 'hidrologi.qml')
+        self.set_symbology(transportasi, 'transportasi.qml')
         
         
         # add all to legend
         self.project.instance().addMapLayers([bidangTanah, titikBatas, \
             transportasi, hidrologi, administrasi, titikDasarTeknik])
+
+        #activate_editing(bidangTanah)
+        
+
+
+
         
     def set_symbology(self, layer, qml):
         uri = os.path.join(os.path.dirname(__file__), 'styles/'+qml)

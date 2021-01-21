@@ -25,7 +25,7 @@ from qgis.PyQt.QtCore import QSettings, QTranslator, QVariant, QCoreApplication,
 from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtWidgets import QAction,QMessageBox, QMenu, QToolButton
 from qgis.core import Qgis, QgsVectorLayer, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
-
+from qgis.gui import QgsRubberBand, QgsMapToolIdentifyFeature, QgsMapToolIdentify
 
 # Initialize Qt resources from file resources.py
 from .resources import *
@@ -41,7 +41,7 @@ from .modules.gotoxy import GotoXYDialog
 from .modules.plotcoord import PlotCoordinateDialog
 from .modules.login import LoginDialog
 from .modules.openaerialmap import OAMDialog
-
+from .modules.utils import activate_editing, edit_by_identify
 
 class GeoKKP:
     """QGIS Plugin Implementation."""
@@ -56,8 +56,10 @@ class GeoKKP:
         """
         # Save reference to the QGIS interface
         self.iface = iface
+        self.canvas = iface.mapCanvas()
         self.project = QgsProject
         self.root = QgsProject.instance().layerTreeRoot()
+        self.mapToolIdentify = QgsMapToolIdentify(self.canvas)
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -222,7 +224,7 @@ class GeoKKP:
 
         # Add Interface: Download Parcel GeoKKP Database Dialog
         icon_path = ':/plugins/geokkp/images/getparcel.png'
-        self.add_action(icon_path, text=self.tr(u'Unduh Bidang Tanah'), 
+        self.add_action(icon_path, text=self.tr(u'Unduh Persil'), 
             callback=self.addWMSParcel, parent=self.iface.mainWindow().menuBar())
 
         self.toolbar.addSeparator()
@@ -230,7 +232,7 @@ class GeoKKP:
 
         # QMenu here
         self.actionDrawPoly = QAction(QIcon(":/plugins/geokkp/images/manualedit.png"),
-            u"Editing Manual Bidang Tanah", self.iface.mainWindow())
+            u"Editing Manual Persil", self.iface.mainWindow())
         self.actionPlotCoordinate = QAction(QIcon(":/plugins/geokkp/images/plotcoordinate.png"),
             u"Plot Koordinat", self.iface.mainWindow())
         self.actionImportCSV = QAction(QIcon(":/plugins/geokkp/images/importcsv.png"),
@@ -245,7 +247,7 @@ class GeoKKP:
             u"Gambar dengan Triangulasi", self.iface.mainWindow())
 
         
-        self.popupDrawMenu = QMenu("&Gambar Bidang",self.iface.mainWindow())
+        self.popupDrawMenu = QMenu("&Gambar Persil",self.iface.mainWindow())
         self.popupDrawMenu.setIcon(QIcon(":/plugins/geokkp/images/manualedit.png"))
 
         self.popupDrawMenu.addAction(self.actionDrawPoly)
@@ -305,8 +307,8 @@ class GeoKKP:
 
         # Add Interface: Edit Atribut
         icon_path = ':/plugins/geokkp/images/editattribute.png'
-        self.add_action(icon_path, text=self.tr(u'Edit Atribut Bidang'), 
-            callback=self.setDimensionStyle, parent=self.iface.mainWindow())
+        self.add_action(icon_path, text=self.tr(u'Edit Atribut Persil'), 
+            callback=self.editatribute, parent=self.iface.mainWindow())
 
         # Add Interface: Auto Adjust
         icon_path = ':/plugins/geokkp/images/autoadjust.png'
@@ -347,7 +349,7 @@ class GeoKKP:
 
         # Add Interface: Georeference
         icon_path = ':/plugins/geokkp/images/georef.png'
-        self.add_action(icon_path, text=self.tr(u'Zoom Ke XY'), 
+        self.add_action(icon_path, text=self.tr(u'Georeferencing'), 
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: Change Basemap
@@ -470,8 +472,23 @@ class GeoKKP:
             self.oamaction = OAMDialog()
         self.oamaction.show()
         
-      
+    def editatribute(self):
+        layer = self.project.instance().mapLayersByName('Persil')[0]
+        self.mapToolIdentify.activate()
 
+        print(layer)
+        #edit_by_identify(self.canvas, layer)
+        #layer = self.iface.activeLayer()
+        
+        #mc=self.canvas
+        #self.mapTool.setLayer(layer)
+        #mc.setMapTool(self.mapTool)
+        #self.mapTool.featureIdentified.connect(self.onFeatureIdentified)
+
+
+    def onFeatureIdentified(self, feature):
+        fid = feature.id()
+        print ("feature selected : " + str(fid))
 
 #--------------------------------------------------------------------------
 # TODO: Move to dockwidget
@@ -516,13 +533,13 @@ class GeoKKP:
 
     def addWMSParcel(self):
         wms_url= "url=https://103.123.13.78/geoserver/umum/wms&format=image/png&layers=PersilHak&styles=&crs=EPSG:4326"
-        rasterLyr = QgsRasterLayer(wms_url, "Bidang Tanah", "wms")
+        rasterLyr = QgsRasterLayer(wms_url, "Persil", "wms")
         self.project.instance().addMapLayer(rasterLyr)
-        self.iface.messageBar().pushMessage("Sukses", "Berhasil menambahkan layer Bidang Tanah", level=Qgis.Success, duration=4)
+        self.iface.messageBar().pushMessage("Sukses", "Berhasil menambahkan layer Persil", level=Qgis.Success, duration=4)
         #self.delIfLayerExist('Bidang Tanah')
 
     def setDimensionStyle(self):
-        print("dimension")
+        pass
         #uri = 'https://raw.githubusercontent.com/danylaksono/GeoKKP-GIS/main/styles/dimension.qml'
         #layer = self.iface.activeLayer()
         #print(layer.name())

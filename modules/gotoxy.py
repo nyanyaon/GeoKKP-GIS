@@ -37,7 +37,7 @@ class GotoXYDialog(QtWidgets.QDialog, FORM_CLASS):
     closingPlugin = pyqtSignal()
     
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=iface.mainWindow()):
         self.iface = iface
         self.canvas = iface.mapCanvas()
         super(GotoXYDialog, self).__init__(parent)
