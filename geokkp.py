@@ -21,8 +21,9 @@
  *                                                                         *
  ***************************************************************************/
 """
-from qgis.PyQt.QtCore import QSettings, QTranslator, QVariant, QCoreApplication, Qt, pyqtSignal
-from qgis.PyQt.QtGui import QIcon, QColor
+
+from qgis.PyQt.QtCore import QSettings, QTranslator, QVariant, QCoreApplication, Qt, pyqtSignal, QUrl
+from qgis.PyQt.QtGui import QIcon, QColor, QDesktopServices
 from qgis.PyQt.QtWidgets import QAction,QMessageBox, QMenu, QToolButton
 from qgis.core import Qgis, QgsVectorLayer, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
 from qgis.gui import QgsRubberBand, QgsMapToolIdentifyFeature, QgsMapToolIdentify
@@ -201,6 +202,7 @@ class GeoKKP:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
+
         self.menu = self.iface.mainWindow().findChild(QMenu, 'GeoKKPGIS')
         if not self.menu:
             self.menu = QMenu(self.tr(u'&GeoKKP-GIS'), self.iface.mainWindow().menuBar())
@@ -260,14 +262,16 @@ class GeoKKP:
         self.popupDrawMenu.addAction(self.actionTrilateration)
         self.popupDrawMenu.addAction(self.actionTriangulation)
 
-        self.actionDrawPoly.triggered.connect(self.plotxy)
+        self.actionDrawPoly.setCheckable(True)
+        self.actionDrawPoly.triggered.connect(self.start_editing)
         self.actionPlotCoordinate.triggered.connect(self.plotxy)
         self.actionImportCSV.triggered.connect(self.plotxy)
-        self.actionAzimuth.triggered.connect(self.gotoxy)
+        self.actionAzimuth.triggered.connect(self.sudut_jarak)
         self.actionTrilateration.triggered.connect(self.gotoxy)
         self.actionTriangulation.triggered.connect(self.gotoxy)
 
         self.toolButton = QToolButton()
+
         self.toolButton.setMenu(self.popupDrawMenu)
         self.toolButton.setDefaultAction(self.actionDrawPoly)
         self.toolButton.setPopupMode(QToolButton.MenuButtonPopup)
@@ -313,13 +317,18 @@ class GeoKKP:
         # Add Interface: Auto Adjust
         icon_path = ':/plugins/geokkp/images/autoadjust.png'
         self.add_action(icon_path, text=self.tr(u'Auto-Adjust'), 
-            callback=self.setDimensionStyle, parent=self.iface.mainWindow())
+            callback=self.auto_adjust, parent=self.iface.mainWindow())
 
 
         # Add Interface: Parcel Dimension
         icon_path = ':/plugins/geokkp/images/dimension.png'
-        self.add_action(icon_path, text=self.tr(u'Gambar Dimensi'), 
-            callback=self.setDimensionStyle, parent=self.iface.mainWindow())
+        self.actionDimension = QAction(QIcon(icon_path), \
+            u"Gambar Dimensi", self.iface.mainWindow())
+        self.toolbar.addAction(self.actionDimension)
+        self.menu.addAction(self.actionDimension)
+        self.actionDimension.setCheckable(True)
+
+        self.actionDimension.triggered.connect(self.set_dimension_style)
         
         self.toolbar.addSeparator()
         self.menu.addSeparator()
@@ -373,7 +382,7 @@ class GeoKKP:
         # Add Interface: Help
         icon_path = ':/plugins/geokkp/images/help.png'
         self.add_action(icon_path, text=self.tr(u'Bantuan'), 
-            callback=self.gotoxy, parent=self.iface.mainWindow())
+            callback=self.openhelp, parent=self.iface.mainWindow())
 
     #--------------------------------------------------------------------------
 
@@ -486,9 +495,40 @@ class GeoKKP:
         #self.mapTool.featureIdentified.connect(self.onFeatureIdentified)
 
 
-    def onFeatureIdentified(self, feature):
-        fid = feature.id()
-        print ("feature selected : " + str(fid))
+    #def onFeatureIdentified(self, feature):
+    #    fid = feature.id()
+    #    print ("feature selected : " + str(fid))
+
+    def start_editing(self):
+        if self.actionDrawPoly.isChecked():
+            print("it is checked")
+            layer = self.project.instance().mapLayersByName('Persil')[0]
+            self.project.instance().setAvoidIntersectionsLayers([layer])
+            activate_editing(layer)
+        else:
+            print("unchecked")
+            self.stop_editing()
+
+    def stop_editing(self):
+        self.iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger() 
+        print("stop editing")
+
+    def sudut_jarak(self):
+        print("sudut jarak")
+        for x in self.iface.advancedDigitizeToolBar().actions():
+            print(x.text())
+            if x.text() == 'Enable advanced digitizing tools':
+                x.trigger()
+                print(x)
+
+    def auto_adjust(self):
+        pass
+        
+
+    def openhelp(self):
+        QDesktopServices.openUrl(QUrl('https://www.notion.so/Kumpulan-Ide-untuk-GeoKKP-GIS-7e0008d172d64c2eab614b7e887cb636'))
+
+
 
 #--------------------------------------------------------------------------
 # TODO: Move to dockwidget
@@ -533,13 +573,24 @@ class GeoKKP:
 
     def addWMSParcel(self):
         wms_url= "url=https://103.123.13.78/geoserver/umum/wms&format=image/png&layers=PersilHak&styles=&crs=EPSG:4326"
-        rasterLyr = QgsRasterLayer(wms_url, "Persil", "wms")
+        rasterLyr = QgsRasterLayer(wms_url, "Persil berdasarkan Hak", "wms")
         self.project.instance().addMapLayer(rasterLyr)
         self.iface.messageBar().pushMessage("Sukses", "Berhasil menambahkan layer Persil", level=Qgis.Success, duration=4)
         #self.delIfLayerExist('Bidang Tanah')
 
-    def setDimensionStyle(self):
-        pass
+    def set_symbology(self, layer, qml):
+        uri = os.path.join(os.path.dirname(__file__), 'styles/'+qml)
+        layer.loadNamedStyle(uri)
+
+    def set_dimension_style(self):
+        layer = self.project.instance().mapLayersByName('Persil')[0]
+        if self.actionDimension.isChecked():
+            self.set_symbology(layer, 'dimension.qml')
+        else:
+            self.set_symbology(layer, 'simplepersil.qml')
+
+        layer.triggerRepaint()
+
         #uri = 'https://raw.githubusercontent.com/danylaksono/GeoKKP-GIS/main/styles/dimension.qml'
         #layer = self.iface.activeLayer()
         #print(layer.name())

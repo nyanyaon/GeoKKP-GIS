@@ -224,7 +224,7 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
 
         # TODO: set symbology
-        self.set_symbology(bidangTanah, 'dimension.qml')
+        self.set_symbology(bidangTanah, 'simplepersil.qml')
         self.set_symbology(titikDasarTeknik, 'TDT.qml')
         self.set_symbology(administrasi, 'administrasi.qml')
         self.set_symbology(titikBatas, 'bataspersil.qml')
@@ -241,7 +241,7 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
 
 
-        
+    # TODO: refactor for simplicity and remove duplicate function
     def set_symbology(self, layer, qml):
         uri = os.path.join(os.path.dirname(__file__), 'styles/'+qml)
         layer.loadNamedStyle(uri)

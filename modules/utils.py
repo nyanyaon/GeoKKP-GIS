@@ -24,9 +24,10 @@ def activate_editing(layer):
     QgsProject.instance().setTopologicalEditing(True)
     layer.startEditing()
     iface.layerTreeView().setCurrentLayer(layer)
-
+    iface.actionAddFeature().trigger()
     # for vertex editing
     #iface.actionVertexTool().trigger()
+
 
 def edit_by_identify(mapcanvas, layer):
     print("identify", mapcanvas)
