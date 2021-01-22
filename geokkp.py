@@ -28,6 +28,8 @@ from qgis.PyQt.QtWidgets import QAction,QMessageBox, QMenu, QToolButton
 from qgis.core import Qgis, QgsVectorLayer, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
 from qgis.gui import QgsRubberBand, QgsMapToolIdentifyFeature, QgsMapToolIdentify
 
+from processing.gui import AlgorithmExecutor
+
 # Initialize Qt resources from file resources.py
 from .resources import *
 
@@ -42,7 +44,10 @@ from .modules.gotoxy import GotoXYDialog
 from .modules.plotcoord import PlotCoordinateDialog
 from .modules.login import LoginDialog
 from .modules.openaerialmap import OAMDialog
-from .modules.utils import activate_editing, edit_by_identify
+from .modules.adjust import AdjustDialog
+
+from .modules.utils import activate_editing, edit_by_identify, is_layer_exist
+
 
 class GeoKKP:
     """QGIS Plugin Implementation."""
@@ -101,7 +106,7 @@ class GeoKKP:
         self.plotxyaction = PlotCoordinateDialog()
         self.loginaction = LoginDialog()
         self.oamaction = OAMDialog()
-    
+        self.adjustaction = AdjustDialog()    
 
 
 
@@ -311,9 +316,14 @@ class GeoKKP:
 
         # Add Interface: Edit Atribut
         icon_path = ':/plugins/geokkp/images/editattribute.png'
-        self.add_action(icon_path, text=self.tr(u'Edit Atribut Persil'), 
-            callback=self.editatribute, parent=self.iface.mainWindow())
+        self.actionAttribute = QAction(QIcon(icon_path), \
+            u"Edit Atribut Persil", self.iface.mainWindow())
+        self.toolbar.addAction(self.actionAttribute)
+        self.menu.addAction(self.actionAttribute)
+        self.actionAttribute.setCheckable(True)
 
+        self.actionAttribute.triggered.connect(self.edit_parcel_attribute)
+        
         # Add Interface: Auto Adjust
         icon_path = ':/plugins/geokkp/images/autoadjust.png'
         self.add_action(icon_path, text=self.tr(u'Auto-Adjust'), 
@@ -481,23 +491,41 @@ class GeoKKP:
             self.oamaction = OAMDialog()
         self.oamaction.show()
         
-    def editatribute(self):
-        layer = self.project.instance().mapLayersByName('Persil')[0]
-        self.mapToolIdentify.activate()
-
-        print(layer)
+    def show_atribute(self):
+        if self.layer.selectedFeatures():
+            fitur = self.layer.selectedFeatures()
+            self.iface.openFeatureForm(self.layer, fitur[0])
+        print("show")
+        
+        #self.mapToolIdentify.activate()
+        
         #edit_by_identify(self.canvas, layer)
         #layer = self.iface.activeLayer()
+
+    def edit_parcel_attribute(self):
+        self.layer = self.iface.activeLayer()
+        print(is_layer_exist(self.project, 'Persil'))
         
-        #mc=self.canvas
-        #self.mapTool.setLayer(layer)
-        #mc.setMapTool(self.mapTool)
-        #self.mapTool.featureIdentified.connect(self.onFeatureIdentified)
 
+        if self.actionAttribute.isChecked():
+            print("it is checked")
+            self.layer.startEditing()
+            self.iface.actionSelect().trigger()
+            self.layer.selectionChanged.connect(self.show_atribute)
+        else:
+            print("unchecked")
+            self.layer.selectionChanged.disconnect(self.show_atribute)
+            self.iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger() 
+            print("stop editing")
+            
+        
 
-    #def onFeatureIdentified(self, feature):
-    #    fid = feature.id()
-    #    print ("feature selected : " + str(fid))
+        #self.layer.startEditing()        
+        #f = self.layer.selectedFeatures()[0]
+        
+        #fid = feature.id()
+        
+        #print ("feature selected : " + str(fid))
 
     def start_editing(self):
         if self.actionDrawPoly.isChecked():
@@ -522,11 +550,13 @@ class GeoKKP:
                 print(x)
 
     def auto_adjust(self):
-        pass
+        if self.adjustaction == None:
+            self.adjustaction = AdjustDialog()
+        self.adjustaction.show()
         
 
     def openhelp(self):
-        QDesktopServices.openUrl(QUrl('https://www.notion.so/Kumpulan-Ide-untuk-GeoKKP-GIS-7e0008d172d64c2eab614b7e887cb636'))
+        QDesktopServices.openUrl(QUrl('https://qgis-id.github.io/'))
 
 
 

@@ -217,9 +217,12 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Populate layers' fields
         # - Bidang Tanah
         pr = bidangTanah.dataProvider()
-        pr.addAttributes([QgsField("NIB", QVariant.String),
-                 QgsField("Jenis Hak",  QVariant.Int),
-                 QgsField("Pemilik", QVariant.Double)])
+        pr.addAttributes([QgsField("NIB", QVariant.String), \
+                 QgsField("Jenis Hak",  QVariant.String), \
+                 QgsField("Pemilik", QVariant.String), \
+                 QgsField("Status Persetujuan Batas", QVariant.String), \
+                 QgsField("Status Berkas", QVariant.String), \
+                 QgsField("Foto", QVariant.String)])
         bidangTanah.updateFields()
 
 
