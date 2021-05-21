@@ -1,30 +1,23 @@
 import os
 import re
 
-from qgis.PyQt.QtCore import Qt, QTimer, QUrl
+from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.gui import QgsRubberBand
 
-from PyQt5 import uic
-from PyQt5.QtWidgets import QAction, QMessageBox
-from qgis.core import (Qgis,
-                    QgsCoordinateReferenceSystem,
-                    QgsCoordinateTransform,
-                    QgsRectangle,
-                    QgsPoint,
-                    QgsPointXY,
-                    QgsGeometry,
-                    QgsWkbTypes,
-                    QgsVectorLayer,
-                    QgsFeature,
-                    QgsProject, QgsApplication)
-from qgis.PyQt import QtGui, QtWidgets, uic
+from qgis.core import (
+    QgsCoordinateTransform,
+    QgsRectangle,
+    QgsPoint,
+    QgsPointXY,
+    QgsGeometry,
+    QgsWkbTypes,
+    QgsProject)
+from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-
-#using utils
-from .utils import  epsg4326, icon
-
+# using utils
+from .utils import icon
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/goto.ui'))
@@ -33,15 +26,13 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 class GotoXYDialog(QtWidgets.QDialog, FORM_CLASS):
     """ Dialog for Zoom to Location """
 
-
     closingPlugin = pyqtSignal()
-
 
     def __init__(self, parent=iface.mainWindow()):
         self.iface = iface
         self.canvas = iface.mapCanvas()
         super(GotoXYDialog, self).__init__(parent)
-        #self.utils = Utilities
+        # self.utils = Utilities
         self.crossRb = QgsRubberBand(self.canvas, QgsWkbTypes.LineGeometry)
         self.crossRb.setColor(Qt.red)
         self.setWindowIcon(icon("icon.png"))
@@ -58,17 +49,17 @@ class GotoXYDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def set_crs(self):
         self._currentcrs = self.selectProj.crs()
-        #print(self._currentcrs.description())
+        # print(self._currentcrs.description())
 
     def zoomtodialog(self):
         text = self.mLineEditXY.text().strip()
-        #try:
+        # try:
         coords = re.split(r'[\s,;:]+', text, 1)
         lat = float(coords[0])
         lon = float(coords[1])
-        #print("lat:", lat, " long:", lon)
+        # print("lat:", lat, " long:", lon)
         self.zoomTo(self._currentcrs, lat, lon)
-        #except Exception:
+        # except Exception:
         #   pass
 
     def zoomTo(self, src_crs, lat, lon):

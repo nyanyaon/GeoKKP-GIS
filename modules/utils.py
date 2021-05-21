@@ -1,30 +1,26 @@
 import os
-from qgis.PyQt.QtCore import Qt, QTimer, QUrl
 from PyQt5.QtGui import QIcon
 from qgis.core import (
                     QgsMessageLog,
                     Qgis,
                     QgsCoordinateReferenceSystem,
-                    QgsCoordinateTransform,
                     QgsProject,
-                    QgsRectangle,
-                    QgsPoint,
-                    QgsPointXY,
-                    QgsGeometry,
-                    QgsWkbTypes,
-                    QgsVectorLayer,
-                    QgsFeature)
+                    QgsVectorFileWriter,
+                    QgsRasterLayer)
 from qgis.utils import iface
-from qgis.gui import QgsRubberBand, QgsMapToolIdentifyFeature, QgsMapToolIdentify
+from qgis.gui import QgsMapToolIdentifyFeature
 
 epsg4326 = QgsCoordinateReferenceSystem('EPSG:4326')
+
 
 def logMessage(message, level=Qgis.Info):
     QgsMessageLog.logMessage(message, 'GeoKKP', level=level)
 
+
 def loadXYZ(url, name):
     rasterLyr = QgsRasterLayer("type=xyz&zmin=0&zmax=21&url=" + url, name, "wms")
     QgsProject.instance().addMapLayer(rasterLyr)
+
 
 def activate_editing(layer):
     QgsProject.instance().setTopologicalEditing(True)
@@ -32,20 +28,17 @@ def activate_editing(layer):
     iface.layerTreeView().setCurrentLayer(layer)
     iface.actionAddFeature().trigger()
     # for vertex editing
-    #iface.actionVertexTool().trigger()
+    # iface.actionVertexTool().trigger()
+
 
 def is_layer_exist(project, layername):
     for layer in project.instance().mapLayers().values():
         print(layer.name(), " - ", layername)
         if (layer.name == layername):
             print("layer exist")
-            _layer = layer
             return True
-
         else:
             return False
-
-
 
 
 def edit_by_identify(mapcanvas, layer):
@@ -53,16 +46,17 @@ def edit_by_identify(mapcanvas, layer):
     print("layer", layer.name())
 
     layer = iface.activeLayer()
-    mc=iface.mapCanvas()
+    mc = iface.mapCanvas()
 
     mapTool = QgsMapToolIdentifyFeature(mc)
     mapTool.setLayer(layer)
     mc.setMapTool(mapTool)
     mapTool.featureIdentified.connect(onFeatureIdentified)
 
+
 def onFeatureIdentified(feature):
     fid = feature.id()
-    print ("feature selected : " + str(fid))
+    print("feature selected : " + str(fid))
 
 
 def save_with_description(layer, outputfile):
