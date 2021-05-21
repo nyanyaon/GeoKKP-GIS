@@ -29,7 +29,7 @@ import processing
 from processing.gui import AlgorithmExecutor
 
 #using utils
-from .utils import epsg4326, is_layer_exist
+from .utils import epsg4326, is_layer_exist, icon
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/adjust.ui'))
@@ -40,15 +40,14 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
     closingPlugin = pyqtSignal()
 
     def __init__(self, parent=iface.mainWindow()):
-        
+
         super(AdjustDialog, self).__init__(parent)
         self.setupUi(self)
         self.iface = iface
         self.canvas = iface.mapCanvas()
         self.project = QgsProject
 
-        uri = os.path.join(os.path.dirname(__file__), '../images/icon.png')
-        self.setWindowIcon(QtGui.QIcon(uri))
+        self.setWindowIcon(icon("icon.png"))
 
         self._layer = None
         self.set_identify_layer()
@@ -60,7 +59,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         self.adjustButton.clicked.connect(self.adjust_parcel)
 
         self.activate_selection()
-    
+
     def set_identify_layer(self):
         layername = 'Persil'
         for layer in self.project.instance().mapLayers().values():
@@ -87,7 +86,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         #self.iface.actionSelect().trigger()
         ##features = self._layer.selectedFeatures()[0]
         #print(features)
-        
+
         self.identifyFeature.setCursor(QCursor(Qt.PointingHandCursor))
         self.identifyFeature.featureIdentified.connect(self.on_feature_identified)
         self.canvas.setMapTool(self.identifyFeature)
@@ -102,9 +101,9 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         #self.clickTool.canvasClicked.disconnect(self.activate_selection)
         #self.iface.actionPan().trigger()
 
-        #self.iface.openFeatureForm(self._layer, feature)        
-        
-    def adjust_parcel(self):       
+        #self.iface.openFeatureForm(self._layer, feature)
+
+    def adjust_parcel(self):
         print("adjust")
         autoadjusttool = QgsApplication.processingRegistry().createAlgorithmById('native:snapgeometries')
         autoadjust2 = autoadjusttool.create({'IN_PLACE': True})
@@ -120,5 +119,3 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
 
         result = processing.runAndLoadResults(autoadjust2, parameters)
         #print(result['OUTPUT'])
-
-        

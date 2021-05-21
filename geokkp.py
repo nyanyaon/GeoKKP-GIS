@@ -46,7 +46,7 @@ from .modules.login import LoginDialog
 from .modules.openaerialmap import OAMDialog
 from .modules.adjust import AdjustDialog
 
-from .modules.utils import activate_editing, edit_by_identify, is_layer_exist
+from .modules.utils import activate_editing, is_layer_exist, iconPath, icon
 
 
 class GeoKKP:
@@ -84,7 +84,7 @@ class GeoKKP:
 
         # Declare instance attributes
         self.actions = []
-        
+
         #self.menu = self.tr(u'&GeoKKP-GIS')
 
         # TODO: We are going to let the user set this up in a future iteration
@@ -106,7 +106,7 @@ class GeoKKP:
         self.plotxyaction = PlotCoordinateDialog()
         self.loginaction = LoginDialog()
         self.oamaction = OAMDialog()
-        self.adjustaction = AdjustDialog()    
+        self.adjustaction = AdjustDialog()
 
 
 
@@ -217,45 +217,45 @@ class GeoKKP:
             self.iface.mainWindow().menuBar().insertMenu(lastAction, self.menu)
 
         # Add Interface: Docked Main Panel GeoKKP
-        icon_path = ':/plugins/geokkp/images/icon.png'
-        icon = QIcon(icon_path)
-        self.iface.mainWindow().setWindowIcon(icon)
+        # icon_path = ':/plugins/geokkp/images/icon.png'
+        # icon = QIcon(icon_path)
+        self.iface.mainWindow().setWindowIcon(icon('icon.png'))
 
-        self.add_action(icon_path,text=self.tr(u'Panel GeoKKP'), 
+        self.add_action(iconPath("icon.png"), text=self.tr(u'Panel GeoKKP'),
             callback=self.run,parent=self.iface.mainWindow().menuBar())
-        
+
         # Add Interface: Login Dialog
-        icon_path = ':/plugins/geokkp/images/login.png'
-        self.add_action(icon_path, text=self.tr(u'Login Pengguna'),
+        # icon_path = ':/plugins/geokkp/images/login.png'
+        self.add_action(iconPath("login.png"), text=self.tr(u'Login Pengguna'),
             callback=self.loginGeoKKP, parent=self.iface.mainWindow().menuBar())
 
         # Add Interface: Download Parcel GeoKKP Database Dialog
-        icon_path = ':/plugins/geokkp/images/getparcel.png'
-        self.add_action(icon_path, text=self.tr(u'Unduh Persil'), 
+        # icon_path = ':/plugins/geokkp/images/getparcel.png'
+        self.add_action(iconPath("getparcel.png"), text=self.tr(u'Unduh Persil'),
             callback=self.addWMSParcel, parent=self.iface.mainWindow().menuBar())
 
         self.toolbar.addSeparator()
         self.menu.addSeparator()
 
         # QMenu here
-        self.actionDrawPoly = QAction(QIcon(":/plugins/geokkp/images/manualedit.png"),
+        self.actionDrawPoly = QAction(icon("manualedit.png"),
             u"Editing Manual Persil", self.iface.mainWindow())
-        self.actionPlotCoordinate = QAction(QIcon(":/plugins/geokkp/images/plotcoordinate.png"),
+        self.actionPlotCoordinate = QAction(icon("plotcoordinate.png"),
             u"Plot Koordinat", self.iface.mainWindow())
-        self.actionImportCSV = QAction(QIcon(":/plugins/geokkp/images/importcsv.png"),
+        self.actionImportCSV = QAction(icon("importcsv.png"),
             u"Import CSV", self.iface.mainWindow())
 
-    
-        self.actionAzimuth = QAction(QIcon(":/plugins/geokkp/images/azimuth.png"),
+
+        self.actionAzimuth = QAction(icon("azimuth.png"),
             u"Sudut dan Jarak", self.iface.mainWindow())
-        self.actionTrilateration = QAction(QIcon(":/plugins/geokkp/images/trilateration.png"),
+        self.actionTrilateration = QAction(icon("trilateration.png"),
             u"Gambar dengan Trilaterasi", self.iface.mainWindow())
-        self.actionTriangulation = QAction(QIcon(":/plugins/geokkp/images/triangulation.png"),
+        self.actionTriangulation = QAction(icon("triangulation.png"),
             u"Gambar dengan Triangulasi", self.iface.mainWindow())
 
-        
+
         self.popupDrawMenu = QMenu("&Gambar Persil",self.iface.mainWindow())
-        self.popupDrawMenu.setIcon(QIcon(":/plugins/geokkp/images/manualedit.png"))
+        self.popupDrawMenu.setIcon(icon("manualedit.png"))
 
         self.popupDrawMenu.addAction(self.actionDrawPoly)
         self.popupDrawMenu.addAction(self.actionPlotCoordinate)
@@ -287,27 +287,27 @@ class GeoKKP:
 
         ### stop here
 
-        
-        
+
+
         '''
         # Add Interface: Draw Polygon
         icon_path = ':/plugins/geokkp/images/drawpoly.png'
-        self.add_action(icon_path, text=self.tr(u'Gambar Bidang Tanah'), 
+        self.add_action(icon_path, text=self.tr(u'Gambar Bidang Tanah'),
             callback=self.plotxy, parent=self.iface.mainWindow())
 
         # Add Interface: Trilateration
         icon_path = ':/plugins/geokkp/images/trilateration.png'
-        self.add_action(icon_path, text=self.tr(u'Gambar dengan Trilaterasi'), 
+        self.add_action(icon_path, text=self.tr(u'Gambar dengan Trilaterasi'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: Distance and Azimuth
         icon_path = ':/plugins/geokkp/images/azimuth.png'
-        self.add_action(icon_path, text=self.tr(u'Gambar dengan Sudut dan Jarak'), 
+        self.add_action(icon_path, text=self.tr(u'Gambar dengan Sudut dan Jarak'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: Triangulation
         icon_path = ':/plugins/geokkp/images/triangulation.png'
-        self.add_action(icon_path, text=self.tr(u'Gambar dengan Triangulasi'), 
+        self.add_action(icon_path, text=self.tr(u'Gambar dengan Triangulasi'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         '''
@@ -316,41 +316,41 @@ class GeoKKP:
 
         # Add Interface: Edit Atribut
         icon_path = ':/plugins/geokkp/images/editattribute.png'
-        self.actionAttribute = QAction(QIcon(icon_path), \
+        self.actionAttribute = QAction(icon("editattribute.png"), \
             u"Edit Atribut Persil", self.iface.mainWindow())
         self.toolbar.addAction(self.actionAttribute)
         self.menu.addAction(self.actionAttribute)
         self.actionAttribute.setCheckable(True)
 
         self.actionAttribute.triggered.connect(self.edit_parcel_attribute)
-        
+
         # Add Interface: Auto Adjust
-        icon_path = ':/plugins/geokkp/images/autoadjust.png'
-        self.add_action(icon_path, text=self.tr(u'Auto-Adjust'), 
+        # icon_path = ':/plugins/geokkp/images/autoadjust.png'
+        self.add_action(iconPath("autoadjust.png"), text=self.tr(u'Auto-Adjust'),
             callback=self.auto_adjust, parent=self.iface.mainWindow())
 
 
         # Add Interface: Parcel Dimension
-        icon_path = ':/plugins/geokkp/images/dimension.png'
-        self.actionDimension = QAction(QIcon(icon_path), \
+        # icon_path = ':/plugins/geokkp/images/dimension.png'
+        self.actionDimension = QAction(icon("dimension.png"), \
             u"Gambar Dimensi", self.iface.mainWindow())
         self.toolbar.addAction(self.actionDimension)
         self.menu.addAction(self.actionDimension)
         self.actionDimension.setCheckable(True)
 
         self.actionDimension.triggered.connect(self.set_dimension_style)
-        
+
         self.toolbar.addSeparator()
         self.menu.addSeparator()
 
         # Add Interface: Topology
-        icon_path = ':/plugins/geokkp/images/topology.png'
-        self.add_action(icon_path, text=self.tr(u'Cek Topologi'), 
+        # icon_path = ':/plugins/geokkp/images/topology.png'
+        self.add_action(iconPath("topology.png"), text=self.tr(u'Cek Topologi'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: Layout
-        icon_path = ':/plugins/geokkp/images/layout.png'
-        self.add_action(icon_path, text=self.tr(u'Layout Peta'), 
+        # icon_path = ':/plugins/geokkp/images/layout.png'
+        self.add_action(iconPath("layout.png"), text=self.tr(u'Layout Peta'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         self.toolbar.addSeparator()
@@ -358,27 +358,27 @@ class GeoKKP:
 
         # Add Interface: Coordinate Transformation
         icon_path = ':/plugins/geokkp/images/conversion.png'
-        self.add_action(icon_path, text=self.tr(u'Transformasi Koordinat'), 
+        self.add_action(icon_path, text=self.tr(u'Transformasi Koordinat'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: Zoom To
         icon_path = ':/plugins/geokkp/images/zoomto.png'
-        self.add_action(icon_path, text=self.tr(u'Zoom Ke XY'), 
+        self.add_action(icon_path, text=self.tr(u'Zoom Ke XY'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: Georeference
         icon_path = ':/plugins/geokkp/images/georef.png'
-        self.add_action(icon_path, text=self.tr(u'Georeferencing'), 
+        self.add_action(icon_path, text=self.tr(u'Georeferencing'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: Change Basemap
         icon_path = ':/plugins/geokkp/images/basemap.png'
-        self.add_action(icon_path, text=self.tr(u'Ganti Basemap'), 
+        self.add_action(icon_path, text=self.tr(u'Ganti Basemap'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: OAM
         icon_path = ':/plugins/geokkp/images/openaerialmap.png'
-        self.add_action(icon_path, text=self.tr(u'OpenAerialMap'), 
+        self.add_action(icon_path, text=self.tr(u'OpenAerialMap'),
             callback=self.loadoam, parent=self.iface.mainWindow())
 
         self.toolbar.addSeparator()
@@ -386,12 +386,12 @@ class GeoKKP:
 
         # Add Interface: Settings
         icon_path = ':/plugins/geokkp/images/settings.png'
-        self.add_action(icon_path, text=self.tr(u'Pengaturan'), 
+        self.add_action(icon_path, text=self.tr(u'Pengaturan'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: Help
         icon_path = ':/plugins/geokkp/images/help.png'
-        self.add_action(icon_path, text=self.tr(u'Bantuan'), 
+        self.add_action(icon_path, text=self.tr(u'Bantuan'),
             callback=self.openhelp, parent=self.iface.mainWindow())
 
     #--------------------------------------------------------------------------
@@ -426,7 +426,7 @@ class GeoKKP:
         # remove the toolbar
         del self.toolbar
 
-    #--------------------------------------------------------------------------    
+    #--------------------------------------------------------------------------
 
     def run(self):
         """Run method that loads and starts the plugin"""
@@ -453,7 +453,7 @@ class GeoKKP:
 
             # detect actions
             self.dockwidget.buttonSelectLocation.clicked.connect(self.selectLocation)
-            
+
 
     def gotoxy(self):
         if self.gotoxyaction == None:
@@ -490,22 +490,22 @@ class GeoKKP:
         if self.oamaction == None:
             self.oamaction = OAMDialog()
         self.oamaction.show()
-        
+
     def show_atribute(self):
         if self.layer.selectedFeatures():
             fitur = self.layer.selectedFeatures()
             self.iface.openFeatureForm(self.layer, fitur[0])
         print("show")
-        
+
         #self.mapToolIdentify.activate()
-        
+
         #edit_by_identify(self.canvas, layer)
         #layer = self.iface.activeLayer()
 
     def edit_parcel_attribute(self):
         self.layer = self.iface.activeLayer()
         print(is_layer_exist(self.project, 'Persil'))
-        
+
 
         if self.actionAttribute.isChecked():
             print("it is checked")
@@ -515,16 +515,16 @@ class GeoKKP:
         else:
             print("unchecked")
             self.layer.selectionChanged.disconnect(self.show_atribute)
-            self.iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger() 
+            self.iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger()
             print("stop editing")
-            
-        
 
-        #self.layer.startEditing()        
+
+
+        #self.layer.startEditing()
         #f = self.layer.selectedFeatures()[0]
-        
+
         #fid = feature.id()
-        
+
         #print ("feature selected : " + str(fid))
 
     def start_editing(self):
@@ -538,7 +538,7 @@ class GeoKKP:
             self.stop_editing()
 
     def stop_editing(self):
-        self.iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger() 
+        self.iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger()
         print("stop editing")
 
     def sudut_jarak(self):
@@ -553,7 +553,7 @@ class GeoKKP:
         if self.adjustaction == None:
             self.adjustaction = AdjustDialog()
         self.adjustaction.show()
-        
+
 
     def openhelp(self):
         QDesktopServices.openUrl(QUrl('https://qgis-id.github.io/'))
@@ -563,7 +563,7 @@ class GeoKKP:
 #--------------------------------------------------------------------------
 # TODO: Move to dockwidget
 # Methods for GeoKKP Dock Widget
-    
+
     def selectLocation(self):
         """ what to do when user clicks location selection """
 
@@ -580,9 +580,9 @@ class GeoKKP:
         wilkerLayer.renderer().symbol().setColor(QColor("transparent"))
         wilkerLayer.renderer().symbol().symbolLayer(0).setStrokeColor(QColor(255,0,0))
         wilkerLayer.renderer().symbol().symbolLayer(0).setStrokeWidth(1)
-        wilkerLayer.triggerRepaint()        
+        wilkerLayer.triggerRepaint()
         #self.project.instance().addMapLayer(wilkerLayer)
-    
+
     def loadXYZ(self, url, name):
         rasterLyr = QgsRasterLayer("type=xyz&zmin=0&zmax=21&url=" + url, name, "wms")
         self.project.instance().addMapLayer(rasterLyr)
@@ -624,17 +624,7 @@ class GeoKKP:
         #uri = 'https://raw.githubusercontent.com/danylaksono/GeoKKP-GIS/main/styles/dimension.qml'
         #layer = self.iface.activeLayer()
         #print(layer.name())
-        #layer.loadNamedStyle(uri) 
+        #layer.loadNamedStyle(uri)
         #layer.triggerRepaint()
         #for layer in self.project.instance().mapLayers().values():
         #    if (layer.name == "Bidang Tanah"):
-        
-        
-
-
-
-
-
-    
-
-
