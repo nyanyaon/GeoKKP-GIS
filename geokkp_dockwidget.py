@@ -24,32 +24,18 @@
 
 import os
 import requests
-import json
 import re
 
 from PyQt5.QtWidgets import QLineEdit
 
-from qgis.PyQt import QtGui, QtWidgets, uic
+from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal, QVariant
 from qgis.utils import iface
-from qgis.core import (Qgis,
-                    QgsField,
-                    QgsCoordinateReferenceSystem,
-                    QgsCoordinateTransform,
-                    QgsRectangle,
-                    QgsPoint,
-                    QgsPointXY,
-                    QgsGeometry,
-                    QgsWkbTypes,
-                    QgsVectorLayer,
-                    QgsFeature,
-                    QgsVectorFileWriter,
-                    QgsProject, QgsApplication)
+from qgis.core import (
+    QgsField,
+    QgsVectorLayer,
+    QgsProject)
 
-
-from .modules.utils import activate_editing, edit_by_identify
-
-# TODO: Compile all UI to py
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'geokkp_dockwidget_base.ui'))
 
@@ -71,33 +57,27 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.setupUi(self)
         self.project = QgsProject
 
-        
-
         self._province = None
         self._district = None
         self._kantahid = None
         self._projectCRS = None
-        
 
         # Populate the select province combobox
         self.getProvince()
         self.setProvince()
-        
 
         # Populate the select kab based on province selection
         self.comboBoxKanwil.currentIndexChanged.connect(self.setKabupaten)
         self.buat_basisdata.clicked.connect(self.createDb)
         self.projectCRS.crsChanged.connect(self.set_crs)
-        #print(self.getKabupaten(32))
-
-
+        # print(self.getKabupaten(32))
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
 
     def getProvince(self):
-        #print("get Province")
+        # print("get Province")
         province_url = 'https://dev.farizdotid.com/api/daerahindonesia/provinsi'
 
         response = requests.get(url=province_url)
@@ -107,23 +87,21 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
     def setProvince(self):
         self.comboBoxKanwil.clear()
-        
-        
+
         provinces = {}
         for item in self.getProvince():
             name = item.pop('nama')
             provinces[name] = item
         self._province = provinces
-        #print(type(_province))
-        #print(self._province)
+        # print(type(_province))
+        # print(self._province)
         self.comboBoxKanwil.addItems(self._province.keys())
-        edit = QLineEdit(self) 
+        edit = QLineEdit(self)
         self.comboBoxKanwil.setLineEdit(edit)
         self.comboBoxKanwil.setCurrentText('')
 
-
     def getKabupaten(self, idkab):
-        #print('getkabupaten')
+        # print('getkabupaten')
         kab_url = 'https://dev.farizdotid.com/api/daerahindonesia/kota?id_provinsi='
         kab_url_id = kab_url + str(idkab)
         response = requests.get(url=kab_url_id)
@@ -132,7 +110,7 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
     def setKabupaten(self):
         self.comboBoxKantah.clear()
-        #print('set kabupaten')
+        # print('set kabupaten')
         currentProvince = self.comboBoxKanwil.currentText()
         kabupatenlist = self.getKabupaten(self._province[currentProvince]['id'])
         kabupatens = {}
@@ -140,27 +118,28 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             name = item.pop('nama')
             kabupatens[name] = item
         self._district = kabupatens
-        
-        #print(type(_province))
-        #print(self._district)
+
+        # print(type(_province))
+        # print(self._district)
         self.comboBoxKantah.addItems(self._district.keys())
-        edit = QLineEdit(self) 
+        edit = QLineEdit(self)
         self.comboBoxKantah.setLineEdit(edit)
-        
 
     def loadLocation(self):
         print('loading locations')
-        if self.comboBoxKantah.count()==0:
-            currentDistrict=''
+        if self.comboBoxKantah.count() == 0:
+            currentDistrict = ''
         else:
             currentDistrict = self.comboBoxKantah.currentText()
-        geoserver_url='http://54.254.9.31:8080/geoserver/wfs?service=wfs&version=1.0.0&request=getfeature&typename=public:indoadminkab&outputformat=application/json&CQL_FILTER=id='
+        # TODO(IS): gunakan URL builder
+        geoserver_url = 'http://54.254.9.31:8080/geoserver/wfs?service=wfs&version=1.0.0&request=getfeature&typename=public:indoadminkab&outputformat=application/json&CQL_FILTER=id='  # noqa: E501
         districtId = self._district[currentDistrict]['id']
-        #print(districtId)
-        geoserver_url_id = geoserver_url + '\''+ str(districtId) +'\''
+        # print(districtId)
+        # TODO(IS): gunakan URL builder
+        geoserver_url_id = geoserver_url + '\'' + str(districtId) + '\''
         response = requests.get(url=geoserver_url_id)
         response_json = response.json()
-        #print(response_json)
+        # print(response_json)
         return response_json
 
     # -------------------------------------------------------------
@@ -170,7 +149,6 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.project.instance().setCrs(self._projectCRS)
         print(self._projectCRS)
 
-
     def createDb(self):
         projectName = self.nama_kegiatan.text().lower()
         userName = self.nama_pelaksana.text().lower()
@@ -178,23 +156,20 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         userName = self.properify(userName)
         defaultDirectory = 'C:/GeoKKP-Projects/'
         path = os.path.join(defaultDirectory, userName)
-        try: 
-            os.makedirs(path, exist_ok = True) 
-            print("Directory '%s' created successfully" % userName) 
-        except OSError as error: 
-            print("Directory '%s' can not be created" % userName) 
-
+        try:
+            os.makedirs(path, exist_ok=True)
+            print("Directory '%s' created successfully" % userName)
+        except OSError:
+            print("Directory '%s' can not be created" % userName)
 
         # TODO: fix save project to database (PostGIS/GPKG)
         uri = 'geopackage:C:/GeoKKP-Projects/'+userName+'/project2.gpkg'
-        projectUri = uri + '?projectName='+ projectName
+        projectUri = uri + '?projectName=' + projectName
         self.project.instance().write(projectUri)
 
         # populate the project with layers and their attributes
         self.populateGpkg(uri, self._projectCRS)
 
-
-    
     def populateGpkg(self, uri, crs):
         """
         Populate Project's GPKG with layers:
@@ -217,14 +192,16 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Populate layers' fields
         # - Bidang Tanah
         pr = bidangTanah.dataProvider()
-        pr.addAttributes([QgsField("NIB", QVariant.String), \
-                 QgsField("Jenis Hak",  QVariant.String), \
-                 QgsField("Pemilik", QVariant.String), \
-                 QgsField("Status Persetujuan Batas", QVariant.String), \
-                 QgsField("Status Berkas", QVariant.String), \
-                 QgsField("Foto", QVariant.String)])
+        attributes = [
+            QgsField("NIB", QVariant.String),
+            QgsField("Jenis Hak",  QVariant.String),
+            QgsField("Pemilik", QVariant.String),
+            QgsField("Status Persetujuan Batas", QVariant.String),
+            QgsField("Status Berkas", QVariant.String),
+            QgsField("Foto", QVariant.String)
+            ]
+        pr.addAttributes(attributes)
         bidangTanah.updateFields()
-
 
         # TODO: set symbology
         self.set_symbology(bidangTanah, 'simplepersil.qml')
@@ -233,29 +210,29 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.set_symbology(titikBatas, 'bataspersil.qml')
         self.set_symbology(hidrologi, 'hidrologi.qml')
         self.set_symbology(transportasi, 'transportasi.qml')
-        
-        
+
         # add all to legend
-        self.project.instance().addMapLayers([bidangTanah, titikBatas, \
-            transportasi, hidrologi, administrasi, titikDasarTeknik])
+        layers = [
+            bidangTanah,
+            titikBatas,
+            transportasi,
+            hidrologi,
+            administrasi,
+            titikDasarTeknik]
+        self.project.instance().addMapLayers(layers)
 
-        #activate_editing(bidangTanah)
-        
-
-
+        # activate_editing(bidangTanah)
 
     # TODO: refactor for simplicity and remove duplicate function
     def set_symbology(self, layer, qml):
         uri = os.path.join(os.path.dirname(__file__), 'styles/'+qml)
         layer.loadNamedStyle(uri)
 
-        
-
     def properify(self, text):
         """
         Filter text for OS's friendly directory format
 
-        Remove all non-word characters (everything except numbers and letters) and 
+        Remove all non-word characters (everything except numbers and letters) and
         replace all runs of whitespace with a single dash
 
         """
@@ -263,14 +240,3 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         text = re.sub(r"\s+", '_', text)
 
         return text
-
-        
-
-
-
-
-
-
-#
-
-        
