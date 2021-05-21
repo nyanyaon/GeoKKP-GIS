@@ -23,7 +23,7 @@ from qgis.utils import iface
 
 
 #using utils
-from .utils import epsg4326, activate_editing
+from .utils import epsg4326, activate_editing, icon
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/plot_coordinate.ui'))
@@ -39,19 +39,18 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
         super(PlotCoordinateDialog, self).__init__(parent)
         self.project = QgsProject
 
-        uri = os.path.join(os.path.dirname(__file__), '../images/icon.png')
-        self.setWindowIcon(QtGui.QIcon(uri))
+        self.setWindowIcon(icon("icon.png"))
 
         self._currentcrs = None
 
-        self.setupUi(self)       
+        self.setupUi(self)
         self.buttonBox.accepted.connect(self.startplot)
         self.listCoordsProj.crsChanged.connect(self.set_crs)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
-    
+
     def set_crs(self):
         self._currentcrs = self.listCoordsProj.crs()
         #print(self._currentcrs.description())
@@ -65,7 +64,7 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
 
         #transform coordinates
         source_crs = self._currentcrs
-        canvas_crs = self.canvas.mapSettings().destinationCrs()                    
+        canvas_crs = self.canvas.mapSettings().destinationCrs()
         tr = QgsCoordinateTransform(source_crs, canvas_crs, self.project.instance().transformContext())
 
         #extract coordinate pairs
@@ -82,7 +81,7 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
             #geom = QgsGeometry.fromPointXY(QgsPointXY(X,Y))
             list_coordinates.append(QgsPointXY(X,Y))
             #print('{} indeks pada {}'.format(index,coord))
-                
+
         print(list_coordinates)
 
         #layer = QgsVectorLayer('Polygon', 'Bidang Tanah' , 'memory')
@@ -116,5 +115,3 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
         #self.zoomTo(self._currentcrs, lat, lon)
         #except Exception:
         #   pass
-
-    

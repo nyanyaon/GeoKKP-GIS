@@ -217,20 +217,16 @@ class GeoKKP:
             self.iface.mainWindow().menuBar().insertMenu(lastAction, self.menu)
 
         # Add Interface: Docked Main Panel GeoKKP
-        # icon_path = ':/plugins/geokkp/images/icon.png'
-        # icon = QIcon(icon_path)
         self.iface.mainWindow().setWindowIcon(icon('icon.png'))
 
         self.add_action(iconPath("icon.png"), text=self.tr(u'Panel GeoKKP'),
             callback=self.run,parent=self.iface.mainWindow().menuBar())
 
         # Add Interface: Login Dialog
-        # icon_path = ':/plugins/geokkp/images/login.png'
         self.add_action(iconPath("login.png"), text=self.tr(u'Login Pengguna'),
             callback=self.loginGeoKKP, parent=self.iface.mainWindow().menuBar())
 
         # Add Interface: Download Parcel GeoKKP Database Dialog
-        # icon_path = ':/plugins/geokkp/images/getparcel.png'
         self.add_action(iconPath("getparcel.png"), text=self.tr(u'Unduh Persil'),
             callback=self.addWMSParcel, parent=self.iface.mainWindow().menuBar())
 
@@ -315,7 +311,6 @@ class GeoKKP:
         ## Qmenu End Here
 
         # Add Interface: Edit Atribut
-        icon_path = ':/plugins/geokkp/images/editattribute.png'
         self.actionAttribute = QAction(icon("editattribute.png"), \
             u"Edit Atribut Persil", self.iface.mainWindow())
         self.toolbar.addAction(self.actionAttribute)
@@ -325,13 +320,11 @@ class GeoKKP:
         self.actionAttribute.triggered.connect(self.edit_parcel_attribute)
 
         # Add Interface: Auto Adjust
-        # icon_path = ':/plugins/geokkp/images/autoadjust.png'
         self.add_action(iconPath("autoadjust.png"), text=self.tr(u'Auto-Adjust'),
             callback=self.auto_adjust, parent=self.iface.mainWindow())
 
 
         # Add Interface: Parcel Dimension
-        # icon_path = ':/plugins/geokkp/images/dimension.png'
         self.actionDimension = QAction(icon("dimension.png"), \
             u"Gambar Dimensi", self.iface.mainWindow())
         self.toolbar.addAction(self.actionDimension)
@@ -344,12 +337,10 @@ class GeoKKP:
         self.menu.addSeparator()
 
         # Add Interface: Topology
-        # icon_path = ':/plugins/geokkp/images/topology.png'
         self.add_action(iconPath("topology.png"), text=self.tr(u'Cek Topologi'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: Layout
-        # icon_path = ':/plugins/geokkp/images/layout.png'
         self.add_action(iconPath("layout.png"), text=self.tr(u'Layout Peta'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
@@ -357,41 +348,34 @@ class GeoKKP:
         self.menu.addSeparator()
 
         # Add Interface: Coordinate Transformation
-        icon_path = ':/plugins/geokkp/images/conversion.png'
-        self.add_action(icon_path, text=self.tr(u'Transformasi Koordinat'),
+        self.add_action(iconPath("conversion.png"), text=self.tr(u'Transformasi Koordinat'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: Zoom To
-        icon_path = ':/plugins/geokkp/images/zoomto.png'
-        self.add_action(icon_path, text=self.tr(u'Zoom Ke XY'),
+        self.add_action(iconPath("zoomto.png"), text=self.tr(u'Zoom Ke XY'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: Georeference
-        icon_path = ':/plugins/geokkp/images/georef.png'
-        self.add_action(icon_path, text=self.tr(u'Georeferencing'),
+        self.add_action(iconPath("georef.png"), text=self.tr(u'Georeferencing'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: Change Basemap
-        icon_path = ':/plugins/geokkp/images/basemap.png'
-        self.add_action(icon_path, text=self.tr(u'Ganti Basemap'),
+        self.add_action(iconPath("basemap.png"), text=self.tr(u'Ganti Basemap'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: OAM
-        icon_path = ':/plugins/geokkp/images/openaerialmap.png'
-        self.add_action(icon_path, text=self.tr(u'OpenAerialMap'),
+        self.add_action(iconPath("openaerialmap.png"), text=self.tr(u'OpenAerialMap'),
             callback=self.loadoam, parent=self.iface.mainWindow())
 
         self.toolbar.addSeparator()
         self.menu.addSeparator()
 
         # Add Interface: Settings
-        icon_path = ':/plugins/geokkp/images/settings.png'
-        self.add_action(icon_path, text=self.tr(u'Pengaturan'),
+        self.add_action(iconPath("settings.png"), text=self.tr(u'Pengaturan'),
             callback=self.gotoxy, parent=self.iface.mainWindow())
 
         # Add Interface: Help
-        icon_path = ':/plugins/geokkp/images/help.png'
-        self.add_action(icon_path, text=self.tr(u'Bantuan'),
+        self.add_action(iconPath("help.png"), text=self.tr(u'Bantuan'),
             callback=self.openhelp, parent=self.iface.mainWindow())
 
     #--------------------------------------------------------------------------

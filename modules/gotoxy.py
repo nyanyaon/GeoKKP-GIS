@@ -23,7 +23,7 @@ from qgis.utils import iface
 
 
 #using utils
-from .utils import  epsg4326
+from .utils import  epsg4326, icon
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -44,8 +44,7 @@ class GotoXYDialog(QtWidgets.QDialog, FORM_CLASS):
         #self.utils = Utilities
         self.crossRb = QgsRubberBand(self.canvas, QgsWkbTypes.LineGeometry)
         self.crossRb.setColor(Qt.red)
-        uri = os.path.join(os.path.dirname(__file__), '../images/icon.png')
-        self.setWindowIcon(QtGui.QIcon(uri))
+        self.setWindowIcon(icon("icon.png"))
 
         self._currentcrs = None
 

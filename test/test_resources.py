@@ -13,6 +13,7 @@ __date__ = '2020-12-24'
 __copyright__ = 'Copyright 2020, Dany Laksono'
 
 import unittest
+from modules.utils import icon
 
 from qgis.PyQt.QtGui import QIcon
 
@@ -31,14 +32,10 @@ class GeoKKPDialogTest(unittest.TestCase):
 
     def test_icon_png(self):
         """Test we can click OK."""
-        path = ':/plugins/GeoKKP/icon.png'
-        icon = QIcon(path)
-        self.assertFalse(icon.isNull())
+        geokkp_icon = icon("icon.png")
+        self.assertFalse(geokkp_icon.isNull())
 
 if __name__ == "__main__":
     suite = unittest.makeSuite(GeoKKPResourcesTest)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
-
-
-
