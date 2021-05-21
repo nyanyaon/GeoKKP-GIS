@@ -8,17 +8,15 @@
 
 """
 
-__author__ = 'danylaksono@ugm.ac.id'
-__date__ = '2020-12-24'
-__copyright__ = 'Copyright 2020, Dany Laksono'
-
 import unittest
-
-from qgis.PyQt.QtGui import QDockWidget
 
 from geokkp_dockwidget import GeoKKPDockWidget
 
 from utilities import get_qgis_app
+
+__author__ = 'danylaksono@ugm.ac.id'
+__date__ = '2020-12-24'
+__copyright__ = 'Copyright 2020, Dany Laksono'
 
 QGIS_APP = get_qgis_app()
 
@@ -38,8 +36,8 @@ class GeoKKPDockWidgetTest(unittest.TestCase):
         """Test we can click OK."""
         pass
 
+
 if __name__ == "__main__":
-    suite = unittest.makeSuite(GeoKKPDialogTest)
+    suite = unittest.makeSuite(GeoKKPDockWidgetTest)
     runner = unittest.TextTestRunner(verbosity=2)
     runner.run(suite)
-
