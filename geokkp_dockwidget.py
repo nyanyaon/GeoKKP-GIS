@@ -159,7 +159,7 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         try:
             os.makedirs(path, exist_ok=True)
             print("Directory '%s' created successfully" % userName)
-        except OSError as error:
+        except OSError:
             print("Directory '%s' can not be created" % userName)
 
         # TODO: fix save project to database (PostGIS/GPKG)
