@@ -28,6 +28,10 @@ from qgis.PyQt.QtWidgets import QAction, QMenu, QToolButton
 from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
 from qgis.gui import QgsMapToolIdentify
 
+
+
+
+
 # Import the code for the DockWidget
 import os
 import json
