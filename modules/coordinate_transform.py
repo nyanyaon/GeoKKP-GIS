@@ -2,6 +2,7 @@ import os
 import re
 
 from qgis.PyQt.QtCore import Qt, QTimer
+from qgis.PyQt.QtGui import QIcon
 from qgis.gui import QgsRubberBand
 
 from qgis.core import (
@@ -33,8 +34,21 @@ class CoordinateTransformDialog(QtWidgets.QDialog, FORM_CLASS):
         self.canvas = iface.mapCanvas()
         super(CoordinateTransformDialog, self).__init__(parent)
         self.setWindowIcon(icon("icon.png"))
-
         self.setupUi(self)
+
+        # Set copy icon
+        copy_icon = QIcon(':/images/themes/default/mActionEditCopy.svg')
+        self.latlong_copy_button.setIcon(copy_icon)
+        self.utm_copy_button.setIcon(copy_icon)
+        self.tm3_copy_button.setIcon(copy_icon)
+
+        # Set copy icon
+        copy_icon = QIcon(':/images/themes/default/transformation.svg')
+        self.latlong_convert_button.setIcon(copy_icon)
+        self.utm_convert_button.setIcon(copy_icon)
+        self.tm3_convert_button.setIcon(copy_icon)
+
+
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

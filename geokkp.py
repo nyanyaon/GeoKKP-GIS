@@ -488,8 +488,7 @@ class GeoKKP:
     def coordinate_transform(self):
         if self.coordinate_transform_dialog is None:
             # Create the dockwidget (after translation) and keep reference
-            self.coordinate_transform_dialog = CoordinateTransformDialog()()
-        # self.coordinate_transform_dialog.selectProj.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
+            self.coordinate_transform_dialog = CoordinateTransformDialog()
 
         # show the dialog
         self.coordinate_transform_dialog.show()
