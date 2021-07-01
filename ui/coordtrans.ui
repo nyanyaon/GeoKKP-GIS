@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Transformasi Koordinat</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -43,7 +43,7 @@
      <widget class="QTextEdit" name="textEdit_2"/>
     </item>
     <item>
-     <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidget"/>
+     <widget class="QgsProjectionSelectionWidget" name="mQgsProjectionSelectionWidget" native="true"/>
     </item>
     <item>
      <spacer name="verticalSpacer">
