@@ -104,7 +104,7 @@ def icon(name):
 
 
 def validate_raw_coordinates(raw_coords):
-    '''Validate list of coordinate pair with rules below
+    r'''Validate list of coordinate pair with rules below
     1) only number, comma, point, minus, semicolon, whitespace
     2) minus could only be placed in front of number
     3) point could only be placed between number
@@ -116,11 +116,11 @@ def validate_raw_coordinates(raw_coords):
     ----------
     raw_coords: str
         list of coordinate pair which separated by semicolon for each pair
-    
+
     Returns
     ----------
     CoordinateValidationResult
-        CoordinateValidationResult is a namedtuple contain two attributes, is_valid which indicate whether 
+        CoordinateValidationResult is a namedtuple contain two attributes, is_valid which indicate whether
         the raw coordinate is valid or not and errors which is tuple that contain CoordinateValidationError.
         CoordinateValidationError is namedtuple contain the row, col and error_value
     '''
@@ -133,7 +133,7 @@ def validate_raw_coordinates(raw_coords):
         r'(?:(?:(?<=^)|(?<=;))\s*(?:-?\d+\.?\d+)\s*(?:(?=;)|(?=$)))'
     ])
     re_pattern = re.compile(pattern)
-    
+
     errors = []
     row = 0
     cursor_pos = 0
@@ -144,17 +144,17 @@ def validate_raw_coordinates(raw_coords):
             cursor_pos = col
             prev_error = len(errors) and errors[-1]
             if prev_error and prev_error.row == row and prev_error.col + 1 == col:
-              errors[-1] = CoordinateValidationErrors(
-                  row=row,
-                  col=col,
-                  error_value=prev_error.error_value + match.group()
-              )
+                errors[-1] = CoordinateValidationErrors(
+                    row=row,
+                    col=col,
+                    error_value=prev_error.error_value + match.group()
+                )
             else:
-              errors.append(CoordinateValidationErrors(
-                  row=row,
-                  col=col,
-                  error_value=match.group()
-              ))
+                errors.append(CoordinateValidationErrors(
+                    row=row,
+                    col=col,
+                    error_value=match.group()
+                ))
     return CoordinateValidationResult(
         is_valid=not len(errors),
         errors=tuple(errors)
