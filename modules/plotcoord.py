@@ -3,7 +3,6 @@ import os
 from qgis.core import (
     Qgis,
     QgsCoordinateTransform,
-    QgsPointXY,
     QgsGeometry,
     QgsFeature,
     QgsProject)
@@ -14,7 +13,7 @@ from qgis.utils import iface
 
 # using utils
 from .utils import (
-    icon, 
+    icon,
     validate_raw_coordinates,
     parse_raw_coordinate,
     display_message_bar,
@@ -33,7 +32,7 @@ class CoordErrorHighlight():
 
     def _highlight_error(self, error):
         if self._text_editor:
-            start, end  = self._get_error_position(error)
+            start, end = self._get_error_position(error)
             cursor = self._text_editor.textCursor()
             cursor.setPosition(start, QTextCursor.MoveAnchor)
             cursor.setPosition(end, QTextCursor.KeepAnchor)
@@ -48,7 +47,8 @@ class CoordErrorHighlight():
         if errors:
             for error in errors:
                 self._highlight_error(error)
-                
+
+
 class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
     """ Dialog for Coordinate Plot """
 
@@ -104,7 +104,9 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
                 level=Qgis.Warning,
                 duration=0,
             )
-            error_message = '\t\n'.join((f'row: {error.row}, col: {error.col}, value: {error.error_value}' for error in self._coordinate_validation.errors))
+            error_message = '\t\n'.join(
+                (f'row: {error.row}, col: {error.col}, value: {error.error_value}' for error in self._coordinate_validation.errors)
+            )
             logMessage(f'Raw coordinate invalid, unexpected value on:\n{error_message}', Qgis.Critical)
             return
 
@@ -115,7 +117,7 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # extract coordinate pairs
         coords = parse_raw_coordinate(raw_coords)
-        
+
         layer = self.project.instance().mapLayersByName('Persil')[0]
         feat = QgsFeature()
         feat.setGeometry(QgsGeometry.fromPolygonXY([coords]))

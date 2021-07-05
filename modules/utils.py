@@ -23,6 +23,7 @@ DefaultMessageBarButton = QPushButton()
 DefaultMessageBarButton.setText("Show Me")
 DefaultMessageBarButton.pressed.connect(iface.openMessageLog)
 
+
 def logMessage(message, level=Qgis.Info):
     QgsMessageLog.logMessage(message, 'GeoKKP', level=level)
 
@@ -34,6 +35,7 @@ def display_message_bar(tag, message, parent=None, level=Qgis.Info, action=Defau
         action.setParent(widget)
         widget.layout().addWidget(action)
     parent.pushWidget(widget, level, duration=duration)
+
 
 def loadXYZ(url, name):
     rasterLyr = QgsRasterLayer("type=xyz&zmin=0&zmax=21&url=" + url, name, "wms")
@@ -100,6 +102,7 @@ def iconPath(name):
 def icon(name):
     return QIcon(iconPath(name))
 
+
 def validate_raw_coordinates(raw_coords):
     '''Validate list of coordinate pair with rules below
     1) only number, comma, point, minus, semicolon, whitespace
@@ -122,12 +125,12 @@ def validate_raw_coordinates(raw_coords):
         CoordinateValidationError is namedtuple contain the row, col and error_value
     '''
     pattern = '|'.join([
-        '(?:[^-.,;\d\r\n \t])',
-        '(?:(?<!\D)-|-(?=\D))',
-        '(?:(?<=\D)\.|\.(?!\d))',
-        '(?:(?<=[^\d \t]),|,(?=[^\d \t]))',
-        '(?:(?<=[^\d \t]);|;$)',
-        '(?:(?:(?<=^)|(?<=;))\s*(?:-?\d+\.?\d+)\s*(?:(?=;)|(?=$)))'
+        r'(?:[^-.,;\d\r\n \t])',
+        r'(?:(?<!\D)-|-(?=\D))',
+        r'(?:(?<=\D)\.|\.(?!\d))',
+        r'(?:(?<=[^\d \t]),|,(?=[^\d \t]))',
+        r'(?:(?<=[^\d \t]);|;$)',
+        r'(?:(?:(?<=^)|(?<=;))\s*(?:-?\d+\.?\d+)\s*(?:(?=;)|(?=$)))'
     ])
     re_pattern = re.compile(pattern)
     
@@ -156,6 +159,7 @@ def validate_raw_coordinates(raw_coords):
         is_valid=not len(errors),
         errors=tuple(errors)
     )
+
 
 def parse_raw_coordinate(coordList):
     stripped_coords = coordList.strip()
