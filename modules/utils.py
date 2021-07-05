@@ -110,7 +110,8 @@ def validate_raw_coordinates(raw_coords):
     3) point could only be placed between number
     4) comma could only be placed between number, whitespace, or tab
     5) simicolon could only be placed after number or whitespace and not in the last position
-    6) coordinate number that is allowed are only the number that follow this pattern ^\s*(?:-?\d+\.?\d+)\s*$|;\s*(?:-?\d+\.?\d+)\s*;
+    6) coordinate number that is allowed are only the number that follow
+        this pattern ^\s*(?:-?\d+\.?\d+)\s*$|;\s*(?:-?\d+\.?\d+)\s*;
 
     Parameters
     ----------

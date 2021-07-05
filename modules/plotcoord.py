@@ -105,7 +105,8 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
                 duration=0,
             )
             error_message = '\t\n'.join(
-                (f'row: {error.row}, col: {error.col}, value: {error.error_value}' for error in self._coordinate_validation.errors)
+                (f'row: {error.row}, col: {error.col}, value: {error.error_value}'
+                    for error in self._coordinate_validation.errors)
             )
             logMessage(f'Raw coordinate invalid, unexpected value on:\n{error_message}', Qgis.Critical)
             return
