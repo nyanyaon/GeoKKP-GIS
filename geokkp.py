@@ -25,7 +25,7 @@
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QUrl
 from qgis.PyQt.QtGui import QIcon, QColor, QDesktopServices
 from qgis.PyQt.QtWidgets import QAction, QMenu, QToolButton, QDockWidget, QMessageBox
-from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem, QgsMessageLog
+from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
 from qgis.gui import QgsMapToolIdentify
 from qgis import utils as qgis_utils
 
