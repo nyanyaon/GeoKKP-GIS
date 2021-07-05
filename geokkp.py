@@ -24,9 +24,10 @@
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QUrl
 from qgis.PyQt.QtGui import QIcon, QColor, QDesktopServices
-from qgis.PyQt.QtWidgets import QAction, QMenu, QToolButton
-from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
+from qgis.PyQt.QtWidgets import QAction, QMenu, QToolButton, QDockWidget, QMessageBox
+from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem, QgsMessageLog
 from qgis.gui import QgsMapToolIdentify
+from qgis import utils as qgis_utils
 
 # Import the code for the DockWidget
 import os
@@ -243,6 +244,10 @@ class GeoKKP:
             icon("importcsv.png"),
             u"Import CSV",
             self.iface.mainWindow())
+        self.cadMode = QAction(
+            icon("azimuth.png"),
+            u"Toggle CAD Mode",
+            self.iface.mainWindow())
         self.actionAzimuth = QAction(
             icon("azimuth.png"),
             u"Sudut dan Jarak",
@@ -265,6 +270,10 @@ class GeoKKP:
 
         self.popupDrawMenu.addSeparator()
 
+        self.popupDrawMenu.addAction(self.cadMode)
+
+        self.popupDrawMenu.addSeparator()
+
         self.popupDrawMenu.addAction(self.actionAzimuth)
         self.popupDrawMenu.addAction(self.actionTrilateration)
         self.popupDrawMenu.addAction(self.actionTriangulation)
@@ -273,6 +282,7 @@ class GeoKKP:
         self.actionDrawPoly.triggered.connect(self.start_editing)
         self.actionPlotCoordinate.triggered.connect(self.plotxy)
         self.actionImportCSV.triggered.connect(self.plotxy)
+        self.cadMode.triggered.connect(self.toggle_cad_mode)
         self.actionAzimuth.triggered.connect(self.sudut_jarak)
         self.actionTrilateration.triggered.connect(self.gotoxy)
         self.actionTriangulation.triggered.connect(self.gotoxy)
@@ -495,6 +505,14 @@ class GeoKKP:
         # show the dialog
         # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.plotxyaction.show()
+
+    def toggle_cad_mode(self):
+        if 'qad' in qgis_utils.active_plugins:
+            for panel in self.iface.mainWindow().findChildren(QDockWidget):
+                if panel.windowTitle() == 'QAD text window - 3.0.4':
+                    panel.setVisible(not panel.isVisible())
+                    return
+        message = QMessageBox.warning(None, 'QAD Plugin Not Found', 'QAD Plugin version 3.0.4 is not installed or activated!')
 
     def loginGeoKKP(self):
         if self.loginaction is None:
