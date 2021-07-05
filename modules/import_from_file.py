@@ -19,6 +19,6 @@ class ImportGeomFromFile():
     def show(self):
         self._file_browser.show()
         file = self._file_browser.getOpenFileName()
-        if len(file) == 2:
-            self._file_browser.close()
+        if len(file) == 2 and file[0]:
             self._show_using_plotxy(file[0])
+        self._file_browser.close()
