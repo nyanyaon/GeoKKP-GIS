@@ -39,6 +39,7 @@ from .modules.plotcoord import PlotCoordinateDialog
 from .modules.login import LoginDialog
 from .modules.openaerialmap import OAMDialog
 from .modules.adjust import AdjustDialog
+from .modules.import_from_file import ImportGeomFromFile
 
 from .modules.utils import activate_editing, is_layer_exist, iconPath, icon
 
@@ -98,6 +99,7 @@ class GeoKKP:
         self.dockwidget = GeoKKPDockWidget()
         self.gotoxyaction = GotoXYDialog()
         self.plotxyaction = PlotCoordinateDialog()
+        self.import_from_file_widget = ImportGeomFromFile(self)
         self.loginaction = LoginDialog()
         self.oamaction = OAMDialog()
         self.adjustaction = AdjustDialog()
@@ -272,7 +274,7 @@ class GeoKKP:
         self.actionDrawPoly.setCheckable(True)
         self.actionDrawPoly.triggered.connect(self.start_editing)
         self.actionPlotCoordinate.triggered.connect(self.plotxy)
-        self.actionImportCSV.triggered.connect(self.plotxy)
+        self.actionImportCSV.triggered.connect(self.import_file)
         self.actionAzimuth.triggered.connect(self.sudut_jarak)
         self.actionTrilateration.triggered.connect(self.gotoxy)
         self.actionTriangulation.triggered.connect(self.gotoxy)
@@ -495,6 +497,11 @@ class GeoKKP:
         # show the dialog
         # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.plotxyaction.show()
+
+    def import_file(self):
+        if self.import_from_file_widget is None:
+            self.import_from_file_widget = ImportGeomFromFile()
+        self.import_from_file_widget.show()
 
     def loginGeoKKP(self):
         if self.loginaction is None:
