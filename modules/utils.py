@@ -1,7 +1,7 @@
 import re
 import os
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QPushButton
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QPushButton
 from qgis.core import (
                     QgsMessageLog,
                     Qgis,
