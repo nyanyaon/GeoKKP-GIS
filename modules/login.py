@@ -10,10 +10,13 @@ from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.utils import iface
 from qgis.core import QgsMessageLog, Qgis
 
+from .utils import storeSetting, readSetting
+
+
 
 from .networkaccessmanager import NetworkAccessManager, RequestsException
-
 from qgis.core import QgsNetworkAccessManager, QgsAuthManager
+
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -41,6 +44,10 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
 
         #login action
         self.buttonBoxLogin.clicked.connect(self.doLoginRequest)
+        if self.checkboxSaveLogin.isChecked:
+            self.isSaved = True
+        else:
+            self.isSaved = False
 
 
     def closeEvent(self, event):
@@ -99,6 +106,9 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             #message.buttonClicked.connect(msgButtonClick)
         else:
             print(status)
+            if self.isSaved:
+                storeSetting("isLoggedIn", status)
+                print("Informasi pengguna disimpan")
             self.closedone()
 
 

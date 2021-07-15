@@ -164,7 +164,7 @@
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
-          <widget class="QCheckBox" name="chechboxSaveLogin">
+          <widget class="QCheckBox" name="checkboxSaveLogin">
            <property name="toolTip">
             <string>Store credentials in QGIS authentication database</string>
            </property>

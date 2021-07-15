@@ -4,6 +4,7 @@ from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QPushButton
 from qgis.core import (
                     QgsMessageLog,
+                    QgsSettings,
                     Qgis,
                     QgsCoordinateReferenceSystem,
                     QgsProject,
@@ -49,6 +50,15 @@ def activate_editing(layer):
     iface.actionAddFeature().trigger()
     # for vertex editing
     # iface.actionVertexTool().trigger()
+
+
+def storeSetting(key, value):
+    settings = QgsSettings()
+    settings.setValue(key, value)
+
+def readSetting(key, value):
+    settings = QgsSettings()
+    return settings.value(key, value)
 
 
 def is_layer_exist(project, layername):
