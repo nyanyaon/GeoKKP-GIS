@@ -115,11 +115,11 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 #FOR DEBUG ONLY
                 print("bypass username:", username)
                 self.profilUser(username)
-                self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
+                
             else:
                 print(status)
                 if self.isSaved:
-                    storeSetting("isLoggedIn", status)
+                    storeSetting("geokkp/isLoggedIn", status)
                     print("Informasi pengguna disimpan")
                     self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
                 self.closedone()
@@ -144,6 +144,12 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         response = requests.request("POST", formaturl, headers=headers, data=payload)
         response_json = response.json()
         print(response_json[0]["nama"])
+        storeSetting("geokkp/jumlahkantor", len(response_json))
+        storeSetting("geokkp/listkantor", response_json)
+        self.iface.messageBar().pushMessage("Simpan Data:", "Data kantor pengguna berhasil disimpan", level=Qgis.Success)
+
+        
+            
     
 
 
