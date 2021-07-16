@@ -22,6 +22,8 @@
  ***************************************************************************/
 """
 
+
+
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QUrl
 from qgis.PyQt.QtGui import QIcon, QColor, QDesktopServices
 from qgis.PyQt.QtWidgets import QAction, QMenu, QToolButton, QDockWidget, QMessageBox
@@ -40,6 +42,8 @@ from .modules.plotcoord import PlotCoordinateDialog
 from .modules.login import LoginDialog
 from .modules.openaerialmap import OAMDialog
 from .modules.adjust import AdjustDialog
+from .modules.postlogin import PostLoginDock
+
 
 from .modules.import_from_file import ImportGeomFromFile
 
@@ -106,6 +110,7 @@ class GeoKKP:
         self.plotxyaction = PlotCoordinateDialog()
         self.import_from_file_widget = ImportGeomFromFile(self)
         self.loginaction = LoginDialog()
+        self.postloginaction = PostLoginDock()
         self.oamaction = OAMDialog()
         self.adjustaction = AdjustDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
@@ -440,13 +445,13 @@ class GeoKKP:
         # print "** CLOSING GeoKKP"
 
         # disconnects
-        self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
+        #self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
 
         # remove this statement if dockwidget is to remain
         # for reuse if plugin is reopened
         # Commented next statement since it causes QGIS crashe
         # when closing the docked window:
-        # self.dockwidget = None
+        #self.dockwidget = None
 
         self.pluginIsActive = False
 
@@ -523,14 +528,26 @@ class GeoKKP:
         # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.plotxyaction.show()
 
+    def postlogin(self):
+        if self.postloginaction is None:
+            # Create the dockwidget (after translation) and keep reference
+            self.postloginaction = PostLoginDock()
+
+        # connect to provide cleanup on closing of dockwidget
+        self.postloginaction.closingPlugin.connect(self.onClosePlugin)
+
+        # show the dialog
+        # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+        self.postloginaction.show()
+
 
     def toggle_cad_mode(self):
         if 'qad' in qgis_utils.active_plugins:
             for panel in self.iface.mainWindow().findChildren(QDockWidget):
-                if panel.windowTitle() == 'QAD text window - 3.0.4':
+                if panel.windowTitle() == 'QAD Text Window - 3.0.4':
                     panel.setVisible(not panel.isVisible())
                     return
-        message = QMessageBox.warning(None, 'QAD Plugin Not Found', 'QAD Plugin version 3.0.4 is not installed or activated!')
+        message = QMessageBox.warning(None, 'Plugin tidak ditemukan', 'Plugin QAD perlu diaktifkan lebih dahulu')
 
     def import_file(self):
         if self.import_from_file_widget is None:
@@ -542,6 +559,7 @@ class GeoKKP:
         if self.loginaction is None:
             self.loginaction = LoginDialog()
         self.loginaction.show()
+        
 
     def loadoam(self):
         if self.oamaction is None:

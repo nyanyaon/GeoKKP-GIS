@@ -12,7 +12,7 @@ from qgis.core import QgsMessageLog, Qgis
 from qgis.gui import QgsMessageBar
 
 from .utils import storeSetting, readSetting
-
+from .postlogin import PostLoginDock
 
 
 from .networkaccessmanager import NetworkAccessManager, RequestsException
@@ -38,6 +38,8 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         #replace Request with built in QGIS Network httplib2
         self.nam = NetworkAccessManager()
         #self.nam = QgsNetworkAccessManager(self)
+
+        self.postloginaction = PostLoginDock()
 
         # API URL: ganti dengan API terbaru pada versi production
         self.baseURL = "http://10.20.22.90:5001/spatialapi"
@@ -113,8 +115,8 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 #message.buttonClicked.connect(msgButtonClick)
                 
                 #FOR DEBUG ONLY
-                print("bypass username:", username)
-                self.profilUser(username)
+                #print("bypass username:", username)
+                #self.profilUser(username)
                 
             else:
                 print(status)
@@ -122,7 +124,8 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                     storeSetting("geokkp/isLoggedIn", status)
                     print("Informasi pengguna disimpan")
                     self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
-                self.closedone()
+                    self.profilUser(username)
+                self.accept()
         except:
             pass
 
@@ -143,14 +146,24 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
 
         response = requests.request("POST", formaturl, headers=headers, data=payload)
         response_json = response.json()
-        print(response_json[0]["nama"])
+        #print(response_json[0]["nama"])
         storeSetting("geokkp/jumlahkantor", len(response_json))
         storeSetting("geokkp/listkantor", response_json)
         self.iface.messageBar().pushMessage("Simpan Data:", "Data kantor pengguna berhasil disimpan", level=Qgis.Success)
+        self.postlogin()
+              
 
-        
-            
-    
+    def postlogin(self):
+        print("==========ps===========")
+        if self.postloginaction is None:
+            # Create the dockwidget (after translation) and keep reference
+            self.postloginaction = PostLoginDock()
+
+        # connect to provide cleanup on closing of dockwidget
+        #self.postloginaction.closingPlugin.connect(self.onClosePlugin)
+
+        # show the dialog
+        self.postloginaction.show() 
 
 
 
