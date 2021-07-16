@@ -40,7 +40,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         #self.nam = QgsNetworkAccessManager(self)
 
         # API URL: ganti dengan API terbaru pada versi production
-        #self.baseURL = "http://10.20.22.90:5001/spatialapi"
+        self.baseURL = "http://10.20.22.90:5001/spatialapi"
         self.mockURL = "https://daac4efe-c84b-4901-81a7-3a80278986ed.mock.pstmn.io"
 
         self.bar = QgsMessageBar()
@@ -82,8 +82,8 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         username = self.inputUsername.text()
         password = self.inputPassword.text()
 
-        #formaturl = '{}/validateUser'.format(self.baseURL)
-        formaturl = '{}/validateUser'.format(self.mockURL)
+        formaturl = '{}/validateUser'.format(self.baseURL)
+        #formaturl = '{}/validateUser'.format(self.mockURL)
 
         payload = json.dumps({
             "providerName": "OracleMembershipProvider",
@@ -92,43 +92,50 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             "password": password,
             "versi": "4.3.0.0"
         })
+
         headers = {
-        # 'Content-Type': 'application/json'
+            'Content-Type': 'application/json'
         }
 
-        response = requests.request("POST", formaturl, headers=headers, data=payload)
-        response_json = response.json()
-        print(response_json)
-        status = response_json['status']
-        informasi = response_json['information']
+        try:
+            response = requests.request("POST", formaturl, headers=headers, data=payload)
+            response_json = response.json()
+            print(response_json)
+            status = response_json['status']
+            informasi = response_json['information']
+            if not status:
+                message = QMessageBox()
+                message.setIcon(QMessageBox.Information)
+                message.setText(informasi)
+                message.setWindowTitle("Peringatan")
+                message.setStandardButtons(QMessageBox.Ok)
+                message.exec()
+                #message.buttonClicked.connect(msgButtonClick)
+                
+                #FOR DEBUG ONLY
+                print("bypass username:", username)
+                self.profilUser(username)
+                self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
+            else:
+                print(status)
+                if self.isSaved:
+                    storeSetting("isLoggedIn", status)
+                    print("Informasi pengguna disimpan")
+                    self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
+                self.closedone()
+        except:
+            pass
 
-        if not status:
-            message = QMessageBox()
-            message.setIcon(QMessageBox.Information)
-            message.setText(informasi)
-            message.setWindowTitle("Peringatan")
-            message.setStandardButtons(QMessageBox.Ok)
-            message.exec()
-            #message.buttonClicked.connect(msgButtonClick)
-        else:
-            print(status)
-            if self.isSaved:
-                storeSetting("isLoggedIn", status)
-                print("Informasi pengguna disimpan")
-                self.bar.pushMessage("Hello", "World", level=Qgis.Info)
-            self.closedone()
-
-
-    def profilKantor(self, username):
+    def profilUser(self, username):
         """
-        Entity by username
+        user entity 
         API backend: {}/getEntityByUserName
         """
 
         formaturl = '{}/getEntityByUserName'.format(self.baseURL)
 
         payload = json.dumps({
-            "username": username,
+            "username": username
         })
         headers = {
          'Content-Type': 'application/json'
@@ -136,64 +143,8 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
 
         response = requests.request("POST", formaturl, headers=headers, data=payload)
         response_json = response.json()
-        status = response_json['status']
-        informasi = response_json['information']
-
-        if not status:
-            message = QMessageBox()
-            message.setIcon(QMessageBox.Information)
-            message.setText(informasi)
-            message.setWindowTitle("Peringatan")
-            message.setStandardButtons(QMessageBox.Ok)
-            message.exec()
-            #message.buttonClicked.connect(msgButtonClick)
-        else:
-            print(status)
-            if self.isSaved:
-                storeSetting("isLoggedIn", status)
-                print("Informasi pengguna disimpan")
-            self.closedone()            
-
-
-
-    def profilUser(self, username):
-        """
-        user entity 
-        API backend: {}/getUserEntityByUserName
-        """
-
-        formaturl = '{}/getUserEntityByUserName'.format(self.baseURL)
-
-        payload = json.dumps({
-            "providerName": "OracleMembershipProvider",
-            "applicationName": "KKPWeb",
-            "username": username,
-            "versi": "4.3.0.0"
-        })
-        headers = {
-         'Content-Type': 'application/json'
-        }
-
-        response = requests.request("POST", formaturl, headers=headers, data=payload)
-        response_json = response.json()
-        status = response_json['status']
-        informasi = response_json['information']
-
-        if not status:
-            message = QMessageBox()
-            message.setIcon(QMessageBox.Information)
-            message.setText(informasi)
-            message.setWindowTitle("Peringatan")
-            message.setStandardButtons(QMessageBox.Ok)
-            message.exec()
-            #message.buttonClicked.connect(msgButtonClick)
-        else:
-            print(status)
-            if self.isSaved:
-                storeSetting("isLoggedIn", status)
-                print("Informasi pengguna disimpan")
-            self.closedone()
-
+        print(response_json[0]["nama"])
+    
 
 
 
