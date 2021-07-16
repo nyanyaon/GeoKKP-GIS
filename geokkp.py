@@ -40,6 +40,7 @@ from .modules.login import LoginDialog
 from .modules.openaerialmap import OAMDialog
 from .modules.adjust import AdjustDialog
 from .modules.coordinate_transform import CoordinateTransformDialog
+from .modules.layout import LayoutDialog
 
 from .modules.utils import activate_editing, is_layer_exist, iconPath, icon
 
@@ -102,8 +103,9 @@ class GeoKKP:
         self.loginaction = LoginDialog()
         self.oamaction = OAMDialog()
         self.adjustaction = AdjustDialog()
+        self.layoutaction = LayoutDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
-
+	
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -359,7 +361,7 @@ class GeoKKP:
         self.add_action(
             iconPath("layout.png"),
             text=self.tr(u'Layout Peta'),
-            callback=self.gotoxy,
+            callback=self.layout,
             parent=self.iface.mainWindow())
 
         self.toolbar.addSeparator()
@@ -506,6 +508,12 @@ class GeoKKP:
         # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.plotxyaction.show()
 
+    def layout(self):
+        if self.layoutaction is None:
+            # Create the dockwidget (after translation) and keep reference
+            self.layoutaction = LayoutDialog()
+        self.layoutaction.show()	
+		
     def loginGeoKKP(self):
         if self.loginaction is None:
             self.loginaction = LoginDialog()
