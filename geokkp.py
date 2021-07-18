@@ -40,6 +40,8 @@ from .modules.plotcoord import PlotCoordinateDialog
 from .modules.login import LoginDialog
 from .modules.openaerialmap import OAMDialog
 from .modules.adjust import AdjustDialog
+from .modules.coordinate_transform import CoordinateTransformDialog
+from .modules.layout import LayoutDialog
 from .modules.import_from_file import ImportGeomFromFile
 
 from .modules.utils import activate_editing, is_layer_exist, iconPath, icon
@@ -104,7 +106,9 @@ class GeoKKP:
         self.loginaction = LoginDialog()
         self.oamaction = OAMDialog()
         self.adjustaction = AdjustDialog()
-
+        self.layoutaction = LayoutDialog()
+        self.coordinate_transform_dialog = CoordinateTransformDialog()
+	
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -371,7 +375,7 @@ class GeoKKP:
         self.add_action(
             iconPath("layout.png"),
             text=self.tr(u'Layout Peta'),
-            callback=self.gotoxy,
+            callback=self.layout,
             parent=self.iface.mainWindow())
 
         self.toolbar.addSeparator()
@@ -381,7 +385,7 @@ class GeoKKP:
         self.add_action(
             iconPath("conversion.png"),
             text=self.tr(u'Transformasi Koordinat'),
-            callback=self.gotoxy,
+            callback=self.coordinate_transform,
             parent=self.iface.mainWindow())
 
         # Add Interface: Zoom To
@@ -497,6 +501,14 @@ class GeoKKP:
         # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.gotoxyaction.show()
 
+    def coordinate_transform(self):
+        if self.coordinate_transform_dialog is None:
+            # Create the dockwidget (after translation) and keep reference
+            self.coordinate_transform_dialog = CoordinateTransformDialog()
+
+        # show the dialog
+        self.coordinate_transform_dialog.show()
+
     def plotxy(self):
         if self.plotxyaction is None:
             # Create the dockwidget (after translation) and keep reference
@@ -510,6 +522,11 @@ class GeoKKP:
         # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.plotxyaction.show()
 
+    def layout(self):
+        if self.layoutaction is None:
+            # Create the dockwidget (after translation) and keep reference
+            self.layoutaction = LayoutDialog()
+        self.layoutaction.show()	
 
     def toggle_cad_mode(self):
         if 'qad' in qgis_utils.active_plugins:
@@ -523,7 +540,6 @@ class GeoKKP:
         if self.import_from_file_widget is None:
             self.import_from_file_widget = ImportGeomFromFile()
         self.import_from_file_widget.show()
-
 
     def loginGeoKKP(self):
         if self.loginaction is None:
