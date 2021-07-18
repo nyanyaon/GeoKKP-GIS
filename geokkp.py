@@ -529,7 +529,6 @@ class GeoKKP:
         # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.plotxyaction.show()
 
-<<<<<<< HEAD
     def postlogin(self):
         if self.postloginaction is None:
             # Create the dockwidget (after translation) and keep reference
@@ -542,13 +541,11 @@ class GeoKKP:
         # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.postloginaction.show()
 
-=======
     def layout(self):
         if self.layoutaction is None:
             # Create the dockwidget (after translation) and keep reference
             self.layoutaction = LayoutDialog()
         self.layoutaction.show()	
->>>>>>> ce7d20e67f5bb0e2e737bd3e1dcafaa17120bfb3
 
     def toggle_cad_mode(self):
         if 'qad' in qgis_utils.active_plugins:
