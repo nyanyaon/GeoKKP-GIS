@@ -23,6 +23,8 @@
 """
 
 
+import os
+import json
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QUrl
 from qgis.PyQt.QtGui import QIcon, QColor, QDesktopServices
@@ -32,8 +34,6 @@ from qgis.gui import QgsMapToolIdentify
 from qgis import utils as qgis_utils
 
 # Import the code for the DockWidget
-import os
-import json
 from .geokkp_dockwidget import GeoKKPDockWidget
 
 # Modules
@@ -48,13 +48,12 @@ from .modules.coordinate_transform import CoordinateTransformDialog
 from .modules.coordinate_transform import CoordinateTransformDialog
 from .modules.layout import LayoutDialog
 from .modules.import_from_file import ImportGeomFromFile
-
-
 from .modules.utils import activate_editing, is_layer_exist, iconPath, icon
 
 
+
 class GeoKKP:
-    """QGIS Plugin Implementation."""
+    """GeoKKP QGIS Plugin Implementation."""
 
     def __init__(self, iface):
         """Constructor.
@@ -80,7 +79,6 @@ class GeoKKP:
             self.plugin_dir,
             'i18n',
             'GeoKKP_{}.qm'.format(locale))
-
         if os.path.exists(locale_path):
             self.translator = QTranslator()
             self.translator.load(locale_path)
@@ -95,10 +93,11 @@ class GeoKKP:
         self.toolbar = self.iface.addToolBar(u'GeoKKP')
         self.toolbar.setObjectName(u'GeoKKP')
 
-        # change title, for fun
+        # Change QGIS Title and Default Icon
         title = self.iface.mainWindow().windowTitle()
         new_title = title.replace('QGIS', 'GeoKKP-GIS')
         self.iface.mainWindow().setWindowTitle(new_title)
+        self.iface.mainWindow().setWindowIcon(icon('icon.png'))
 
         self.pluginIsActive = False
 
@@ -219,8 +218,6 @@ class GeoKKP:
             self.iface.mainWindow().menuBar().insertMenu(lastAction, self.menu)
 
         # Add Interface: Docked Main Panel GeoKKP
-        self.iface.mainWindow().setWindowIcon(icon('icon.png'))
-
         self.add_action(
             iconPath("icon.png"),
             text=self.tr(u'Panel GeoKKP'),
@@ -446,20 +443,18 @@ class GeoKKP:
         # print "** CLOSING GeoKKP"
 
         # disconnects
-        #self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
+        self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
 
         # remove this statement if dockwidget is to remain
         # for reuse if plugin is reopened
         # Commented next statement since it causes QGIS crashe
         # when closing the docked window:
-        #self.dockwidget = None
+        self.dockwidget = None
 
         self.pluginIsActive = False
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
-
-        # print "** UNLOAD GeoKKP"
 
         for action in self.actions:
             self.iface.removePluginMenu(
@@ -475,7 +470,6 @@ class GeoKKP:
         if not self.pluginIsActive:
             self.pluginIsActive = True
 
-            # print "** STARTING GeoKKP"
 
             # dockwidget may not exist if:
             #    first run of plugin

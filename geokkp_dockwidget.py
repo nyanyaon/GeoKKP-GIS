@@ -79,9 +79,12 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
     def getProvince(self):
         # print("get Province")
         province_url = 'https://dev.farizdotid.com/api/daerahindonesia/provinsi'
-
-        response = requests.get(url=province_url)
-        response_json = response.json()['provinsi']
+        response_json = {}
+        try:
+            response = requests.get(url=province_url)
+            response_json = response.json()['provinsi']
+        except:
+            pass
         return response_json
         # print(_province)
 
@@ -104,8 +107,13 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # print('getkabupaten')
         kab_url = 'https://dev.farizdotid.com/api/daerahindonesia/kota?id_provinsi='
         kab_url_id = kab_url + str(idkab)
-        response = requests.get(url=kab_url_id)
-        response_json = response.json()['kota_kabupaten']
+
+        response_json = {}
+        try:
+            response = requests.get(url=kab_url_id)
+            response_json = response.json()['kota_kabupaten']
+        except:
+            pass
         return response_json
 
     def setKabupaten(self):
