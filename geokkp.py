@@ -30,7 +30,7 @@ from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QUrl
 from qgis.PyQt.QtGui import QIcon, QColor, QDesktopServices
 from qgis.PyQt.QtWidgets import QAction, QMenu, QToolButton, QDockWidget, QMessageBox
 from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
-from qgis.gui import QgsMapToolIdentify
+from qgis.gui import QgsMapToolIdentify, QgsDockWidget
 from qgis import utils as qgis_utils
 
 # Import the code for the DockWidget
@@ -103,7 +103,7 @@ class GeoKKP:
 
         # self.canvasClicked = pyqtSignal('QgsPointXY')
 
-        # self.dockwidget = None
+        # Set widgets
         self.dockwidget = GeoKKPDockWidget()
         self.gotoxyaction = GotoXYDialog()
         self.plotxyaction = PlotCoordinateDialog()
@@ -114,6 +114,9 @@ class GeoKKP:
         self.adjustaction = AdjustDialog()
         self.layoutaction = LayoutDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
+
+
+        #debugging
 	
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -217,7 +220,7 @@ class GeoKKP:
             lastAction = actions[-1]
             self.iface.mainWindow().menuBar().insertMenu(lastAction, self.menu)
 
-        # Add Interface: Docked Main Panel GeoKKP
+        # Add Interface: Docked Main    
         self.add_action(
             iconPath("icon.png"),
             text=self.tr(u'Panel GeoKKP'),
@@ -440,37 +443,43 @@ class GeoKKP:
     def onClosePlugin(self):
         """Cleanup necessary items here when plugin dockwidget is closed"""
 
-        # print "** CLOSING GeoKKP"
-
         # disconnects
         self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
 
         # remove this statement if dockwidget is to remain
         # for reuse if plugin is reopened
-        # Commented next statement since it causes QGIS crashe
-        # when closing the docked window:
         self.dockwidget = None
+
 
         self.pluginIsActive = False
 
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
-
         for action in self.actions:
             self.iface.removePluginMenu(
                 self.tr(u'&GeoKKP-GIS'),
                 action)
             self.iface.removeToolBarIcon(action)
+
         # remove the toolbar
+        #del self.dockwidget
         del self.toolbar
+        
+        # remove panels registry
+        self.iface.mainWindow().removeDockWidget(self.dockwidget)
+        self.dockwidget.setVisible(False)
+        self.dockwidget.destroy()
+        del self.dockwidget
+
+        #remove menu
+        self.menu.clear()
+        
 
     def run(self):
         """Run method that loads and starts the plugin"""
 
         if not self.pluginIsActive:
             self.pluginIsActive = True
-
-
             # dockwidget may not exist if:
             #    first run of plugin
             #    removed on close (see self.onClosePlugin method)
@@ -487,7 +496,8 @@ class GeoKKP:
             self.dockwidget.show()
 
             # detect actions
-            self.dockwidget.buttonSelectLocation.clicked.connect(self.selectLocation)
+            # TODO: Delete this
+            #self.dockwidget.buttonSelectLocation.clicked.connect(self.selectLocation)
 
     def gotoxy(self):
         if self.gotoxyaction is None:
@@ -524,6 +534,9 @@ class GeoKKP:
         self.plotxyaction.show()
 
     def postlogin(self):
+        """
+        what to do if user is logged in  
+        """
         if self.postloginaction is None:
             # Create the dockwidget (after translation) and keep reference
             self.postloginaction = PostLoginDock()
@@ -541,6 +554,8 @@ class GeoKKP:
             self.layoutaction = LayoutDialog()
         self.layoutaction.show()	
 
+    
+    # TODO: rubah CAD mode dengan menu penggambaran sendiri
     def toggle_cad_mode(self):
         if 'qad' in qgis_utils.active_plugins:
             for panel in self.iface.mainWindow().findChildren(QDockWidget):
@@ -559,7 +574,6 @@ class GeoKKP:
             self.loginaction = LoginDialog()
         self.loginaction.show()
         
-
     def loadoam(self):
         if self.oamaction is None:
             self.oamaction = OAMDialog()
@@ -578,7 +592,7 @@ class GeoKKP:
 
     def edit_parcel_attribute(self):
         self.layer = self.iface.activeLayer()
-        print(is_layer_exist(self.project, 'Persil'))
+        #print(is_layer_exist(self.project, 'Persil'))
 
         if self.actionAttribute.isChecked():
             print("it is checked")
@@ -649,7 +663,7 @@ class GeoKKP:
         wilkerLayer.renderer().symbol().symbolLayer(0).setStrokeWidth(1)
         wilkerLayer.triggerRepaint()
         # self.project.instance().addMapLayer(wilkerLayer)
-
+    
     def loadXYZ(self, url, name):
         rasterLyr = QgsRasterLayer("type=xyz&zmin=0&zmax=21&url=" + url, name, "wms")
         self.project.instance().addMapLayer(rasterLyr)

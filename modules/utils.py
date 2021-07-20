@@ -15,6 +15,17 @@ from qgis.utils import iface
 from qgis.gui import QgsMapToolIdentifyFeature
 from collections import namedtuple
 
+"""
+Kumpulan Utilities untuk GeoKKP-QGIS
+===========================================
+
+Variabel global dan modul global untuk digunakan di plugin GeoKKP-GIS
+
+
+"""
+
+
+
 epsg4326 = QgsCoordinateReferenceSystem('EPSG:4326')
 
 CoordinateValidationResult = namedtuple('CoordinateValidationResult', 'is_valid errors')
@@ -25,11 +36,19 @@ DefaultMessageBarButton.setText("Show Me")
 DefaultMessageBarButton.pressed.connect(iface.openMessageLog)
 
 
+
+
 def logMessage(message, level=Qgis.Info):
+    """
+    Logger untuk debugging
+    """
     QgsMessageLog.logMessage(message, 'GeoKKP', level=level)
 
 
 def display_message_bar(tag, message, parent=None, level=Qgis.Info, action=DefaultMessageBarButton, duration=5):
+    """
+    Wrapper untuk menampilkan pesan di message bar
+    """
     parent = parent if parent else iface.messageBar()
     widget = parent.createMessage(tag, message)
     if action:
@@ -39,11 +58,18 @@ def display_message_bar(tag, message, parent=None, level=Qgis.Info, action=Defau
 
 
 def loadXYZ(url, name):
+    """
+    Memuat layer dalam bentuk XYZ Tile
+    """
     rasterLyr = QgsRasterLayer("type=xyz&zmin=0&zmax=21&url=" + url, name, "wms")
     QgsProject.instance().addMapLayer(rasterLyr)
 
 
 def activate_editing(layer):
+    """
+    Activate layer editing tools
+    TODO: fix conflicts with built-in layer editing in QGIS
+    """
     QgsProject.instance().setTopologicalEditing(True)
     layer.startEditing()
     iface.layerTreeView().setCurrentLayer(layer)
@@ -53,15 +79,24 @@ def activate_editing(layer):
 
 
 def storeSetting(key, value):
+    """
+    Store value to QGIS Settings
+    """
     settings = QgsSettings()
     settings.setValue(key, value)
 
 def readSetting(key, value):
+    """
+    Read value from QGIS Settings
+    """
     settings = QgsSettings()
     return settings.value(key, value)
 
 
 def is_layer_exist(project, layername):
+    """
+    Boolean check if layer exist
+    """
     for layer in project.instance().mapLayers().values():
         print(layer.name(), " - ", layername)
         if (layer.name == layername):
@@ -69,6 +104,26 @@ def is_layer_exist(project, layername):
             return True
         else:
             return False
+
+def set_symbology(self, layer, qml):
+    """
+    Set layer symbology based on QML files in ./styles folder
+    """
+    uri = os.path.join(os.path.dirname(__file__), 'styles/'+qml)
+    layer.loadNamedStyle(uri)
+
+def properify(self, text):
+    """
+    Filter text for OS's friendly directory format
+
+    Remove all non-word characters (everything except numbers and letters) and
+    replace all runs of whitespace with a single dash
+
+    """
+    text = re.sub(r"[^\w\s]", '', text)
+    text = re.sub(r"\s+", '_', text)
+
+    return text
 
 
 def edit_by_identify(mapcanvas, layer):
