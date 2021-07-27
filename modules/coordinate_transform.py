@@ -1,18 +1,7 @@
 import os
-import re
 
-from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtGui import QIcon
-from qgis.gui import QgsRubberBand
 
-from qgis.core import (
-    QgsCoordinateTransform,
-    QgsRectangle,
-    QgsPoint,
-    QgsPointXY,
-    QgsGeometry,
-    QgsWkbTypes,
-    QgsProject)
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
@@ -47,8 +36,6 @@ class CoordinateTransformDialog(QtWidgets.QDialog, FORM_CLASS):
         self.latlong_convert_button.setIcon(copy_icon)
         self.utm_convert_button.setIcon(copy_icon)
         self.tm3_convert_button.setIcon(copy_icon)
-
-
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

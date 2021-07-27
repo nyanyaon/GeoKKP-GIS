@@ -108,7 +108,7 @@ class GeoKKP:
         self.adjustaction = AdjustDialog()
         self.layoutaction = LayoutDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
-	
+
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -526,7 +526,7 @@ class GeoKKP:
         if self.layoutaction is None:
             # Create the dockwidget (after translation) and keep reference
             self.layoutaction = LayoutDialog()
-        self.layoutaction.show()	
+        self.layoutaction.show()
 
     def toggle_cad_mode(self):
         if 'qad' in qgis_utils.active_plugins:
@@ -534,7 +534,8 @@ class GeoKKP:
                 if panel.windowTitle() == 'QAD text window - 3.0.4':
                     panel.setVisible(not panel.isVisible())
                     return
-        message = QMessageBox.warning(None, 'QAD Plugin Not Found', 'QAD Plugin version 3.0.4 is not installed or activated!')
+        QMessageBox.warning(
+            None, 'QAD Plugin Not Found', 'QAD Plugin version 3.0.4 is not installed or activated!')
 
     def import_file(self):
         if self.import_from_file_widget is None:

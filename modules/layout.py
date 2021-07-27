@@ -14,6 +14,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 qpt_path = os.path.join(os.path.dirname(__file__), '../template/pbt.qpt')
 
+
 class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
     """ Dialog for Zoom to Location """
 
@@ -40,8 +41,8 @@ class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
             var_name ([type]): [description]
             var_value ([type]): [description]
         """
-        QgsExpressionContextUtils.setProjectVariable(self.project,var_name,var_value)
-    
+        QgsExpressionContextUtils.setProjectVariable(self.project, var_name, var_value)
+
     def set_variable(self):
         self.var_set('nama_provinsi', self.nama_provinsi.text())
         self.var_set('nama_kabupaten', self.nama_kabupaten.text())
@@ -57,38 +58,38 @@ class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
         self.var_set('lisensi_ask', self.lisensi_ask.text())
         self.var_set('nama_skb', self.nama_skb.text())
         self.var_set('lisensi_skb', self.lisensi_skb.text())
-        
+
     def read_settings(self):
-        self.nama_provinsi.setText( self.project.readEntry('GeoKKP',"nama_provinsi")[0])
-        self.nama_kabupaten.setText(self.project.readEntry('GeoKKP',"nama_kabupaten")[0])
-        self.nama_kecamatan.setText(self.project.readEntry('GeoKKP',"nama_kecamatan")[0])
-        self.nama_desa.setText(self.project.readEntry('GeoKKP',"nama_desa")[0])
-        self.nama_blok.setText(self.project.readEntry('GeoKKP',"nama_blok")[0])
-        self.nama_kantah.setText(self.project.readEntry('GeoKKP',"nama_kantah")[0])
-        self.nama_pejabat.setText(self.project.readEntry('GeoKKP',"nama_pejabat")[0])
-        self.nip_pejabat.setText(self.project.readEntry('GeoKKP',"nip_pejabat")[0])
-        self.no_pbt.setText(self.project.readEntry('GeoKKP',"no_pbt")[0])
-        self.tgl_pbt.setText(self.project.readEntry('GeoKKP',"tgl_pbt")[0])
-        self.nama_ask.setText(self.project.readEntry('GeoKKP',"nama_ask")[0])
-        self.lisensi_ask.setText(self.project.readEntry('GeoKKP',"lisensi_ask")[0])
-        self.nama_skb.setText(self.project.readEntry('GeoKKP',"nama_skb")[0])
-        self.lisensi_skb.setText(self.project.readEntry('GeoKKP',"lisensi_skb")[0])
+        self.nama_provinsi.setText(self.project.readEntry('GeoKKP', "nama_provinsi")[0])
+        self.nama_kabupaten.setText(self.project.readEntry('GeoKKP', "nama_kabupaten")[0])
+        self.nama_kecamatan.setText(self.project.readEntry('GeoKKP', "nama_kecamatan")[0])
+        self.nama_desa.setText(self.project.readEntry('GeoKKP', "nama_desa")[0])
+        self.nama_blok.setText(self.project.readEntry('GeoKKP', "nama_blok")[0])
+        self.nama_kantah.setText(self.project.readEntry('GeoKKP', "nama_kantah")[0])
+        self.nama_pejabat.setText(self.project.readEntry('GeoKKP', "nama_pejabat")[0])
+        self.nip_pejabat.setText(self.project.readEntry('GeoKKP', "nip_pejabat")[0])
+        self.no_pbt.setText(self.project.readEntry('GeoKKP', "no_pbt")[0])
+        self.tgl_pbt.setText(self.project.readEntry('GeoKKP', "tgl_pbt")[0])
+        self.nama_ask.setText(self.project.readEntry('GeoKKP', "nama_ask")[0])
+        self.lisensi_ask.setText(self.project.readEntry('GeoKKP', "lisensi_ask")[0])
+        self.nama_skb.setText(self.project.readEntry('GeoKKP', "nama_skb")[0])
+        self.lisensi_skb.setText(self.project.readEntry('GeoKKP', "lisensi_skb")[0])
 
     def write_settings(self):
-        self.project.writeEntry('GeoKKP',"nama_provinsi", self.nama_provinsi.text())
-        self.project.writeEntry('GeoKKP',"nama_kabupaten", self.nama_kabupaten.text())
-        self.project.writeEntry('GeoKKP',"nama_kecamatan", self.nama_kecamatan.text())
-        self.project.writeEntry('GeoKKP',"nama_desa", self.nama_desa.text())    
-        self.project.writeEntry('GeoKKP',"nama_blok", self.nama_blok.text())
-        self.project.writeEntry('GeoKKP',"nama_kantah", self.nama_kantah.text())
-        self.project.writeEntry('GeoKKP',"nama_pejabat", self.nama_pejabat.text())
-        self.project.writeEntry('GeoKKP',"nip_pejabat", self.nip_pejabat.text())
-        self.project.writeEntry('GeoKKP',"no_pbt", self.no_pbt.text())
-        self.project.writeEntry('GeoKKP',"tgl_pbt", self.tgl_pbt.text())
-        self.project.writeEntry('GeoKKP',"nama_ask", self.nama_ask.text())
-        self.project.writeEntry('GeoKKP',"lisensi_ask", self.lisensi_ask.text())
-        self.project.writeEntry('GeoKKP',"nama_skb", self.nama_skb.text())
-        self.project.writeEntry('GeoKKP',"lisensi_skb", self.lisensi_skb.text())
+        self.project.writeEntry('GeoKKP', "nama_provinsi", self.nama_provinsi.text())
+        self.project.writeEntry('GeoKKP', "nama_kabupaten", self.nama_kabupaten.text())
+        self.project.writeEntry('GeoKKP', "nama_kecamatan", self.nama_kecamatan.text())
+        self.project.writeEntry('GeoKKP', "nama_desa", self.nama_desa.text())
+        self.project.writeEntry('GeoKKP', "nama_blok", self.nama_blok.text())
+        self.project.writeEntry('GeoKKP', "nama_kantah", self.nama_kantah.text())
+        self.project.writeEntry('GeoKKP', "nama_pejabat", self.nama_pejabat.text())
+        self.project.writeEntry('GeoKKP', "nip_pejabat", self.nip_pejabat.text())
+        self.project.writeEntry('GeoKKP', "no_pbt", self.no_pbt.text())
+        self.project.writeEntry('GeoKKP', "tgl_pbt", self.tgl_pbt.text())
+        self.project.writeEntry('GeoKKP', "nama_ask", self.nama_ask.text())
+        self.project.writeEntry('GeoKKP', "lisensi_ask", self.lisensi_ask.text())
+        self.project.writeEntry('GeoKKP', "nama_skb", self.nama_skb.text())
+        self.project.writeEntry('GeoKKP', "lisensi_skb", self.lisensi_skb.text())
 
     def on_btn_edit_layout_pressed(self):
         _pbt_template_exists = False
@@ -104,15 +105,15 @@ class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
                 qpt_content = qpt_file.read()
             doc = QtXml.QDomDocument()
             doc.setContent(qpt_content)
-            layout_items, _= layout.loadFromTemplate(doc, QgsReadWriteContext())
-            self.project.layoutManager().addLayout(layout)        
+            layout_items, _ = layout.loadFromTemplate(doc, QgsReadWriteContext())
+            self.project.layoutManager().addLayout(layout)
         # set variable and set settings
         self.set_variable()
         self.write_settings()
         # show the composer and hide dialog
         self.iface.openLayoutDesigner(layout)
         self.close()
-    
+
     def on_btn_print_pdf_pressed(self):
         """Export Peta Bidang to PDF.
         """
