@@ -26,9 +26,7 @@ import os
 import requests
 import re
 
-
 from qgis.PyQt import QtWidgets, uic
-from qgis.gui import QgsDockWidget
 from qgis.PyQt.QtCore import pyqtSignal, QVariant
 from qgis.utils import iface
 from qgis.core import (
@@ -40,7 +38,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui/welcome_dock.ui'))
 
 
-class GeoKKPDockWidget(QgsDockWidget, FORM_CLASS):
+class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
 

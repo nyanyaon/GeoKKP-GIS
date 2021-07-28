@@ -36,7 +36,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         #read settings: Jumlah Kantah Terdaftar
         jumlahKantor = self.settings.value("geokkp/jumlahkantor")
         #print(jumlahKantor)
-        self.populateKantah(jumlahKantor)
+        #self.populateKantah(jumlahKantor)
         
     
     def populateKantah(self, jumlahKantor):

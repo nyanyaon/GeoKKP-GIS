@@ -28,7 +28,7 @@ tags=python
 homepage=http://homepage
 category=Plugins
 icon=images/icon.png
-# experimental flag
+# experimental flag 
 experimental=True
 
 # deprecated flag (applies to the whole plugin, not just a single version)

@@ -26,11 +26,32 @@
 import os
 import json
 
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QUrl
+from qgis.PyQt.QtCore import (
+    QSettings, 
+    QTranslator, 
+    QCoreApplication, 
+    Qt, 
+    QUrl,
+    QSize
+)
 from qgis.PyQt.QtGui import QIcon, QColor, QDesktopServices
-from qgis.PyQt.QtWidgets import QAction, QMenu, QToolButton, QDockWidget, QMessageBox
+
+from qgis.PyQt.QtWidgets import (
+    QWidget,
+    QAction, 
+    QMenu, 
+    QToolBar,
+    QDockWidget,
+    QToolButton, 
+    QMessageBox,
+    QSizePolicy,
+    QHBoxLayout,
+    QLabel,
+    QPushButton
+)
+
 from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
-from qgis.gui import QgsMapToolIdentify, QgsDockWidget
+from qgis.gui import QgsMapToolIdentify
 from qgis import utils as qgis_utils
 
 # Import the code for the DockWidget
@@ -53,7 +74,7 @@ from .modules.utils import activate_editing, is_layer_exist, iconPath, icon
 
 
 class GeoKKP:
-    """GeoKKP QGIS Plugin Implementation."""
+    """GeoKKP QGIS Plugin Basic Implementation"""
 
     def __init__(self, iface):
         """Constructor.
@@ -87,13 +108,20 @@ class GeoKKP:
         # Declare instance attributes
         self.actions = []
 
-        # self.menu = self.tr(u'&GeoKKP-GIS')
-
-        # TODO: We are going to let the user set this up in a future iteration
+        # Add GeoKKP Toolbar
         self.toolbar = self.iface.addToolBar(u'GeoKKP')
         self.toolbar.setObjectName(u'GeoKKP')
 
-        # Change QGIS Title and Default Icon
+        # Add GeoKKP Main Menu
+        self.menu = self.iface.mainWindow().findChild(QMenu, 'GeoKKPGIS')
+        if not self.menu:
+            self.menu = QMenu(self.tr(u'&GeoKKP-GIS'), self.iface.mainWindow().menuBar())
+            self.menu.setObjectName('GeoKKPGIS')
+            actions = self.iface.mainWindow().menuBar().actions()
+            lastAction = actions[-1]
+            self.iface.mainWindow().menuBar().insertMenu(lastAction, self.menu)
+
+        # Change QGIS Title and Default Icon to GeoKKP
         title = self.iface.mainWindow().windowTitle()
         new_title = title.replace('QGIS', 'GeoKKP-GIS')
         self.iface.mainWindow().setWindowTitle(new_title)
@@ -114,9 +142,6 @@ class GeoKKP:
         self.adjustaction = AdjustDialog()
         self.layoutaction = LayoutDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
-
-
-        #debugging
 	
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -212,13 +237,6 @@ class GeoKKP:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        self.menu = self.iface.mainWindow().findChild(QMenu, 'GeoKKPGIS')
-        if not self.menu:
-            self.menu = QMenu(self.tr(u'&GeoKKP-GIS'), self.iface.mainWindow().menuBar())
-            self.menu.setObjectName('GeoKKPGIS')
-            actions = self.iface.mainWindow().menuBar().actions()
-            lastAction = actions[-1]
-            self.iface.mainWindow().menuBar().insertMenu(lastAction, self.menu)
 
         # Add Interface: Docked Main    
         self.add_action(
@@ -244,7 +262,8 @@ class GeoKKP:
         self.toolbar.addSeparator()
         self.menu.addSeparator()
 
-        # QMenu here
+
+        # Dropdown Menu Penggambaran
         self.actionDrawPoly = QAction(
             icon("manualedit.png"),
             u"Editing Manual Persil",
@@ -274,70 +293,55 @@ class GeoKKP:
             u"Gambar dengan Triangulasi",
             self.iface.mainWindow())
 
+        # Menu Penggambaran
         self.popupDrawMenu = QMenu("&Gambar Persil", self.iface.mainWindow())
         self.popupDrawMenu.setIcon(icon("manualedit.png"))
-
         self.popupDrawMenu.addAction(self.actionDrawPoly)
-        self.popupDrawMenu.addAction(self.actionPlotCoordinate)
-        self.popupDrawMenu.addAction(self.actionImportCSV)
+        self.actionDrawPoly.setCheckable(True)
+        self.actionDrawPoly.triggered.connect(self.start_editing)
 
+        ## Plot Koordinat
+        self.popupDrawMenu.addAction(self.actionPlotCoordinate)
+        self.actionPlotCoordinate.triggered.connect(self.plotxy)
+
+        ## Import CSV
+        self.popupDrawMenu.addAction(self.actionImportCSV)
+        self.actionImportCSV.triggered.connect(self.plotxy)
+        self.actionImportCSV.triggered.connect(self.import_file)
+
+        
         self.popupDrawMenu.addSeparator()
 
+        ## Menu Mode CAD
         self.popupDrawMenu.addAction(self.cadMode)
+        self.cadMode.triggered.connect(self.toggle_cad_mode)
 
         self.popupDrawMenu.addSeparator()
 
         self.popupDrawMenu.addAction(self.actionAzimuth)
-        self.popupDrawMenu.addAction(self.actionTrilateration)
-        self.popupDrawMenu.addAction(self.actionTriangulation)
-
-        self.actionDrawPoly.setCheckable(True)
-        self.actionDrawPoly.triggered.connect(self.start_editing)
-        self.actionPlotCoordinate.triggered.connect(self.plotxy)
-
-        self.actionImportCSV.triggered.connect(self.plotxy)
-        self.cadMode.triggered.connect(self.toggle_cad_mode)
-        self.actionImportCSV.triggered.connect(self.import_file)
         self.actionAzimuth.triggered.connect(self.sudut_jarak)
+
+        self.popupDrawMenu.addAction(self.actionTrilateration)
         self.actionTrilateration.triggered.connect(self.gotoxy)
+
+        ## Menu Triangulasi
+        self.popupDrawMenu.addAction(self.actionTriangulation)
         self.actionTriangulation.triggered.connect(self.gotoxy)
 
+               
+        ## Pengaturan menu penggambaran
         self.toolButton = QToolButton()
-
         self.toolButton.setMenu(self.popupDrawMenu)
         self.toolButton.setDefaultAction(self.actionDrawPoly)
         self.toolButton.setPopupMode(QToolButton.MenuButtonPopup)
         # self.toolButton.triggered.connect(self.gotoxy)
 
+        
+        # Tambahkan menu ke daftar menu dan toolbar
         self.toolbar.addWidget(self.toolButton)
-        self.menu.addMenu(self.popupDrawMenu)
+        self.menu.addMenu(self.popupDrawMenu)        
 
-        # stop here
-
-        '''
-        # Add Interface: Draw Polygon
-        icon_path = ':/plugins/geokkp/images/drawpoly.png'
-        self.add_action(icon_path, text=self.tr(u'Gambar Bidang Tanah'),
-            callback=self.plotxy, parent=self.iface.mainWindow())
-
-        # Add Interface: Trilateration
-        icon_path = ':/plugins/geokkp/images/trilateration.png'
-        self.add_action(icon_path, text=self.tr(u'Gambar dengan Trilaterasi'),
-            callback=self.gotoxy, parent=self.iface.mainWindow())
-
-        # Add Interface: Distance and Azimuth
-        icon_path = ':/plugins/geokkp/images/azimuth.png'
-        self.add_action(icon_path, text=self.tr(u'Gambar dengan Sudut dan Jarak'),
-            callback=self.gotoxy, parent=self.iface.mainWindow())
-
-        # Add Interface: Triangulation
-        icon_path = ':/plugins/geokkp/images/triangulation.png'
-        self.add_action(icon_path, text=self.tr(u'Gambar dengan Triangulasi'),
-            callback=self.gotoxy, parent=self.iface.mainWindow())
-
-        '''
-
-        # Qmenu End Here
+        #  ================================
 
         # Add Interface: Edit Atribut
         self.actionAttribute = QAction(
@@ -347,7 +351,6 @@ class GeoKKP:
         self.toolbar.addAction(self.actionAttribute)
         self.menu.addAction(self.actionAttribute)
         self.actionAttribute.setCheckable(True)
-
         self.actionAttribute.triggered.connect(self.edit_parcel_attribute)
 
         # Add Interface: Auto Adjust
@@ -423,8 +426,10 @@ class GeoKKP:
             callback=self.loadoam,
             parent=self.iface.mainWindow())
 
-        self.toolbar.addSeparator()
-        self.menu.addSeparator()
+        #self.toolbar.addSeparator()
+        #self.menu.addSeparator()
+
+        #self.add_central_toolbar_button()
 
         # Add Interface: Settings
         self.add_action(
@@ -440,17 +445,45 @@ class GeoKKP:
             callback=self.openhelp,
             parent=self.iface.mainWindow())
 
-    def onClosePlugin(self):
-        """Cleanup necessary items here when plugin dockwidget is closed"""
 
+    def add_central_toolbar_button(self):
+        """
+        Widget di tengah toolbar        
+        """
+        widget = QWidget()
+        widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        layout = QHBoxLayout()
+        layout.addStretch()
+        self.btnLogin = QPushButton()
+        palette = self.btnLogin.palette()
+        self.btnLogin.setPalette(palette)
+        self.btnLogin.setText("Log in")
+        #self.btnLogin.setAutoRaise(True)
+        self.btnLogin.setAttribute(Qt.WA_TranslucentBackground)
+        #self.btnLogin.clicked.connect(self.btn_login_clicked)
+        icon = QIcon(iconPath("icon.png"))
+        labelIcon = QLabel()
+        labelIcon.setPixmap(icon.pixmap(QSize(24, 24)))
+        layout.addWidget(labelIcon)
+        self.labelLoggedIn = QLabel()
+        self.labelLoggedIn.setText("GeoKKPGIS")
+        layout.addWidget(self.labelLoggedIn)
+        layout.addWidget(self.btnLogin)
+        layout.addStretch()
+        widget.setLayout(layout)
+        self.toolbar.addWidget(widget)
+
+
+    def onClosePlugin(self):
+        """
+        Cleanup necessary items here when plugin dockwidget is closed
+        """
         # disconnects
         self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
 
         # remove this statement if dockwidget is to remain
         # for reuse if plugin is reopened
-        self.dockwidget = None
-
-
+        #self.dockwidget = None
         self.pluginIsActive = False
 
     def unload(self):
@@ -463,16 +496,24 @@ class GeoKKP:
 
         # remove the toolbar
         #del self.dockwidget
-        del self.toolbar
+        # remove the toolbar       
+        if self.toolbar:
+            del self.toolbar
+        if self.dockwidget:
+            self.dockwidget.deleteLater()
         
         # remove panels registry
         self.iface.mainWindow().removeDockWidget(self.dockwidget)
         self.dockwidget.setVisible(False)
         self.dockwidget.destroy()
-        del self.dockwidget
 
         #remove menu
-        self.menu.clear()
+        if self.menu:
+            #self.menu.clear()
+            self.menu = None
+            
+
+        
         
 
     def run(self):
@@ -608,7 +649,7 @@ class GeoKKP:
         # self.layer.startEditing()
         # f = self.layer.selectedFeatures()[0]
 
-        # fid = feature.id()
+        # fid = feature.id()    
 
         # print ("feature selected : " + str(fid))
 
