@@ -1,5 +1,4 @@
 import os
-import re
 import requests
 import json
 
@@ -13,11 +12,6 @@ from qgis.gui import QgsMessageBar
 
 from .utils import storeSetting, readSetting
 from .postlogin import PostLoginDock
-
-
-from .networkaccessmanager import NetworkAccessManager, RequestsException
-from qgis.core import QgsNetworkAccessManager, QgsAuthManager
-
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -39,7 +33,6 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         #self.setWindowFlag(Qt.FramelessWindowHint)
 
         #replace Request with built in QGIS Network httplib2
-        self.nam = NetworkAccessManager()
         #self.nam = QgsNetworkAccessManager(self)
 
         self.postloginaction = PostLoginDock()
