@@ -143,7 +143,6 @@ class GeoKKP:
         self.layoutaction = LayoutDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
 
-        
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
         """Get the translation for a string using Qt translation API.
@@ -633,7 +632,7 @@ class GeoKKP:
         if self.layoutaction is None:
             # Create the dockwidget (after translation) and keep reference
             self.layoutaction = LayoutDialog()
-        self.layoutaction.show()	
+        self.layoutaction.show()
 
     # TODO: rubah CAD mode dengan menu penggambaran sendiri
     def toggle_cad_mode(self):
@@ -642,7 +641,9 @@ class GeoKKP:
                 if panel.windowTitle() == 'QAD Text Window - 3.0.4':
                     panel.setVisible(not panel.isVisible())
                     return
+
         message = QMessageBox.warning(None, 'Plugin tidak ditemukan', 'Plugin QAD perlu diaktifkan lebih dahulu')
+
 
     def import_file(self):
         if self.import_from_file_widget is None:
