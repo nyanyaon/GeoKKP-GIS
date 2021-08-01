@@ -34,13 +34,14 @@ from qgis.PyQt.QtCore import (
     QUrl,
     QSize
 )
-from qgis.PyQt.QtGui import QIcon, QColor, QDesktopServices
+from qgis.PyQt.QtGui import QIcon, QColor, QDesktopServices, QFont
 
 from qgis.PyQt.QtWidgets import (
     QWidget,
     QAction, 
     QMenu, 
     QToolBar,
+    QDialog,
     QDockWidget,
     QToolButton, 
     QMessageBox,
@@ -235,218 +236,264 @@ class GeoKKP:
         return action
 
     def initGui(self):
+        """================== GeoKKP-GIS Main Interface =================="""
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
-
-
-        # Add Interface: Docked Main    
-        self.add_action(
-            iconPath("icon.png"),
-            text=self.tr(u'Panel GeoKKP'),
-            callback=self.run,
-            parent=self.iface.mainWindow().menuBar())
-
-        # Add Interface: Login Dialog
+        
+        # ========== Menu: Login Pengguna ==========
         self.add_action(
             iconPath("login.png"),
             text=self.tr(u'Login Pengguna'),
-            callback=self.loginGeoKKP,
+            callback=self.login_geokkp,
             parent=self.iface.mainWindow().menuBar())
-
-        # Add Interface: Download Parcel GeoKKP Database Dialog
-        self.add_action(
-            iconPath("getparcel.png"),
-            text=self.tr(u'Unduh Persil'),
-            callback=self.addWMSParcel,
-            parent=self.iface.mainWindow().menuBar())
+        #-------------------------------------------
 
         self.toolbar.addSeparator()
         self.menu.addSeparator()
 
+        # ======== Menu: Buat Layer ======== 
+        self.add_action(
+            iconPath("buatlayer.png"),
+            text=self.tr(u'Layer Baru'),
+            callback=self.run,
+            parent=self.iface.mainWindow().menuBar())
+        #-------------------------------------------
 
-        # Dropdown Menu Penggambaran
-        self.actionDrawPoly = QAction(
-            icon("manualedit.png"),
-            u"Editing Manual Persil",
+        
+        # ======== Dropdown Menu: Tambah Data ======== 
+        ## Deklarasi menu tambah data
+        self.popupAddData = QMenu("&Tambah Data", self.iface.mainWindow())
+
+        #  --- Sub-menu Unduh Data Persil ---
+        self.actionAddData = QAction(
+            icon("getparcel.png"),
+            u"Tambah Data",
             self.iface.mainWindow())
+        self.popupAddData.addAction(self.actionAddData)
+        self.actionAddData.triggered.connect(self.gotoxy)
+
+        #  --- Sub-menu Import CSV ---
+        self.actionImportCSV = QAction(
+            icon("importcsv.png"),
+            u"Import CSV/TXT",
+            self.iface.mainWindow())
+        self.popupAddData.addAction(self.actionImportCSV)
+        self.actionImportCSV.triggered.connect(self.import_file)
+
+        self.popupAddData.addSeparator()
+
+        #  --- Sub-menu Tambah Basemap ---
+        self.actionTambahBasemap = QAction(
+            icon("basemap.png"),
+            u"Tambah Basemap",
+            self.iface.mainWindow())
+        self.popupAddData.addAction(self.actionTambahBasemap)
+        self.actionTambahBasemap.triggered.connect(self.gotoxy)
+
+        #  --- Sub-menu Tambah OpenAerialMap ---
+        self.actionTambahOAM = QAction(
+            icon("openaerialmap.png"),
+            u"Tambah OpenAerialMap",
+            self.iface.mainWindow())
+        self.popupAddData.addAction(self.actionTambahOAM)
+        self.actionTambahOAM.triggered.connect(self.gotoxy)
+       
+        ## Pengaturan Dropdown menu Tambah Data
+        self.AddDataButton = QToolButton()
+        self.AddDataButton.setMenu(self.popupAddData)
+        self.AddDataButton.setIcon(icon("getparcel.png"))
+        self.AddDataButton.setToolTip("Tambah Data")
+        self.AddDataButton.setDefaultAction(self.actionAddData)
+        self.AddDataButton.setPopupMode(QToolButton.MenuButtonPopup)
+        # Register menu to toolbar
+        self.toolbar.addWidget(self.AddDataButton)
+        self.menu.addMenu(self.popupAddData)     
+        #-------------------------------------------
+
+
+        # ======== Dropdown Menu: Penggambaran ======== 
+        ## Deklarasi menu penggambaran
+        self.popupDraw = QMenu("&Penggambaran", self.iface.mainWindow())
+
+        #  --- Sub-menu Gambar Manual ---
+        self.actionManualDraw = QAction(
+            icon("manualedit.png"),
+            u"Gambar Manual",
+            self.iface.mainWindow())
+        self.popupDraw.addAction(self.actionManualDraw)
+        self.actionManualDraw.triggered.connect(self.gotoxy)
+
+        #  --- Sub-menu Plot Koordinat ---
         self.actionPlotCoordinate = QAction(
             icon("plotcoordinate.png"),
             u"Plot Koordinat",
             self.iface.mainWindow())
-        self.actionImportCSV = QAction(
-            icon("importcsv.png"),
-            u"Import CSV",
-            self.iface.mainWindow())
-        self.cadMode = QAction(
-            icon("azimuth.png"),
-            u"Toggle CAD Mode",
-            self.iface.mainWindow())
-        self.actionAzimuth = QAction(
-            icon("azimuth.png"),
-            u"Sudut dan Jarak",
-            self.iface.mainWindow())
+        self.popupDraw.addAction(self.actionPlotCoordinate)
+        self.actionPlotCoordinate.triggered.connect(self.plotxy)
+
+        #  --- Sub-menu Trilaterasi ---
         self.actionTrilateration = QAction(
             icon("trilateration.png"),
             u"Gambar dengan Trilaterasi",
             self.iface.mainWindow())
+        self.popupDraw.addAction(self.actionTrilateration)
+        self.actionTrilateration.triggered.connect(self.gotoxy)
+
+        #  --- Sub-menu Triangulasi ---
         self.actionTriangulation = QAction(
             icon("triangulation.png"),
             u"Gambar dengan Triangulasi",
             self.iface.mainWindow())
-
-        # Menu Penggambaran
-        self.popupDrawMenu = QMenu("&Gambar Persil", self.iface.mainWindow())
-        self.popupDrawMenu.setIcon(icon("manualedit.png"))
-        self.popupDrawMenu.addAction(self.actionDrawPoly)
-        self.actionDrawPoly.setCheckable(True)
-        self.actionDrawPoly.triggered.connect(self.start_editing)
-
-        ## Plot Koordinat
-        self.popupDrawMenu.addAction(self.actionPlotCoordinate)
-        self.actionPlotCoordinate.triggered.connect(self.plotxy)
-
-        ## Import CSV
-        self.popupDrawMenu.addAction(self.actionImportCSV)
-        self.actionImportCSV.triggered.connect(self.plotxy)
-        self.actionImportCSV.triggered.connect(self.import_file)
-
-        
-        self.popupDrawMenu.addSeparator()
-
-        ## Menu Mode CAD
-        self.popupDrawMenu.addAction(self.cadMode)
-        self.cadMode.triggered.connect(self.toggle_cad_mode)
-
-        self.popupDrawMenu.addSeparator()
-
-        self.popupDrawMenu.addAction(self.actionAzimuth)
-        self.actionAzimuth.triggered.connect(self.sudut_jarak)
-
-        self.popupDrawMenu.addAction(self.actionTrilateration)
-        self.actionTrilateration.triggered.connect(self.gotoxy)
-
-        ## Menu Triangulasi
-        self.popupDrawMenu.addAction(self.actionTriangulation)
+        self.popupDraw.addAction(self.actionTriangulation)
         self.actionTriangulation.triggered.connect(self.gotoxy)
-
-               
-        ## Pengaturan menu penggambaran
-        self.toolButton = QToolButton()
-        self.toolButton.setMenu(self.popupDrawMenu)
-        self.toolButton.setDefaultAction(self.actionDrawPoly)
-        self.toolButton.setPopupMode(QToolButton.MenuButtonPopup)
-        # self.toolButton.triggered.connect(self.gotoxy)
+       
+        ## Pengaturan Dropdown menu Penggambaran
+        self.DrawButton = QToolButton()
+        self.DrawButton.setMenu(self.popupDraw)
+        self.DrawButton.setIcon(icon("drawpoly.png"))
+        self.DrawButton.setToolTip("Penggambaran")
+        #self.DrawButton.setDefaultAction(self.actionManualDraw)
+        self.DrawButton.setPopupMode(QToolButton.MenuButtonPopup)
+        # Register menu to toolbar
+        self.toolbar.addWidget(self.DrawButton)
+        self.menu.addMenu(self.popupDraw)     
+        #-------------------------------------------
 
         
-        # Tambahkan menu ke daftar menu dan toolbar
-        self.toolbar.addWidget(self.toolButton)
-        self.menu.addMenu(self.popupDrawMenu)        
+        # ======== Dropdown Menu: Validasi ======== 
+        ## Deklarasi menu validasi
+        self.popupValidasi = QMenu("&Validasi", self.iface.mainWindow())
 
-        #  ================================
-
-        # Add Interface: Edit Atribut
-        self.actionAttribute = QAction(
-            icon("editattribute.png"),
-            u"Edit Atribut Persil",
+        #  --- Sub-menu Cek Topologi ---
+        self.actionCekTopologi = QAction(
+            icon("validasi.png"),
+            u"Validasi",
             self.iface.mainWindow())
-        self.toolbar.addAction(self.actionAttribute)
-        self.menu.addAction(self.actionAttribute)
-        self.actionAttribute.setCheckable(True)
-        self.actionAttribute.triggered.connect(self.edit_parcel_attribute)
+        self.popupValidasi.addAction(self.actionCekTopologi)
+        self.actionCekTopologi.triggered.connect(self.gotoxy)
 
-        # Add Interface: Auto Adjust
-        self.add_action(
-            iconPath("autoadjust.png"),
-            text=self.tr(u'Auto-Adjust'),
-            callback=self.auto_adjust,
-            parent=self.iface.mainWindow())
-
-        # Add Interface: Parcel Dimension
-        self.actionDimension = QAction(
-            icon("dimension.png"),
-            u"Gambar Dimensi",
+        #  --- Sub-menu Auto Adjust ---
+        self.actionAutoAdjust = QAction(
+            icon("autoadjust.png"),
+            u"Auto Adjust",
             self.iface.mainWindow())
-        self.toolbar.addAction(self.actionDimension)
-        self.menu.addAction(self.actionDimension)
-        self.actionDimension.setCheckable(True)
+        self.popupValidasi.addAction(self.actionAutoAdjust)
+        self.actionAutoAdjust.triggered.connect(self.plotxy)
+       
+        ## Pengaturan Dropdown menu Validasi
+        self.ValidasiButton = QToolButton()
+        self.ValidasiButton.setMenu(self.popupValidasi)
+        self.ValidasiButton.setIcon(icon("validasi.png"))
+        self.ValidasiButton.setToolTip("Validasi")
+        #self.ValidasiButton.setDefaultAction(self.actionCekTopologi)
+        self.ValidasiButton.setPopupMode(QToolButton.MenuButtonPopup)
+        #self.ValidasiButton.triggered.connect(self.gotoxy)
+        # Register menu to toolbar
+        self.toolbar.addWidget(self.ValidasiButton)
+        self.menu.addMenu(self.popupValidasi)     
+        #-------------------------------------------
 
-        self.actionDimension.triggered.connect(self.set_dimension_style)
+        # ======== Dropdown Menu: Pencetakan ======== 
+        ## Deklarasi menu Pencetakan
+        self.popupPencetakan = QMenu("&Pencetakan", self.iface.mainWindow())
 
-        self.toolbar.addSeparator()
-        self.menu.addSeparator()
+        #  --- Sub-menu Cetak Peta ---
+        self.actionCetakPeta = QAction(
+            icon("layout.png"),
+            u"Cetak Peta",
+            self.iface.mainWindow())
+        self.popupPencetakan.addAction(self.actionCetakPeta)
+        self.actionCetakPeta.triggered.connect(self.gotoxy)
 
-        # Add Interface: Topology
-        self.add_action(
-            iconPath("topology.png"),
-            text=self.tr(u'Cek Topologi'),
-            callback=self.gotoxy,
-            parent=self.iface.mainWindow())
+        #  --- Sub-menu Cetak SU ---
+        self.actionCetakSU = QAction(
+            icon("layout.png"),
+            u"Cetak Surat Ukur",
+            self.iface.mainWindow())
+        self.popupPencetakan.addAction(self.actionCetakSU)
+        self.actionCetakSU.triggered.connect(self.plotxy)
 
-        # Add Interface: Layout
-        self.add_action(
-            iconPath("layout.png"),
-            text=self.tr(u'Layout Peta'),
-            callback=self.layout,
-            parent=self.iface.mainWindow())
+        #  --- Sub-menu Cetak PBT ---
+        self.actionCetakPBT = QAction(
+            icon("layout.png"),
+            u"Cetak Peta Bidang Tanah",
+            self.iface.mainWindow())
+        self.popupPencetakan.addAction(self.actionCetakPBT)
+        self.actionCetakPBT.triggered.connect(self.plotxy)
+       
+        ## Pengaturan Dropdown menu Pencetakan
+        self.PencetakanButton = QToolButton()
+        self.PencetakanButton.setMenu(self.popupPencetakan)
+        self.PencetakanButton.setIcon(icon("layout.png"))
+        self.PencetakanButton.setToolTip("Pencetakan")
+        #self.PencetakanButton.setDefaultAction(self.actionCetakPeta)
+        self.PencetakanButton.setPopupMode(QToolButton.MenuButtonPopup)
+        # Register menu to toolbar
+        self.toolbar.addWidget(self.PencetakanButton)
+        self.menu.addMenu(self.popupPencetakan)     
+        #-------------------------------------------
 
-        self.toolbar.addSeparator()
-        self.menu.addSeparator()
 
-        # Add Interface: Coordinate Transformation
-        self.add_action(
-            iconPath("conversion.png"),
-            text=self.tr(u'Transformasi Koordinat'),
-            callback=self.coordinate_transform,
-            parent=self.iface.mainWindow())
+        # ======== Dropdown Menu: Peralatan ======== 
+        ## Deklarasi menu Pencetakan
+        self.popupPeralatan = QMenu("&Peralatan", self.iface.mainWindow())
 
-        # Add Interface: Zoom To
-        self.add_action(
-            iconPath("zoomto.png"),
-            text=self.tr(u'Zoom Ke XY'),
-            callback=self.gotoxy,
-            parent=self.iface.mainWindow())
+        #  --- Sub-menu Transformasi Koordinat ---
+        self.actionTransformasiKoordinat = QAction(
+            icon("conversion.png"),
+            u"Transformasi Koordinat",
+            self.iface.mainWindow())
+        self.popupPeralatan.addAction(self.actionTransformasiKoordinat)
+        self.actionTransformasiKoordinat.triggered.connect(self.coordinate_transform)
+        
+        #  --- Sub-menu Zoom to XY ---
+        self.actionGotoXY = QAction(
+            icon("zoomto.png"),
+            u"Zoom ke XY",
+            self.iface.mainWindow())
+        self.popupPeralatan.addAction(self.actionGotoXY)
+        self.actionGotoXY.triggered.connect(self.gotoxy)
 
-        # Add Interface: Georeference
-        self.add_action(
-            iconPath("georef.png"),
-            text=self.tr(u'Georeferencing'),
-            callback=self.gotoxy,
-            parent=self.iface.mainWindow())
+        #  --- Sub-menu Geocoding ---
+        self.actionGeocoding = QAction(
+            icon("georef.png"),
+            u"Geocoding",
+            self.iface.mainWindow())
+        self.popupPeralatan.addAction(self.actionGeocoding)
+        self.actionGeocoding.triggered.connect(self.gotoxy)
 
-        # Add Interface: Change Basemap
-        self.add_action(
-            iconPath("basemap.png"),
-            text=self.tr(u'Ganti Basemap'),
-            callback=self.gotoxy,
-            parent=self.iface.mainWindow())
+        ## Pengaturan Dropdown menu Peralatan
+        self.PeralatanButton = QToolButton()
+        self.PeralatanButton.setMenu(self.popupPeralatan)
+        self.PeralatanButton.setIcon(icon("perangkat.png"))
+        self.PeralatanButton.setToolTip("Perangkat")
+        #self.PeralatanButton.setDefaultAction(self.actionTransformasiKoordinat)
+        self.PeralatanButton.setPopupMode(QToolButton.MenuButtonPopup)
+        # Register menu to toolbar
+        self.toolbar.addWidget(self.PeralatanButton)
+        self.menu.addMenu(self.popupPeralatan)     
+        #-------------------------------------------
+        
 
-        # Add Interface: OAM
-        self.add_action(
-            iconPath("openaerialmap.png"),
-            text=self.tr(u'OpenAerialMap'),
-            callback=self.loadoam,
-            parent=self.iface.mainWindow())
+        # ========== Label Toolbar GeoKKP ==========
+        self.judul_aplikasi()
 
-        #self.toolbar.addSeparator()
-        #self.menu.addSeparator()
 
-        #self.add_central_toolbar_button()
-
-        # Add Interface: Settings
+        # ========== Menu: Pengaturan ==========
         self.add_action(
             iconPath("settings.png"),
             text=self.tr(u'Pengaturan'),
             callback=self.gotoxy,
             parent=self.iface.mainWindow())
 
-        # Add Interface: Help
+        # ========== Menu: Bantuan ==========
         self.add_action(
             iconPath("help.png"),
             text=self.tr(u'Bantuan'),
             callback=self.openhelp,
-            parent=self.iface.mainWindow())
+            parent=self.iface.mainWindow())   
 
 
-    def add_central_toolbar_button(self):
+    def judul_aplikasi(self):
         """
         Widget di tengah toolbar        
         """
@@ -454,25 +501,17 @@ class GeoKKP:
         widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         layout = QHBoxLayout()
         layout.addStretch()
-        self.btnLogin = QPushButton()
-        palette = self.btnLogin.palette()
-        self.btnLogin.setPalette(palette)
-        self.btnLogin.setText("Log in")
-        #self.btnLogin.setAutoRaise(True)
-        self.btnLogin.setAttribute(Qt.WA_TranslucentBackground)
-        #self.btnLogin.clicked.connect(self.btn_login_clicked)
         icon = QIcon(iconPath("icon.png"))
         labelIcon = QLabel()
         labelIcon.setPixmap(icon.pixmap(QSize(24, 24)))
         layout.addWidget(labelIcon)
         self.labelLoggedIn = QLabel()
-        self.labelLoggedIn.setText("GeoKKPGIS")
+        self.labelLoggedIn.setText("<b> Aplikasi GeoKKP-GIS ATR/BPN </b>")
+        self.labelLoggedIn.setFont(QFont('Times Font', 14))
         layout.addWidget(self.labelLoggedIn)
-        layout.addWidget(self.btnLogin)
         layout.addStretch()
         widget.setLayout(layout)
         self.toolbar.addWidget(widget)
-
 
     def onClosePlugin(self):
         """
@@ -512,10 +551,6 @@ class GeoKKP:
             #self.menu.clear()
             self.menu = None
             
-
-        
-        
-
     def run(self):
         """Run method that loads and starts the plugin"""
 
@@ -595,7 +630,6 @@ class GeoKKP:
             self.layoutaction = LayoutDialog()
         self.layoutaction.show()	
 
-    
     # TODO: rubah CAD mode dengan menu penggambaran sendiri
     def toggle_cad_mode(self):
         if 'qad' in qgis_utils.active_plugins:
@@ -610,7 +644,7 @@ class GeoKKP:
             self.import_from_file_widget = ImportGeomFromFile()
         self.import_from_file_widget.show()
 
-    def loginGeoKKP(self):
+    def login_geokkp(self):
         if self.loginaction is None:
             self.loginaction = LoginDialog()
         self.loginaction.show()

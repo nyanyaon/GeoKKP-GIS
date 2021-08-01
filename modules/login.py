@@ -5,7 +5,7 @@ import json
 
 
 from qgis.PyQt import QtWidgets, uic
-from qgis.PyQt.QtCore import QUrl, QUrlQuery, pyqtSignal, QByteArray
+from qgis.PyQt.QtCore import QUrl, QUrlQuery, pyqtSignal, Qt
 from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.utils import iface
 from qgis.core import QgsMessageLog, Qgis
@@ -34,6 +34,9 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         self.canvas = iface.mapCanvas()
         super(LoginDialog, self).__init__(parent)
         self.setupUi(self)
+
+        # look Ma, no title!
+        #self.setWindowFlag(Qt.FramelessWindowHint)
 
         #replace Request with built in QGIS Network httplib2
         self.nam = NetworkAccessManager()
