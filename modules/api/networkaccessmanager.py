@@ -24,26 +24,30 @@ __date__ = 'August 2016'
 
 import re
 import urllib
-
 from qgis.PyQt.QtCore import QUrl, QEventLoop
 from qgis.PyQt.QtNetwork import QNetworkRequest, QNetworkReply
-
 from qgis.core import QgsNetworkAccessManager, QgsAuthManager, QgsMessageLog
+
 
 # FIXME: ignored
 DEFAULT_MAX_REDIRECTS = 4
 
+
 class RequestsException(Exception):
     pass
+
 
 class RequestsExceptionTimeout(RequestsException):
     pass
 
+
 class RequestsExceptionConnectionError(RequestsException):
     pass
 
+
 class RequestsExceptionUserAbort(RequestsException):
     pass
+
 
 class Map(dict):
     """
@@ -61,18 +65,23 @@ class Map(dict):
             for k, v in kwargs.items():
                 self[k] = v
 
+
     def __getattr__(self, attr):
         return self.get(attr)
 
+
     def __setattr__(self, key, value):
         self.__setitem__(key, value)
+
 
     def __setitem__(self, key, value):
         super(Map, self).__setitem__(key, value)
         self.__dict__.update({key: value})
 
+
     def __delattr__(self, item):
         self.__delitem__(item)
+
 
     def __delitem__(self, key):
         super(Map, self).__delitem__(key)
@@ -81,6 +90,7 @@ class Map(dict):
 
 class Response(Map):
     pass
+
 
 class NetworkAccessManager(object):
     """
@@ -129,6 +139,7 @@ class NetworkAccessManager(object):
             'exception' - the exception returne dduring execution
     """
 
+
     def __init__(self, authid=None, disable_ssl_certificate_validation=False, exception_class=None, debug=False):
         self.disable_ssl_certificate_validation = disable_ssl_certificate_validation
         self.authid = authid
@@ -148,12 +159,15 @@ class NetworkAccessManager(object):
             'exception': None,
         })
 
+
     def msg_log(self, msg):
         if self.debug:
             QgsMessageLog.logMessage(msg, "NetworkAccessManager")
 
+
     def httpResult(self):
         return self.http_call_result
+
 
     def request(self, url, method="GET", body=None, headers=None, redirections=DEFAULT_MAX_REDIRECTS, connection_type=None, blocking=True):
         """
@@ -241,12 +255,14 @@ class NetworkAccessManager(object):
 
         return (self.http_call_result, self.http_call_result.content)
 
+
     #@pyqtSlot()
     def downloadProgress(self, bytesReceived, bytesTotal):
         """Keep track of the download progress"""
         #self.msg_log("downloadProgress %s of %s ..." % (bytesReceived, bytesTotal))
         pass
 
+   
     #@pyqtSlot(QNetworkReply)
     def requestTimedOut(self, QNetworkReply):
         """Trap the timeout. In Async mode requestTimedOut is called after replyFinished"""
@@ -254,6 +270,7 @@ class NetworkAccessManager(object):
         self.exception_class = RequestsExceptionTimeout
         self.http_call_result.exception = RequestsExceptionTimeout("Timeout error")
 
+    
     #@pyqtSlot(QObject)
     def replyFinished(self):
         err = self.reply.error()
@@ -357,6 +374,7 @@ class NetworkAccessManager(object):
         else:
             self.msg_log("Reply was already deleted ...")
 
+ 
     #@pyqtSlot()
     def sslErrors(self, ssl_errors):
         """
@@ -369,6 +387,7 @@ class NetworkAccessManager(object):
         if self.disable_ssl_certificate_validation:
             self.reply.ignoreSslErrors()
 
+  
     #@pyqtSlot()
     def abort(self):
         """

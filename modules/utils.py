@@ -180,10 +180,10 @@ def parse_raw_coordinate(coordList):
         point = QgsPointXY(float(coord_components[0]), float(coord_components[1]))
         yield point
 
+
 GPOINT = 'Point'
 GLINESTRING = 'LineString'
 GPOLYGON = 'Polygon'
-
 SDO_GTYPE_MAP = {
     '00': 'Unknown',
     '01': GPOINT,
@@ -196,8 +196,8 @@ SDO_GTYPE_MAP = {
     '08': 'Solid',
     '09': 'MultiSolid',
 }
-
 SDO_FIELD_EXCLUDE = ['text', 'boundary', 'rotation', 'height']
+
 
 def parse_sdo_geometry_type(sdo_gtype):
     sdo_gtype_str = str(sdo_gtype).rjust(4, '0') 
@@ -205,9 +205,11 @@ def parse_sdo_geometry_type(sdo_gtype):
     dim = max(2, int(sdo_gtype_str[0]))
     return SDO_GTYPE_MAP[gtype], dim
 
+
 def parse_sdo_fields(sdo):
     fields = [field for field in sdo.keys() if field not in SDO_FIELD_EXCLUDE]
     return [QgsField(field, QVariant.String) for field in fields], fields
+
 
 def parse_sdo_geometry(elem_info, ordinates):
     start_index = elem_info[0] - 1
@@ -229,6 +231,7 @@ def parse_sdo_geometry(elem_info, ordinates):
     elif gtype == GPOLYGON:
         return QgsGeometry.fromPolygonXY([result])
 
+
 def sdo_to_feature(sdo, fields):
     attrs = [sdo[f] for f in fields]
     geometry = parse_sdo_geometry(sdo['boundary']['sdoElemInfo'], sdo['boundary']['sdoOrdinates'])
@@ -238,6 +241,7 @@ def sdo_to_feature(sdo, fields):
     feature.setAttributes(attrs)
 
     return feature
+
 
 def sdo_to_layer(sdo, name, crs=None):
     if not isinstance(sdo, list):
@@ -259,8 +263,9 @@ def sdo_to_layer(sdo, name, crs=None):
     pool.join()
     provider.addFeatures(features)
     layer.commitChanges()
-    
+
     return layer
+
 
 def get_epsg_from_tm3_zone(zone):
     splitted_zone = zone.split('.')

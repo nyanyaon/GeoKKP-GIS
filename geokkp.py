@@ -22,8 +22,8 @@
  ***************************************************************************/
 """
 
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QUrl
-from qgis.PyQt.QtGui import QIcon, QColor, QDesktopServices
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
+from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtWidgets import QAction, QMenu, QToolButton, QDockWidget, QMessageBox
 from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
 from qgis.gui import QgsMapToolIdentify
@@ -31,7 +31,6 @@ from qgis import utils as qgis_utils
 
 # Import the code for the DockWidget
 import os
-import json
 from .geokkp_dockwidget import GeoKKPDockWidget
 
 # Modules
@@ -46,6 +45,7 @@ from .modules.import_from_file import ImportGeomFromFile
 
 from .modules.utils import activate_editing, is_layer_exist, iconPath, icon, sdo_to_layer
 import json 
+
 
 class GeoKKP:
     """QGIS Plugin Implementation."""
