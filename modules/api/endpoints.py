@@ -234,9 +234,8 @@ def check_peta_bidang(berkas_id):
        "berkasId": berkas_id
     }
 
-@api(endpoint='getEntityByUserName')
+@api(endpoint='createPetaBidang')
 def create_peta_bidang(berkas_id, mode, kantor_id, wilayah_id, petugas_id):
-    endpoint = 'createPetaBidang'
     return {
         "berkasId": berkas_id,
         "mode": mode,
@@ -251,4 +250,13 @@ def stop_berkas(nomor_berkas, tahun_berkas, kantor_id):
         "nomorBerkas": nomor_berkas,
         "tahunBerkas": tahun_berkas,
         "kantorId": kantor_id
+    }
+
+# Utilities
+@(endpoint='GetZonaTm3ByBerkas')
+def get_zona_tm3_by_berkas(nomor_berkas, tahun_berkas, kantor_id):
+    return {
+        "nomorBerkas": nomor_berkas,
+        "tahun_berkas": tahun_berkas,
+        "kantor_id": kantor_id
     }
