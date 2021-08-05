@@ -44,7 +44,7 @@ from .modules.layout import LayoutDialog
 from .modules.import_from_file import ImportGeomFromFile
 
 from .modules.utils import activate_editing, is_layer_exist, iconPath, icon, sdo_to_layer
-import json 
+import json
 
 
 class GeoKKP:

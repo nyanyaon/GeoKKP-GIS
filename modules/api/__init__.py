@@ -1,7 +1,7 @@
 import json
 
 from modules.api.networkaccessmanager import (
-    NetworkAccessManager, 
+    NetworkAccessManager,
     DEFAULT_MAX_REDIRECTS
 )
 
@@ -10,6 +10,7 @@ BASE_URL = 'http://10.20.22.90:5001/spatialapi'
 DEFAULT_HEADER = {
     b'Content-Type': b'application/json'
 }
+
 
 class API:
     def __init__(self, base_url=BASE_URL, *args, **kwargs):
@@ -23,14 +24,29 @@ class API:
     def build_api_payload(payload):
         return json.dumps(payload).encode('utf8')
 
-    def request(self, endpoint, method='POST', body=None, headers=DEFAULT_HEADER, redirections=DEFAULT_MAX_REDIRECTS, blocking=True):
+    def request(
+            self,
+            endpoint,
+            method='POST',
+            body=None,
+            headers=DEFAULT_HEADER,
+            redirections=DEFAULT_MAX_REDIRECTS,
+            blocking=True):
         request_url = self._build_url(endpoint)
         request_body = self.build_api_payload(body)
-        (response, content) = self._client.request(url=request_url, method=method, body=request_body, headers=headers, redirections=redirections, blocking=blocking)
+        (response, content) = self._client.request(
+            url=request_url,
+            method=method,
+            body=request_body,
+            headers=headers,
+            redirections=redirections,
+            blocking=blocking
+        )
         if blocking:
             return response
         else:
             return self._client
+
 
 def api(endpoint, base_url=BASE_URL, method='POST', **client_config):
     def decorator(function):
@@ -40,12 +56,14 @@ def api(endpoint, base_url=BASE_URL, method='POST', **client_config):
             redirections = getattr(kwargs, 'redirections', DEFAULT_MAX_REDIRECTS)
             blocking = getattr(kwargs, 'blocking', True)
             payload = function(**kwargs)
-            response = client.request(endpoint=endpoint, 
-                method=method, 
-                body=payload, 
-                headers=headers, 
-                redirections=redirections, 
-                blocking=blocking)
+            response = client.request(
+                endpoint=endpoint,
+                method=method,
+                body=payload,
+                headers=headers,
+                redirections=redirections,
+                blocking=blocking
+            )
             return response
         return wrapper
     return decorator

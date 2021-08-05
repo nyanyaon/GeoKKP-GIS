@@ -1,6 +1,6 @@
 import platform
 from qgis.core import QgsExpressionContextUtils
-from modules.api import API
+from modules.api import api
 
 
 ARCH = platform.processor()
@@ -22,7 +22,6 @@ def login(username, password):
     }
 
 
-
 @api(endpoint='getUserByUserName')
 def get_user_by_username(username, user_is_online=True):
     return {
@@ -41,10 +40,10 @@ def get_entity_by_username(username):
 
 
 @api(endpoint='getUserEntityByUserName')
-def get_user_entity_by_username(username, only_valid, kantor_id):
+def get_user_entity_by_username(username, kantor_id, only_valid=True):
     return {
         "username": username,
-        "OnlyValid": true,
+        "OnlyValid": only_valid,
         "kantorid": kantor_id,
         "clientAppVersion": QGIS_VERSION,
         "clientProcessorArch": ARCH
@@ -121,6 +120,7 @@ def get_notifikasi_by_kantor(kantor_id):
         "kantorId": kantor_id
     }
 
+
 # Buka Berkas Sequence
 @api(endpoint='getBerkas')
 def get_berkas(kantor_id, tahun_berkas=None, nomor_berkas='', tipe_kantor_id=None, start=0, limit=20, count=-1):
@@ -154,6 +154,7 @@ def get_spatial_document_sdo(gugus_ids, include_riwayat=False):
         "getRiwayat": include_riwayat
     }
 
+
 # Simpan Berkas Sequence
 @api(endpoint='getWilayahPrior')
 def get_wilayah_prior(wilayah_id):
@@ -163,23 +164,24 @@ def get_wilayah_prior(wilayah_id):
 
 
 @api(endpoint='getParcels')
-def  get_parcels(persil_ids):
+def get_parcels(persil_ids):
     return persil_ids
 
 
 @api(endpoint='submitSdo')
 def submit_sdo(
-        nomor_berkas, 
-        tahun_berkas, 
-        kantor_id, 
+        nomor_berkas,
+        tahun_berkas,
+        kantor_id,
         tipe_kantor_id,
         wilayah_id,
         petugas_id,
         user_id,
+        gugus_ids,
         gu_id,
         sistem_koordinat='TM3',
         keterangan='',
-        reset302= False,
+        reset302=False,
         persil_baru=None,
         persil_edit=None,
         persil_induk=None,
@@ -204,7 +206,7 @@ def submit_sdo(
         "gugusId": gugus_ids,
         "guId": gu_id,
         "reset302": reset302,
-        "userid": user_id
+        "userid": user_id,
         "sts": {
             "PersilBaru": persil_baru,
             "PersilEdit": persil_edit,
@@ -277,8 +279,9 @@ def stop_berkas(nomor_berkas, tahun_berkas, kantor_id):
         "kantorId": kantor_id
     }
 
+
 # Utilities
-@(endpoint='GetZonaTm3ByBerkas')
+@api(endpoint='GetZonaTm3ByBerkas')
 def get_zona_tm3_by_berkas(nomor_berkas, tahun_berkas, kantor_id):
     return {
         "nomorBerkas": nomor_berkas,

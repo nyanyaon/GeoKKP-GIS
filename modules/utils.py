@@ -200,7 +200,7 @@ SDO_FIELD_EXCLUDE = ['text', 'boundary', 'rotation', 'height']
 
 
 def parse_sdo_geometry_type(sdo_gtype):
-    sdo_gtype_str = str(sdo_gtype).rjust(4, '0') 
+    sdo_gtype_str = str(sdo_gtype).rjust(4, '0')
     gtype = sdo_gtype_str[2:4]
     dim = max(2, int(sdo_gtype_str[0]))
     return SDO_GTYPE_MAP[gtype], dim
@@ -214,7 +214,7 @@ def parse_sdo_fields(sdo):
 def parse_sdo_geometry(elem_info, ordinates):
     start_index = elem_info[0] - 1
     gtype, dim = parse_sdo_geometry_type(elem_info[1])
-    
+
     result = []
     start = start_index
     while True:
@@ -246,7 +246,7 @@ def sdo_to_feature(sdo, fields):
 def sdo_to_layer(sdo, name, crs=None):
     if not isinstance(sdo, list):
         sdo = [sdo]
-    
+
     gtype, dim = parse_sdo_geometry_type(sdo[0]['boundary']['sdoGtype'])
     uri = gtype if not crs else f'{gtype}?crs={crs}'
     layer = QgsVectorLayer(uri, name, 'memory')
