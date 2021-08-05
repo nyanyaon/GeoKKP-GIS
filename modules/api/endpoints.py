@@ -12,7 +12,7 @@ DEFAULT_APP_VERSION = '4.3.0.0'
 
 # Login Sequence
 @api(endpoint='validateUser')
-def login(username, password):
+def login(username, password, **kwargs):
     return {
         'providerName': DEFAULT_PROVIDER,
         'applicationName': DEFAULT_APP_NAME,
@@ -23,7 +23,7 @@ def login(username, password):
 
 
 @api(endpoint='getUserByUserName')
-def get_user_by_username(username, user_is_online=True):
+def get_user_by_username(username, user_is_online=True, **kwargs):
     return {
         'providerName': DEFAULT_PROVIDER,
         'applicationName': DEFAULT_APP_NAME,
@@ -33,14 +33,14 @@ def get_user_by_username(username, user_is_online=True):
 
 
 @api(endpoint='getEntityByUserName')
-def get_entity_by_username(username):
+def get_entity_by_username(username, **kwargs):
     return {
         'username': username
     }
 
 
 @api(endpoint='getUserEntityByUserName')
-def get_user_entity_by_username(username, kantor_id, only_valid=True):
+def get_user_entity_by_username(username, kantor_id, only_valid=True, **kwargs):
     return {
         "username": username,
         "OnlyValid": only_valid,
@@ -51,7 +51,7 @@ def get_user_entity_by_username(username, kantor_id, only_valid=True):
 
 
 @api(endpoint='getPropinsi')
-def get_provinsi_by_kantor(kantor_id, tipe_kantor_id):
+def get_provinsi_by_kantor(kantor_id, tipe_kantor_id, **kwargs):
     return {
         "kantorId": kantor_id,
         "tipeKantorId": tipe_kantor_id
@@ -59,7 +59,7 @@ def get_provinsi_by_kantor(kantor_id, tipe_kantor_id):
 
 
 @api(endpoint='getKabupaten')
-def get_kabupaten_by_kantor(kantor_id, tipe_kantor_id, propinsi_id):
+def get_kabupaten_by_kantor(kantor_id, tipe_kantor_id, propinsi_id, **kwargs):
     return {
         "kantorId": kantor_id,
         "tipeKantorId": tipe_kantor_id,
@@ -68,7 +68,7 @@ def get_kabupaten_by_kantor(kantor_id, tipe_kantor_id, propinsi_id):
 
 
 @api(endpoint='getKecamatan')
-def get_kecamatan_by_kantor(kantor_id, tipe_kantor_id, kabupaten_id):
+def get_kecamatan_by_kantor(kantor_id, tipe_kantor_id, kabupaten_id, **kwargs):
     return {
         "kantorId": kantor_id,
         "tipeKantorId": tipe_kantor_id,
@@ -77,7 +77,7 @@ def get_kecamatan_by_kantor(kantor_id, tipe_kantor_id, kabupaten_id):
 
 
 @api(endpoint='getDesa')
-def get_desa_by_kantor(kantor_id, tipe_kantor_id, kecamatan_id):
+def get_desa_by_kantor(kantor_id, tipe_kantor_id, kecamatan_id, **kwargs):
     return {
         "kantorId": kantor_id,
         "tipeKantorId": tipe_kantor_id,
@@ -86,7 +86,7 @@ def get_desa_by_kantor(kantor_id, tipe_kantor_id, kecamatan_id):
 
 
 @api(endpoint='getProfileGeo')
-def get_profile_geo(kantor_id, user_id):
+def get_profile_geo(kantor_id, user_id, **kwargs):
     return {
         "kantorId": kantor_id,
         "userId": user_id
@@ -94,28 +94,28 @@ def get_profile_geo(kantor_id, user_id):
 
 
 @api(endpoint='getProgram')
-def get_program_by_kantor(kantor_id):
+def get_program_by_kantor(kantor_id, **kwargs):
     return {
        "kantorId": kantor_id
     }
 
 
 @api(endpoint='getProgramInvent')
-def get_program_invent_by_kantor(kantor_id):
+def get_program_invent_by_kantor(kantor_id, **kwargs):
     return {
         "kantorId": kantor_id
     }
 
 
 @api(endpoint='getProgramParticipatoryMapping')
-def get_program_participatory_mapping_by_kantor(kantor_id):
+def get_program_participatory_mapping_by_kantor(kantor_id, **kwargs):
     return {
        "kantorId": kantor_id
     }
 
 
 @api(endpoint='getNotifikasi')
-def get_notifikasi_by_kantor(kantor_id):
+def get_notifikasi_by_kantor(kantor_id, **kwargs):
     return {
         "kantorId": kantor_id
     }
@@ -123,7 +123,15 @@ def get_notifikasi_by_kantor(kantor_id):
 
 # Buka Berkas Sequence
 @api(endpoint='getBerkas')
-def get_berkas(kantor_id, tahun_berkas=None, nomor_berkas='', tipe_kantor_id=None, start=0, limit=20, count=-1):
+def get_berkas(
+        kantor_id,
+        tahun_berkas=None,
+        nomor_berkas='',
+        tipe_kantor_id=None,
+        start=0,
+        limit=20,
+        count=-1,
+        **kwargs):
     return {
         "nomorBerkas": nomor_berkas,
         "tahunBerkas": tahun_berkas,
@@ -136,7 +144,7 @@ def get_berkas(kantor_id, tahun_berkas=None, nomor_berkas='', tipe_kantor_id=Non
 
 
 @api(endpoint='startBerkasSpasial')
-def start_berkas_spasial(nomor_berkas, tahun_berkas, kantor_id, tipe_kantor_id, username):
+def start_berkas_spasial(nomor_berkas, tahun_berkas, kantor_id, tipe_kantor_id, username, **kwargs):
     return {
         "nomorBerkas": nomor_berkas,
         "tahunBerkas": tahun_berkas,
@@ -148,7 +156,7 @@ def start_berkas_spasial(nomor_berkas, tahun_berkas, kantor_id, tipe_kantor_id, 
 
 
 @api(endpoint='getSpatialDocumentSdo')
-def get_spatial_document_sdo(gugus_ids, include_riwayat=False):
+def get_spatial_document_sdo(gugus_ids, include_riwayat=False, **kwargs):
     return {
         "gugusId": gugus_ids,
         "getRiwayat": include_riwayat
@@ -157,14 +165,14 @@ def get_spatial_document_sdo(gugus_ids, include_riwayat=False):
 
 # Simpan Berkas Sequence
 @api(endpoint='getWilayahPrior')
-def get_wilayah_prior(wilayah_id):
+def get_wilayah_prior(wilayah_id, **kwargs):
     return {
        "wilayahId": wilayah_id
     }
 
 
 @api(endpoint='getParcels')
-def get_parcels(persil_ids):
+def get_parcels(persil_ids, **kwargs):
     return persil_ids
 
 
@@ -193,7 +201,8 @@ def submit_sdo(
         garis=None,
         teks=None,
         titik=None,
-        dimensi=None):
+        dimensi=None,
+        **kwargs):
     return {
         "nomorBerkas": nomor_berkas,
         "tahunBerkas": tahun_berkas,
@@ -225,7 +234,7 @@ def submit_sdo(
 
 
 @api(endpoint='getParcelNotLinkedTo302')
-def get_parcel_not_linked_to_302(berkas_id, pengukuran_ulang=True):
+def get_parcel_not_linked_to_302(berkas_id, pengukuran_ulang=True, **kwargs):
     return {
         "berkasId": berkas_id,
         "pengukuranUlang": pengukuran_ulang
@@ -233,35 +242,35 @@ def get_parcel_not_linked_to_302(berkas_id, pengukuran_ulang=True):
 
 
 @api(endpoint='get302NotLinkedToParcel')
-def get_302_not_linked_to_parcel(berkas_id):
+def get_302_not_linked_to_parcel(berkas_id, **kwargs):
     return {
         "berkasId": berkas_id
     }
 
 
 @api(endpoint='getParcelLinkedTo302')
-def get_parcel_linked_to_302(berkas_id):
+def get_parcel_linked_to_302(berkas_id, **kwargs):
     return {
        "berkasId": berkas_id
     }
 
 
 @api(endpoint='autoLinkParcelToDI302')
-def autolink_parcel_to_302(berkas_id):
+def autolink_parcel_to_302(berkas_id, **kwargs):
     return {
        "berkasId": berkas_id
     }
 
 
 @api(endpoint='checkPetaBidang')
-def check_peta_bidang(berkas_id):
+def check_peta_bidang(berkas_id, **kwargs):
     return {
        "berkasId": berkas_id
     }
 
 
 @api(endpoint='createPetaBidang')
-def create_peta_bidang(berkas_id, mode, kantor_id, wilayah_id, petugas_id):
+def create_peta_bidang(berkas_id, mode, kantor_id, wilayah_id, petugas_id, **kwargs):
     return {
         "berkasId": berkas_id,
         "mode": mode,
@@ -272,7 +281,7 @@ def create_peta_bidang(berkas_id, mode, kantor_id, wilayah_id, petugas_id):
 
 
 @api(endpoint='stopBerkas')
-def stop_berkas(nomor_berkas, tahun_berkas, kantor_id):
+def stop_berkas(nomor_berkas, tahun_berkas, kantor_id, **kwargs):
     return {
         "nomorBerkas": nomor_berkas,
         "tahunBerkas": tahun_berkas,
@@ -282,7 +291,7 @@ def stop_berkas(nomor_berkas, tahun_berkas, kantor_id):
 
 # Utilities
 @api(endpoint='GetZonaTm3ByBerkas')
-def get_zona_tm3_by_berkas(nomor_berkas, tahun_berkas, kantor_id):
+def get_zona_tm3_by_berkas(nomor_berkas, tahun_berkas, kantor_id, **kwargs):
     return {
         "nomorBerkas": nomor_berkas,
         "tahunBerkas": tahun_berkas,

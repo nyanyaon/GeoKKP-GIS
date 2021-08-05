@@ -52,17 +52,12 @@ def api(endpoint, base_url=BASE_URL, method='POST', **client_config):
     def decorator(function):
         def wrapper(*args, **kwargs):
             client = API(base_url=base_url, **client_config)
-            headers = getattr(kwargs, 'headers', DEFAULT_HEADER)
-            redirections = getattr(kwargs, 'redirections', DEFAULT_MAX_REDIRECTS)
-            blocking = getattr(kwargs, 'blocking', True)
             payload = function(*args, **kwargs)
             response = client.request(
                 endpoint=endpoint,
                 method=method,
                 body=payload,
-                headers=headers,
-                redirections=redirections,
-                blocking=blocking
+                **kwargs
             )
             return response
         return wrapper
