@@ -285,6 +285,6 @@ def stop_berkas(nomor_berkas, tahun_berkas, kantor_id):
 def get_zona_tm3_by_berkas(nomor_berkas, tahun_berkas, kantor_id):
     return {
         "nomorBerkas": nomor_berkas,
-        "tahun_berkas": tahun_berkas,
-        "kantor_id": kantor_id
+        "tahunBerkas": tahun_berkas,
+        "kantorId": kantor_id
     }
