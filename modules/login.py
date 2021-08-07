@@ -22,6 +22,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
     """ Dialog for Login """
 
     closingPlugin = pyqtSignal()
+    loginChanged = pyqtSignal()
 
     def __init__(self, parent=iface.mainWindow()):
         self.iface = iface
@@ -118,6 +119,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 print(status)
                 if self.isSaved:
                     storeSetting("geokkp/isLoggedIn", status)
+                    self.loginChanged.emit()
                     print("Informasi pengguna disimpan")
                     self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
                     self.profilUser(username)
@@ -151,15 +153,16 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def postlogin(self):
         print("==========ps===========")
-        if self.postloginaction is None:
+
+        #if self.postloginaction is None:
             # Create the dockwidget (after translation) and keep reference
-            self.postloginaction = PostLoginDock()
+        #    self.postloginaction = PostLoginDock()
 
         # connect to provide cleanup on closing of dockwidget
         #self.postloginaction.closingPlugin.connect(self.onClosePlugin)
 
         # show the dialog
-        self.postloginaction.show() 
+        #self.postloginaction.show() 
 
 
 

@@ -33,6 +33,7 @@ from qgis.PyQt.QtCore import (
     QUrl,
     QSize
 )
+
 from qgis.PyQt.QtGui import QIcon, QColor, QDesktopServices, QFont
 
 from qgis.PyQt.QtWidgets import (
@@ -69,8 +70,11 @@ from .modules.coordinate_transform import CoordinateTransformDialog
 from .modules.coordinate_transform import CoordinateTransformDialog
 from .modules.layout import LayoutDialog
 from .modules.import_from_file import ImportGeomFromFile
-from .modules.utils import activate_editing, is_layer_exist, iconPath, icon
+from .modules.utils import activate_editing, is_layer_exist, iconPath, icon, storeSetting, readSetting
 
+
+# variables
+_is_logged_in = False
 
 
 class GeoKKP:
@@ -239,14 +243,21 @@ class GeoKKP:
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
         # start the deck
-        self.run()
+        self.run
         
         # ========== Menu: Login Pengguna ==========
         self.add_action(
             iconPath("login.png"),
             text=self.tr(u'Login Pengguna'),
             callback=self.login_geokkp,
-            parent=self.iface.mainWindow().menuBar())
+            parent=self.iface.mainWindow().menuBar())   
+        widget = QWidget()
+        layout = QHBoxLayout()
+        self.labelLoggedIn = QLabel()
+        self.labelLoggedIn.setText("Masuk Pengguna")
+        layout.addWidget(self.labelLoggedIn)
+        widget.setLayout(layout)
+        self.toolbar.addWidget(widget)
         #-------------------------------------------
 
         self.toolbar.addSeparator()
@@ -492,8 +503,11 @@ class GeoKKP:
             iconPath("help.png"),
             text=self.tr(u'Bantuan'),
             callback=self.openhelp,
-            parent=self.iface.mainWindow())   
+            parent=self.iface.mainWindow())
 
+        # ============ Events ============ 
+        self.loginaction.loginChanged.connect(self.login_changed)
+           
 
     def judul_aplikasi(self):
         """
@@ -552,11 +566,10 @@ class GeoKKP:
         if self.menu:
             #self.menu.clear()
             self.menu = None
-            
+
+
     def run(self):
         """Run method that loads and starts the plugin"""
-
-        print("run the plugin")
 
         if not self.pluginIsActive:
             self.pluginIsActive = True
@@ -575,9 +588,27 @@ class GeoKKP:
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
             self.dockwidget.show()
 
-            # detect actions
-            # TODO: Delete this
-            #self.dockwidget.buttonSelectLocation.clicked.connect(self.selectLocation)
+            print("run the plugin")
+
+
+
+    def login_changed(self):
+        self._is_logged_in = readSetting("geokkp/isLoggedIn")
+        print("successfully logged in")
+        print(self._is_logged_in)
+
+
+    def enable_button(self, loggedIn):
+        #self.btnLogin.setVisible(not loggedIn)
+        labelText = ("<b>Welcome to Planet</b>" if not loggedIn else "<b>Planet</b>")
+        self.labelLoggedIn.setText(labelText)
+
+
+
+
+    # ==============================================================
+    # Definisi Fungsi GeoKKP-GIS
+    # ==============================================================
 
     def gotoxy(self):
         if self.gotoxyaction is None:
@@ -654,6 +685,7 @@ class GeoKKP:
         if self.loginaction is None:
             self.loginaction = LoginDialog()
         self.loginaction.show()
+        self.loginaction
         
     def loadoam(self):
         if self.oamaction is None:
