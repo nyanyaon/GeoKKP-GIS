@@ -22,8 +22,8 @@
  ***************************************************************************/
 """
 
-from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt, QUrl
-from qgis.PyQt.QtGui import QIcon, QColor, QDesktopServices
+from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
+from qgis.PyQt.QtGui import QIcon, QColor
 from qgis.PyQt.QtWidgets import QAction, QMenu, QToolButton, QDockWidget, QMessageBox
 from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
 from qgis.gui import QgsMapToolIdentify
@@ -31,7 +31,6 @@ from qgis import utils as qgis_utils
 
 # Import the code for the DockWidget
 import os
-import json
 from .geokkp_dockwidget import GeoKKPDockWidget
 
 # Modules
@@ -44,7 +43,8 @@ from .modules.coordinate_transform import CoordinateTransformDialog
 from .modules.layout import LayoutDialog
 from .modules.import_from_file import ImportGeomFromFile
 
-from .modules.utils import activate_editing, is_layer_exist, iconPath, icon
+from .modules.utils import activate_editing, is_layer_exist, iconPath, icon, sdo_to_layer
+import json
 
 
 class GeoKKP:
@@ -613,7 +613,11 @@ class GeoKKP:
         self.adjustaction.show()
 
     def openhelp(self):
-        QDesktopServices.openUrl(QUrl('https://qgis-id.github.io/'))
+        with open('/home/izzahudin/Downloads/sdo_geom.json') as f:
+            data = json.load(f)
+            vl = sdo_to_layer(data['geoKkpPolygons'], 'test')
+            QgsProject.instance().addMapLayer(vl)
+        # QDesktopServices.openUrl(QUrl('https://qgis-id.github.io/'))
 
 # TODO: Move to dockwidget
 # Methods for GeoKKP Dock Widget
