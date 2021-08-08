@@ -1,7 +1,11 @@
 import re
 import os
-from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QPushButton
+from multiprocessing.dummy import Pool as ThreadPool
+from functools import partial
+
+from PyQt5.QtCore import QVariant
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QPushButton
 from qgis.core import (
                     QgsMessageLog,
                     QgsSettings,
@@ -10,7 +14,11 @@ from qgis.core import (
                     QgsProject,
                     QgsVectorFileWriter,
                     QgsRasterLayer,
-                    QgsPointXY)
+                    QgsVectorLayer,
+                    QgsField,
+                    QgsPointXY,
+                    QgsGeometry,
+                    QgsFeature)
 from qgis.utils import iface
 from qgis.gui import QgsMapToolIdentifyFeature
 from collections import namedtuple
@@ -236,3 +244,99 @@ def parse_raw_coordinate(coordList):
             raise ValueError("Coordinate pair must be consist of two number separated by comma")
         point = QgsPointXY(float(coord_components[0]), float(coord_components[1]))
         yield point
+
+
+GPOINT = 'Point'
+GLINESTRING = 'LineString'
+GPOLYGON = 'Polygon'
+SDO_GTYPE_MAP = {
+    '00': 'Unknown',
+    '01': GPOINT,
+    '02': GLINESTRING,
+    '03': GPOLYGON,
+    '04': 'Collection',
+    '05': 'MultiPoint',
+    '06': 'MultiLine',
+    '07': 'MultiPolygon',
+    '08': 'Solid',
+    '09': 'MultiSolid',
+}
+SDO_FIELD_EXCLUDE = ['text', 'boundary', 'rotation', 'height']
+
+
+def parse_sdo_geometry_type(sdo_gtype):
+    sdo_gtype_str = str(sdo_gtype).rjust(4, '0')
+    gtype = sdo_gtype_str[2:4]
+    dim = max(2, int(sdo_gtype_str[0]))
+    return SDO_GTYPE_MAP[gtype], dim
+
+
+def parse_sdo_fields(sdo):
+    fields = [field for field in sdo.keys() if field not in SDO_FIELD_EXCLUDE]
+    return [QgsField(field, QVariant.String) for field in fields], fields
+
+
+def parse_sdo_geometry(elem_info, ordinates):
+    start_index = elem_info[0] - 1
+    gtype, dim = parse_sdo_geometry_type(elem_info[1])
+
+    result = []
+    start = start_index
+    while True:
+        end = start + min(2, dim)
+        result.append(QgsPointXY(*ordinates[start:end]))
+        start += dim
+        if start >= len(ordinates):
+            break
+
+    if gtype == GPOINT:
+        return QgsGeometry.fromPointXY(result[0])
+    elif gtype == GLINESTRING:
+        return QgsGeometry.fromPolyline(result)
+    elif gtype == GPOLYGON:
+        return QgsGeometry.fromPolygonXY([result])
+
+
+def sdo_to_feature(sdo, fields):
+    attrs = [sdo[f] for f in fields]
+    geometry = parse_sdo_geometry(sdo['boundary']['sdoElemInfo'], sdo['boundary']['sdoOrdinates'])
+
+    feature = QgsFeature()
+    feature.setGeometry(geometry)
+    feature.setAttributes(attrs)
+
+    return feature
+
+
+def sdo_to_layer(sdo, name, crs=None):
+    if not isinstance(sdo, list):
+        sdo = [sdo]
+
+    gtype, dim = parse_sdo_geometry_type(sdo[0]['boundary']['sdoGtype'])
+    uri = gtype if not crs else f'{gtype}?crs={crs}'
+    layer = QgsVectorLayer(uri, name, 'memory')
+    fields, raw_fields = parse_sdo_fields(sdo[0])
+
+    provider = layer.dataProvider()
+    provider.addAttributes(fields)
+    layer.updateFields()
+
+    pool = ThreadPool()
+    func = partial(sdo_to_feature, fields=raw_fields)
+    features = pool.map(func, sdo)
+    pool.close()
+    pool.join()
+    provider.addFeatures(features)
+    layer.commitChanges()
+
+    return layer
+
+
+def get_epsg_from_tm3_zone(zone):
+    splitted_zone = zone.split('.')
+    major = int(splitted_zone[0])
+    minor = int(splitted_zone[1]) if len(splitted_zone) == 2 else 1
+    if major < 46 or major > 54:
+        return False
+    magic = (major * 2 + minor) - 64
+    return f'EPSG:238{magic}'

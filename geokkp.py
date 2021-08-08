@@ -21,7 +21,6 @@
  ***************************************************************************/
 """
 
-
 import os
 import json
 
@@ -35,7 +34,6 @@ from qgis.PyQt.QtCore import (
 )
 
 from qgis.PyQt.QtGui import QIcon, QColor, QDesktopServices, QFont
-
 from qgis.PyQt.QtWidgets import (
     QWidget,
     QAction, 
@@ -70,11 +68,19 @@ from .modules.coordinate_transform import CoordinateTransformDialog
 from .modules.coordinate_transform import CoordinateTransformDialog
 from .modules.layout import LayoutDialog
 from .modules.import_from_file import ImportGeomFromFile
-from .modules.utils import activate_editing, is_layer_exist, iconPath, icon, storeSetting, readSetting
-
+from .modules.utils import (
+    activate_editing, 
+    is_layer_exist, 
+    iconPath, 
+    icon, 
+    storeSetting, 
+    readSetting,
+    sdo_to_layer
+)
 
 # variables
 _is_logged_in = False
+
 
 
 class GeoKKP:
@@ -753,7 +759,11 @@ class GeoKKP:
         self.adjustaction.show()
 
     def openhelp(self):
-        QDesktopServices.openUrl(QUrl('https://qgis-id.github.io/'))
+        with open('/home/izzahudin/Downloads/sdo_geom.json') as f:
+            data = json.load(f)
+            vl = sdo_to_layer(data['geoKkpPolygons'], 'test')
+            QgsProject.instance().addMapLayer(vl)
+        # QDesktopServices.openUrl(QUrl('https://qgis-id.github.io/'))
 
 # TODO: Move to dockwidget
 # Methods for GeoKKP Dock Widget
