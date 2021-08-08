@@ -1,18 +1,38 @@
 import re
 import os
+from multiprocessing.dummy import Pool as ThreadPool
+from functools import partial
+
+from PyQt5.QtCore import QVariant
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QPushButton
 from qgis.core import (
                     QgsMessageLog,
+                    QgsSettings,
                     Qgis,
                     QgsCoordinateReferenceSystem,
                     QgsProject,
                     QgsVectorFileWriter,
                     QgsRasterLayer,
-                    QgsPointXY)
+                    QgsVectorLayer,
+                    QgsField,
+                    QgsPointXY,
+                    QgsGeometry,
+                    QgsFeature)
 from qgis.utils import iface
 from qgis.gui import QgsMapToolIdentifyFeature
 from collections import namedtuple
+
+"""
+Kumpulan Utilities untuk GeoKKP-QGIS
+===========================================
+
+Variabel global dan modul global untuk digunakan di plugin GeoKKP-GIS
+
+
+"""
+
+
 
 epsg4326 = QgsCoordinateReferenceSystem('EPSG:4326')
 
@@ -24,11 +44,19 @@ DefaultMessageBarButton.setText("Show Me")
 DefaultMessageBarButton.pressed.connect(iface.openMessageLog)
 
 
+
+
 def logMessage(message, level=Qgis.Info):
+    """
+    Logger untuk debugging
+    """
     QgsMessageLog.logMessage(message, 'GeoKKP', level=level)
 
 
 def display_message_bar(tag, message, parent=None, level=Qgis.Info, action=DefaultMessageBarButton, duration=5):
+    """
+    Wrapper untuk menampilkan pesan di message bar
+    """
     parent = parent if parent else iface.messageBar()
     widget = parent.createMessage(tag, message)
     if action:
@@ -38,11 +66,18 @@ def display_message_bar(tag, message, parent=None, level=Qgis.Info, action=Defau
 
 
 def loadXYZ(url, name):
+    """
+    Memuat layer dalam bentuk XYZ Tile
+    """
     rasterLyr = QgsRasterLayer("type=xyz&zmin=0&zmax=21&url=" + url, name, "wms")
     QgsProject.instance().addMapLayer(rasterLyr)
 
 
 def activate_editing(layer):
+    """
+    Activate layer editing tools
+    TODO: fix conflicts with built-in layer editing in QGIS
+    """
     QgsProject.instance().setTopologicalEditing(True)
     layer.startEditing()
     iface.layerTreeView().setCurrentLayer(layer)
@@ -51,7 +86,25 @@ def activate_editing(layer):
     # iface.actionVertexTool().trigger()
 
 
+def storeSetting(key, value):
+    """
+    Store value to QGIS Settings
+    """
+    settings = QgsSettings()
+    settings.setValue(key, value)
+
+def readSetting(key):
+    """
+    Read value from QGIS Settings
+    """
+    settings = QgsSettings()
+    return settings.value(key)
+
+
 def is_layer_exist(project, layername):
+    """
+    Boolean check if layer exist
+    """
     for layer in project.instance().mapLayers().values():
         print(layer.name(), " - ", layername)
         if (layer.name == layername):
@@ -59,6 +112,26 @@ def is_layer_exist(project, layername):
             return True
         else:
             return False
+
+def set_symbology(self, layer, qml):
+    """
+    Set layer symbology based on QML files in ./styles folder
+    """
+    uri = os.path.join(os.path.dirname(__file__), 'styles/'+qml)
+    layer.loadNamedStyle(uri)
+
+def properify(self, text):
+    """
+    Filter text for OS's friendly directory format
+
+    Remove all non-word characters (everything except numbers and letters) and
+    replace all runs of whitespace with a single dash
+
+    """
+    text = re.sub(r"[^\w\s]", '', text)
+    text = re.sub(r"\s+", '_', text)
+
+    return text
 
 
 def edit_by_identify(mapcanvas, layer):
@@ -171,3 +244,99 @@ def parse_raw_coordinate(coordList):
             raise ValueError("Coordinate pair must be consist of two number separated by comma")
         point = QgsPointXY(float(coord_components[0]), float(coord_components[1]))
         yield point
+
+
+GPOINT = 'Point'
+GLINESTRING = 'LineString'
+GPOLYGON = 'Polygon'
+SDO_GTYPE_MAP = {
+    '00': 'Unknown',
+    '01': GPOINT,
+    '02': GLINESTRING,
+    '03': GPOLYGON,
+    '04': 'Collection',
+    '05': 'MultiPoint',
+    '06': 'MultiLine',
+    '07': 'MultiPolygon',
+    '08': 'Solid',
+    '09': 'MultiSolid',
+}
+SDO_FIELD_EXCLUDE = ['text', 'boundary', 'rotation', 'height']
+
+
+def parse_sdo_geometry_type(sdo_gtype):
+    sdo_gtype_str = str(sdo_gtype).rjust(4, '0')
+    gtype = sdo_gtype_str[2:4]
+    dim = max(2, int(sdo_gtype_str[0]))
+    return SDO_GTYPE_MAP[gtype], dim
+
+
+def parse_sdo_fields(sdo):
+    fields = [field for field in sdo.keys() if field not in SDO_FIELD_EXCLUDE]
+    return [QgsField(field, QVariant.String) for field in fields], fields
+
+
+def parse_sdo_geometry(elem_info, ordinates):
+    start_index = elem_info[0] - 1
+    gtype, dim = parse_sdo_geometry_type(elem_info[1])
+
+    result = []
+    start = start_index
+    while True:
+        end = start + min(2, dim)
+        result.append(QgsPointXY(*ordinates[start:end]))
+        start += dim
+        if start >= len(ordinates):
+            break
+
+    if gtype == GPOINT:
+        return QgsGeometry.fromPointXY(result[0])
+    elif gtype == GLINESTRING:
+        return QgsGeometry.fromPolyline(result)
+    elif gtype == GPOLYGON:
+        return QgsGeometry.fromPolygonXY([result])
+
+
+def sdo_to_feature(sdo, fields):
+    attrs = [sdo[f] for f in fields]
+    geometry = parse_sdo_geometry(sdo['boundary']['sdoElemInfo'], sdo['boundary']['sdoOrdinates'])
+
+    feature = QgsFeature()
+    feature.setGeometry(geometry)
+    feature.setAttributes(attrs)
+
+    return feature
+
+
+def sdo_to_layer(sdo, name, crs=None):
+    if not isinstance(sdo, list):
+        sdo = [sdo]
+
+    gtype, dim = parse_sdo_geometry_type(sdo[0]['boundary']['sdoGtype'])
+    uri = gtype if not crs else f'{gtype}?crs={crs}'
+    layer = QgsVectorLayer(uri, name, 'memory')
+    fields, raw_fields = parse_sdo_fields(sdo[0])
+
+    provider = layer.dataProvider()
+    provider.addAttributes(fields)
+    layer.updateFields()
+
+    pool = ThreadPool()
+    func = partial(sdo_to_feature, fields=raw_fields)
+    features = pool.map(func, sdo)
+    pool.close()
+    pool.join()
+    provider.addFeatures(features)
+    layer.commitChanges()
+
+    return layer
+
+
+def get_epsg_from_tm3_zone(zone):
+    splitted_zone = zone.split('.')
+    major = int(splitted_zone[0])
+    minor = int(splitted_zone[1]) if len(splitted_zone) == 2 else 1
+    if major < 46 or major > 54:
+        return False
+    magic = (major * 2 + minor) - 64
+    return f'EPSG:238{magic}'
