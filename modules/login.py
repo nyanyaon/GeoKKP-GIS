@@ -8,10 +8,16 @@ from qgis.utils import iface
 from qgis.core import Qgis
 from qgis.gui import QgsMessageBar
 
-from .utils import storeSetting, logMessage
+from .utils import (
+    storeSetting,
+    logMessage,
+    get_saved_credentials,
+    save_credentials
+)
 from .postlogin import PostLoginDock
 from .api import endpoints
 from .memo import app_state
+
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/login.ui'))
@@ -34,10 +40,15 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # login action
         self.buttonBoxLogin.clicked.connect(self.doLoginRequest)
-        if self.checkboxSaveLogin.isChecked:
-            self.isSaved = True
-        else:
-            self.isSaved = False
+
+    def _autofill_credentials(self):
+        credentials = get_saved_credentials()
+        if set(['username', 'password']).issubset(credentials.keys()):
+            self.inputUsername.setText(credentials['username'])
+            self.inputPassword.setText(credentials['password'])
+
+    def showEvent(self, event):
+        self._autofill_credentials()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -65,7 +76,8 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             message.setStandardButtons(QMessageBox.Ok)
             message.exec()
         else:
-            if self.isSaved:
+            if self.checkboxSaveLogin.isChecked():
+                save_credentials(username, password)
                 storeSetting("geokkp/isLoggedIn", content['status'])
             logMessage(str(content))
             self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)

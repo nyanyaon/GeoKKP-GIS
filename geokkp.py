@@ -29,11 +29,10 @@ from qgis.PyQt.QtCore import (
     QTranslator,
     QCoreApplication,
     Qt,
-    QUrl,
     QSize
 )
 
-from qgis.PyQt.QtGui import QIcon, QColor, QDesktopServices, QFont
+from qgis.PyQt.QtGui import QIcon, QColor, QFont
 from qgis.PyQt.QtWidgets import (
     QWidget,
     QAction,
@@ -56,7 +55,7 @@ from .geokkp_dockwidget import GeoKKPDockWidget
 # Modules
 from .modules.gotoxy import GotoXYDialog
 from .modules.plotcoord import PlotCoordinateDialog
-from .modules.login import LoginDialog
+from .modules.login import LoginDialog, get_saved_credentials
 from .modules.openaerialmap import OAMDialog
 from .modules.adjust import AdjustDialog
 from .modules.postlogin import PostLoginDock
@@ -587,7 +586,7 @@ class GeoKKP:
         Cleanup necessary items here when plugin dockwidget is closed
         """
         # disconnects
-        self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
+        # self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
 
         # remove this statement if dockwidget is to remain
         # for reuse if plugin is reopened
@@ -652,6 +651,8 @@ class GeoKKP:
                     and 'need_auth' in action_data.keys() \
                     and action_data['need_auth']:
                 action.setEnabled(state)
+        if state:
+            self.postlogin()
 
     def enable_button(self, loggedIn):
         # self.btnLogin.setVisible(not loggedIn)
@@ -708,7 +709,7 @@ class GeoKKP:
         self.postloginaction.closingPlugin.connect(self.onClosePlugin)
 
         # show the dialog
-        # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+        # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.postloginaction)
         self.postloginaction.show()
 
     def layout(self):
@@ -804,7 +805,8 @@ class GeoKKP:
         self.adjustaction.show()
 
     def openhelp(self):
-        QDesktopServices.openUrl(QUrl('https://qgis-id.github.io/'))
+        # QDesktopServices.openUrl(QUrl('https://qgis-id.github.io/'))
+        get_saved_credentials()
 
 # TODO: Move to dockwidget
 # Methods for GeoKKP Dock Widget

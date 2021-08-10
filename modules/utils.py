@@ -18,7 +18,9 @@ from qgis.core import (
                     QgsField,
                     QgsPointXY,
                     QgsGeometry,
-                    QgsFeature)
+                    QgsFeature,
+                    QgsApplication,
+                    QgsAuthMethodConfig)
 from qgis.utils import iface
 from qgis.gui import QgsMapToolIdentifyFeature
 from collections import namedtuple
@@ -340,3 +342,32 @@ def get_epsg_from_tm3_zone(zone):
         return False
     magic = (major * 2 + minor) - 64
     return f'EPSG:238{magic}'
+
+
+def get_saved_credentials():
+    auth_mgr = QgsApplication.authManager()
+    auth_id = readSetting('geokkp/authId')
+    auth_cfg = QgsAuthMethodConfig()
+    if auth_id:
+        auth_mgr.loadAuthenticationConfig(auth_id, auth_cfg, True)
+    return auth_cfg.configMap()
+
+
+def save_credentials(username, password):
+    auth_mgr = QgsApplication.authManager()
+    auth_id = readSetting('geokkp/authId')
+    auth_cfg = QgsAuthMethodConfig()
+    if not auth_id:
+        auth_id = auth_cfg.id()
+        auth_cfg.setName('geokkp')
+        auth_cfg.setMethod('Basic')
+    else:
+        auth_mgr.loadAuthenticationConfig(auth_id, auth_cfg, True)
+
+    auth_cfg.setConfig('username', username)
+    auth_cfg.setConfig('password', password)
+    assert auth_cfg.isValid()
+    auth_mgr.storeAuthenticationConfig(auth_cfg)
+    assert auth_cfg.id()
+    storeSetting('geokkp/authId', auth_cfg.id())
+    return auth_cfg.id()
