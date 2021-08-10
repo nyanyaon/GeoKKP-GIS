@@ -4,18 +4,6 @@ from PyQt5.QtCore import (
 )
 
 
-class Singleton():
-    def __init__(cls):
-        super(Singleton, cls).__init__()
-        cls.instance = None
-
-    def __call__(cls, *args, **kw):
-        if cls.instance is None:
-            cls.instance = super(Singleton, cls).__call__(*args, **kw)
-
-        return cls.instance
-
-
 class Item(QObject):
     changed = pyqtSignal(object)
 
