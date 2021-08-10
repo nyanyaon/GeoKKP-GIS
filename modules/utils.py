@@ -33,7 +33,6 @@ Variabel global dan modul global untuk digunakan di plugin GeoKKP-GIS
 """
 
 
-
 epsg4326 = QgsCoordinateReferenceSystem('EPSG:4326')
 
 CoordinateValidationResult = namedtuple('CoordinateValidationResult', 'is_valid errors')
@@ -42,8 +41,6 @@ CoordinateValidationErrors = namedtuple('CoordinateValidationErrors', 'row, col 
 DefaultMessageBarButton = QPushButton()
 DefaultMessageBarButton.setText("Show Me")
 DefaultMessageBarButton.pressed.connect(iface.openMessageLog)
-
-
 
 
 def logMessage(message, level=Qgis.Info):
@@ -93,6 +90,7 @@ def storeSetting(key, value):
     settings = QgsSettings()
     settings.setValue(key, value)
 
+
 def readSetting(key):
     """
     Read value from QGIS Settings
@@ -113,12 +111,14 @@ def is_layer_exist(project, layername):
         else:
             return False
 
+
 def set_symbology(self, layer, qml):
     """
     Set layer symbology based on QML files in ./styles folder
     """
     uri = os.path.join(os.path.dirname(__file__), 'styles/'+qml)
     layer.loadNamedStyle(uri)
+
 
 def properify(self, text):
     """
