@@ -23,16 +23,11 @@
 """
 
 import os
-import requests
-import re
 
 from qgis.PyQt import QtWidgets, uic
-from qgis.PyQt.QtCore import pyqtSignal, QVariant
+from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
-from qgis.core import (
-    QgsField,
-    QgsVectorLayer,
-    QgsProject)
+from qgis.core import QgsProject
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'ui/welcome_dock.ui'))
@@ -62,12 +57,8 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.closingPlugin.emit()
         event.accept()
 
-
     def mulai(self):
         print("login geokkp")
 
-
     def bantuan(self):
         print("bantuanGeoKKP")
-
-

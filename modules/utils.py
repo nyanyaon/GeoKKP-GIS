@@ -18,7 +18,9 @@ from qgis.core import (
                     QgsField,
                     QgsPointXY,
                     QgsGeometry,
-                    QgsFeature)
+                    QgsFeature,
+                    QgsApplication,
+                    QgsAuthMethodConfig)
 from qgis.utils import iface
 from qgis.gui import QgsMapToolIdentifyFeature
 from collections import namedtuple
@@ -33,7 +35,6 @@ Variabel global dan modul global untuk digunakan di plugin GeoKKP-GIS
 """
 
 
-
 epsg4326 = QgsCoordinateReferenceSystem('EPSG:4326')
 
 CoordinateValidationResult = namedtuple('CoordinateValidationResult', 'is_valid errors')
@@ -42,8 +43,6 @@ CoordinateValidationErrors = namedtuple('CoordinateValidationErrors', 'row, col 
 DefaultMessageBarButton = QPushButton()
 DefaultMessageBarButton.setText("Show Me")
 DefaultMessageBarButton.pressed.connect(iface.openMessageLog)
-
-
 
 
 def logMessage(message, level=Qgis.Info):
@@ -93,6 +92,7 @@ def storeSetting(key, value):
     settings = QgsSettings()
     settings.setValue(key, value)
 
+
 def readSetting(key):
     """
     Read value from QGIS Settings
@@ -113,12 +113,14 @@ def is_layer_exist(project, layername):
         else:
             return False
 
+
 def set_symbology(self, layer, qml):
     """
     Set layer symbology based on QML files in ./styles folder
     """
     uri = os.path.join(os.path.dirname(__file__), 'styles/'+qml)
     layer.loadNamedStyle(uri)
+
 
 def properify(self, text):
     """
@@ -340,3 +342,32 @@ def get_epsg_from_tm3_zone(zone):
         return False
     magic = (major * 2 + minor) - 64
     return f'EPSG:238{magic}'
+
+
+def get_saved_credentials():
+    auth_mgr = QgsApplication.authManager()
+    auth_id = readSetting('geokkp/authId')
+    auth_cfg = QgsAuthMethodConfig()
+    if auth_id:
+        auth_mgr.loadAuthenticationConfig(auth_id, auth_cfg, True)
+    return auth_cfg.configMap()
+
+
+def save_credentials(username, password):
+    auth_mgr = QgsApplication.authManager()
+    auth_id = readSetting('geokkp/authId')
+    auth_cfg = QgsAuthMethodConfig()
+    if not auth_id:
+        auth_id = auth_cfg.id()
+        auth_cfg.setName('geokkp')
+        auth_cfg.setMethod('Basic')
+    else:
+        auth_mgr.loadAuthenticationConfig(auth_id, auth_cfg, True)
+
+    auth_cfg.setConfig('username', username)
+    auth_cfg.setConfig('password', password)
+    assert auth_cfg.isValid()
+    auth_mgr.storeAuthenticationConfig(auth_cfg)
+    assert auth_cfg.id()
+    storeSetting('geokkp/authId', auth_cfg.id())
+    return auth_cfg.id()

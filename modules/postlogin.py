@@ -1,23 +1,18 @@
 
 import os
-import re
 
 from qgis.PyQt import QtWidgets, uic
-from qgis.PyQt.QtCore import pyqtSignal, QVariant
+from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 from qgis.core import (
-    QgsField,
-    QgsVectorLayer,
     QgsProject,
     QgsSettings
-    )
+)
 
-from .utils import storeSetting, readSetting
+from .utils import storeSetting
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/postlogin2.ui'))
-
-
 
 
 class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
@@ -33,12 +28,11 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         self.project = QgsProject
         self.settings = QgsSettings()
 
-        #read settings: Jumlah Kantah Terdaftar
+        # read settings: Jumlah Kantah Terdaftar
         jumlahKantor = self.settings.value("geokkp/jumlahkantor")
-        #print(jumlahKantor)
-        #self.populateKantah(jumlahKantor)
-        
-    
+        print(jumlahKantor)
+        self.populateKantah(jumlahKantor)
+
     def populateKantah(self, jumlahKantor):
         jsonKantor = self.settings.value("geokkp/listkantor")
         self.indexkantor = 0
@@ -49,10 +43,9 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
                 kantah[nama] = item
             self._kantahs = kantah
 
-            #print(jsonKantor)
+            print(jsonKantor)
             self.labelSatuKantah_3.hide()
             for n in range(len(jumlahKantor)):
-                #print(jsonKantor[n]['nama'])
                 self.comboBoxKantah_3.addItems(self._kantahs.keys())
         else:
             self.labelBeberapaKantah_4.hide()
@@ -65,9 +58,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         print("menyimpan kantor "+idkantorTerpilih)
         storeSetting("geokkp/kantorterpilih", idkantorTerpilih)
         self.accept()
-        
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
-
