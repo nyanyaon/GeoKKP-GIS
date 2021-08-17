@@ -53,6 +53,7 @@ from qgis import utils as qgis_utils
 from .geokkp_dockwidget import GeoKKPDockWidget
 
 # Modules
+from .modules.add_layer import AddLayerDialog
 from .modules.gotoxy import GotoXYDialog
 from .modules.plotcoord import PlotCoordinateDialog
 from .modules.login import LoginDialog, get_saved_credentials
@@ -68,9 +69,6 @@ from .modules.utils import (
     icon
 )
 from .modules.memo import app_state
-
-# variables
-_is_logged_in = False
 
 
 class GeoKKP:
@@ -137,6 +135,7 @@ class GeoKKP:
 
         # Set widgets
         self.dockwidget = GeoKKPDockWidget()
+        self.addlayeraction = AddLayerDialog()
         self.gotoxyaction = GotoXYDialog()
         self.plotxyaction = PlotCoordinateDialog()
         self.import_from_file_widget = ImportGeomFromFile(self)
@@ -275,7 +274,8 @@ class GeoKKP:
         self.add_action(
             iconPath("buatlayer.png"),
             text=self.tr(u'Layer Baru'),
-            callback=self.run,
+            callback=self.add_layers,
+            need_auth=False,
             parent=self.iface.mainWindow().menuBar())
         # -------------------------------------------
 
@@ -542,6 +542,55 @@ class GeoKKP:
         # ========== Label Toolbar GeoKKP ==========
         self.judul_aplikasi()
 
+
+        # ======== Dropdown Menu: Workspace GeoKKP ========
+        # Deklarasi menu Workspace
+        self.popupWorkspace = QMenu("&Workspace", self.iface.mainWindow())
+
+        #  --- Sub-menu Workspace Rutin ---
+        self.actionWorkspaceRutin = self.add_action(
+            icon(""),
+            text=self.tr(u"Workspace Rutin"),
+            callback=self.gotoxy,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            parent=self.popupWorkspace
+        )
+        self.popupWorkspace.addAction(self.actionWorkspaceRutin)
+
+        #  --- Sub-menu Workspace Partisipatif ---
+        self.actionWorkspacePartisipatif = self.add_action(
+            icon(""),
+            text=self.tr(u"Partisipatif"),
+            callback=self.gotoxy,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            parent=self.popupWorkspace
+        )
+        self.popupWorkspace.addAction(self.actionWorkspacePartisipatif)
+
+
+        # Pengaturan Dropdown menu Workspace
+        self.WorkspaceButton = QToolButton()
+        self.WorkspaceButton.setMenu(self.popupWorkspace)
+        self.WorkspaceButton.setToolTip("Perangkat")
+        self.WorkspaceButton.setDefaultAction(self.actionWorkspaceRutin)
+        self.WorkspaceButton.setPopupMode(QToolButton.MenuButtonPopup)
+        self.WorkspaceButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        # Register menu to toolbar
+        self.toolbar.addWidget(self.WorkspaceButton)
+        self.menu.addMenu(self.popupWorkspace)
+        # -------------------------------------------
+
+        # ========== Menu: CADMode ==========
+        self.add_action(
+            iconPath("autoadjust.png"),
+            text=self.tr(u'CAD Mode'),
+            callback=self.toggle_cad_mode,
+            parent=self.iface.mainWindow(),
+            need_auth=False)
+        # -------------------------------------------
+
         # ========== Menu: Pengaturan ==========
         self.add_action(
             iconPath("settings.png"),
@@ -549,6 +598,7 @@ class GeoKKP:
             callback=self.gotoxy,
             parent=self.iface.mainWindow(),
             need_auth=False)
+        # -------------------------------------------
 
         # ========== Menu: Bantuan ==========
         self.add_action(
@@ -557,8 +607,9 @@ class GeoKKP:
             callback=self.openhelp,
             parent=self.iface.mainWindow(),
             need_auth=False)
+        # -------------------------------------------
 
-        # ============ Events ============
+        # ============ Toolbar Events ============
         # self.loginaction.loginChanged.connect(self.login_changed)
 
     def judul_aplikasi(self):
@@ -717,6 +768,12 @@ class GeoKKP:
             # Create the dockwidget (after translation) and keep reference
             self.layoutaction = LayoutDialog()
         self.layoutaction.show()
+
+
+    def add_layers(self):
+        if self.addlayeraction is None:
+            self.addlayeraction = AddLayerDialog()
+        self.addlayeraction.show()
 
     # TODO: rubah CAD mode dengan menu penggambaran sendiri
     def toggle_cad_mode(self):

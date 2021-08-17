@@ -31,7 +31,7 @@ Kumpulan Utilities untuk GeoKKP-QGIS
 
 Variabel global dan modul global untuk digunakan di plugin GeoKKP-GIS
 
-
+TODO: Pindah variabel & konstanta global ke modul terpisah
 """
 
 

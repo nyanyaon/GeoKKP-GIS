@@ -154,7 +154,7 @@
           <string>Password</string>
          </property>
          <property name="clearButtonEnabled">
-          <bool>true</bool>
+          <bool>false</bool>
          </property>
          <property name="showLockIcon">
           <bool>true</bool>
