@@ -106,9 +106,9 @@ def is_layer_exist(project, layername):
     Boolean check if layer exist
     """
     for layer in project.instance().mapLayers().values():
-        print(layer.name(), " - ", layername)
+        #print(layer.name(), " - ", layername)
         if (layer.name == layername):
-            print("layer exist")
+            #print("layer exist")
             return True
         else:
             return False
@@ -137,8 +137,8 @@ def properify(self, text):
 
 
 def edit_by_identify(mapcanvas, layer):
-    print("identify", mapcanvas)
-    print("layer", layer.name())
+    #print("identify", mapcanvas)
+    #print("layer", layer.name())
 
     layer = iface.activeLayer()
     mc = iface.mapCanvas()
@@ -151,7 +151,7 @@ def edit_by_identify(mapcanvas, layer):
 
 def onFeatureIdentified(feature):
     fid = feature.id()
-    print("feature selected : " + str(fid))
+    #print("feature selected : " + str(fid))
 
 
 def save_with_description(layer, outputfile):
@@ -371,3 +371,7 @@ def save_credentials(username, password):
     assert auth_cfg.id()
     storeSetting('geokkp/authId', auth_cfg.id())
     return auth_cfg.id()
+
+
+def add_layer(layername, type, symbol, fields, crs, parent):
+    QgsVectorLayer("Polygon?crs=epsg:" + str(crs.postgisSrid()), "Persil", "memory")

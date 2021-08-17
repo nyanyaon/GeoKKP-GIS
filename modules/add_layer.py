@@ -1,5 +1,5 @@
 import os
-import re
+import json
 
 from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtWidgets import QTreeWidgetItem
@@ -17,10 +17,14 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
+from .utils import readSetting, logMessage
+
 # using utils
 from .utils import icon
 
-data_layer = {"Layer Administrasi" : [
+data_layer = readSetting("geokkp/layers")
+
+data_layer2 = {"Layer Administrasi" : [
 		"(10100) Batas Negara",
 		"(10200) Batas Propinsi",
 		"(10300) Batas Kabupaten Kotamadya",
@@ -159,7 +163,7 @@ data_layer = {"Layer Administrasi" : [
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/addlayer.ui'))
+    os.path.dirname(__file__), '../ui/addlayerv2.ui'))
 
 
 class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
@@ -176,12 +180,19 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
         
         self._currentcrs = None
         self.setupUi(self)
-        #self.daftarLayer.setSelectionMode(2)
+
+
+        self.itemChecklist = {'Item12': {'ItemEnabled': True}}
 
         self.populateDaftarLayer(data_layer)        
+
+        
+
         self.cariDaftarLayer.valueChanged.connect(self.findLayer)
-        self.pushButtonAdd.clicked.connect(self.addSelectedLayer)
-        self.hapusSeleksi.clicked.connect(self.deleteSelection)
+        #self.pushButtonAdd.clicked.connect(self.addSelectedLayer)
+        #self.hapusSeleksi.clicked.connect(self.deleteSelection)
+        #self.pushButtonDelete.clicked.connect(self.deleteSelectedLayer)
+        self.pushButtonAddtoQGIS.clicked.connect(self.addToQGIS)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -196,12 +207,17 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
         items = []
         for key, values in data.items():
             item = QTreeWidgetItem([key])
-            for value in values:
-                ext = value.split(".")[-1].upper()
-                child = QTreeWidgetItem([value, ext])
+            for count, value in enumerate(values):
+                nama_layer =  value["Nama Layer"]
+                tipe_layer =  value["Tipe Layer"]
+                style_path =  value["Style Path"]
+                child = QTreeWidgetItem([nama_layer, tipe_layer, style_path])
+                child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
+                child.setCheckState(0, Qt.Unchecked)
                 item.addChild(child)
             items.append(item)
         self.daftarLayer.insertTopLevelItems(0, items)
+        #self.daftarLayer.itemChanged.connect(self.treeWidgetItemChanged)
 
     def findLayer(self):
         textto_find = self.cariDaftarLayer.value()
@@ -224,15 +240,41 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
                 item = groupItem.child(layer)
                 if item is not None:
                     #print(item.text(0))
-                    item.setSelected(False)
-                
+                    item.setSelected(False)                
 
     def addSelectedLayer(self):
-        items = self.daftarLayer.selectedItems()
-        print(items)
-        for i in range(len(items)):
-            self.layerTerpilih.addTopLevelItem(items[i])
+        #self.layerTerpilih.setColumnCount(1)
+        root = self.daftarLayer.invisibleRootItem()
+        for item in self.daftarLayer.selectedItems():
+            #print(item.text(0))
+            root.removeChild(item)
+            self.layerTerpilih.insertTopLevelItem(0, item)
+        
+        #items = self.daftarLayer.selectedItems()
+        #for i in range(len(items)):
+        #    print(items[i].text(0))
+        #    self.layerTerpilih.insertTopLevelItem(0, items[i])
 
+    def deleteSelectedLayer(self):
+        root = self.layerTerpilih.invisibleRootItem()
+        for item in self.layerTerpilih.selectedItems():
+            root.removeChild(item)
+            self.daftarLayer.insertTopLevelItem(0, item)
+        #self.layerTerpilih.clear()
+
+    def addToQGIS(self):
+        root = self.daftarLayer.invisibleRootItem()
+        group_count = root.childCount()
+        for group in range(group_count):
+            groupItem = root.child(group)
+            layer_count = groupItem.childCount()
+            for layer in range(layer_count):
+                item = groupItem.child(layer)
+                if item.checkState(0) != 0:
+                    print(item.text(0), item.text(1), item.text(2), item.text(3))
+                
+
+   
         
 
 

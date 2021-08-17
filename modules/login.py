@@ -34,7 +34,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         self.canvas = iface.mapCanvas()
         super(LoginDialog, self).__init__(parent)
         self.setupUi(self)
-        self.postloginaction = PostLoginDock()
+        #self.postloginaction = PostLoginDock()
 
         self.bar = QgsMessageBar()
 
@@ -103,17 +103,5 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             "Data kantor pengguna berhasil disimpan",
             level=Qgis.Success
         )
-        self.postlogin()
+        
 
-    def postlogin(self):
-        print("==========ps===========")
-
-        # if self.postloginaction is None:
-        # Create the dockwidget (after translation) and keep reference
-        #    self.postloginaction = PostLoginDock()
-
-        # connect to provide cleanup on closing of dockwidget
-        # self.postloginaction.closingPlugin.connect(self.onClosePlugin)
-
-        # show the dialog
-        # self.postloginaction.show()

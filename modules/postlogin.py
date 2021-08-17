@@ -1,5 +1,5 @@
-
 import os
+import json
 
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
@@ -9,7 +9,14 @@ from qgis.core import (
     QgsSettings
 )
 
-from .utils import storeSetting
+from .utils import storeSetting, logMessage
+from .memo import app_state
+
+
+layer_json_file = os.path.join(
+    os.path.dirname(__file__), '../config/layers.json')
+#basemap_json_file = os.path.join(
+#    os.path.dirname(__file__), '../config/basemap.json')
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/postlogin2.ui'))
@@ -28,10 +35,16 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         self.project = QgsProject
         self.settings = QgsSettings()
 
-        # read settings: Jumlah Kantah Terdaftar
-        jumlahKantor = self.settings.value("geokkp/jumlahkantor")
-        print(jumlahKantor)
-        self.populateKantah(jumlahKantor)
+
+        # read settings: Jumlah Kantah Terdaftar atas nama user yang login
+        jumlah_kantor = self.settings.value("geokkp/jumlahkantor")
+        self.populateKantah(jumlah_kantor)
+        self.simpanLayerSettings()
+
+
+    def closeEvent(self, event):
+        self.closingPlugin.emit()
+        event.accept()
 
     def populateKantah(self, jumlahKantor):
         jsonKantor = self.settings.value("geokkp/listkantor")
@@ -43,7 +56,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
                 kantah[nama] = item
             self._kantahs = kantah
 
-            print(jsonKantor)
+            #print(jsonKantor)
             self.labelSatuKantah_3.hide()
             for n in range(len(jumlahKantor)):
                 self.comboBoxKantah_3.addItems(self._kantahs.keys())
@@ -51,14 +64,21 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
             self.labelBeberapaKantah_4.hide()
             self.comboBoxKantah_3.addItems(jsonKantor[0])
 
-        self.buttonLanjut_3.clicked.connect(self.simpan)
+        self.buttonLanjut_3.clicked.connect(self.simpanKantorSettings)
 
-    def simpan(self):
+    def simpanKantorSettings(self):
         idkantorTerpilih = self.comboBoxKantah_3.currentText()
-        print("menyimpan kantor "+idkantorTerpilih)
+        #print("menyimpan kantor "+idkantorTerpilih)
         storeSetting("geokkp/kantorterpilih", idkantorTerpilih)
         self.accept()
 
-    def closeEvent(self, event):
-        self.closingPlugin.emit()
-        event.accept()
+    def simpanLayerSettings(self):
+        f = open(layer_json_file,)
+        data = json.load(f)
+        for i in data['layers']:
+            pass
+        f.close()
+        storeSetting("geokkp/layers", data['layers'])
+
+    def simpanBasemapSettings(self):
+        pass
