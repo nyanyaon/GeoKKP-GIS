@@ -36,6 +36,8 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
     def populateKantah(self, jumlahKantor):
         jsonKantor = self.settings.value("geokkp/listkantor")
         self.indexkantor = 0
+        if not jsonKantor or not jumlahKantor:
+            return
         if int(jumlahKantor) > 1:
             kantah = {}
             for item in jsonKantor:
@@ -45,7 +47,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
 
             print(jsonKantor)
             self.labelSatuKantah_3.hide()
-            for n in range(len(jumlahKantor)):
+            for n in range(jumlahKantor):
                 self.comboBoxKantah_3.addItems(self._kantahs.keys())
         else:
             self.labelBeberapaKantah_4.hide()
