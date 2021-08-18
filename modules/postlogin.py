@@ -16,8 +16,8 @@ from .memo import app_state
 
 layer_json_file = os.path.join(
     os.path.dirname(__file__), '../config/layers.json')
-#basemap_json_file = os.path.join(
-#    os.path.dirname(__file__), '../config/basemap.json')
+basemap_json_file = os.path.join(
+    os.path.dirname(__file__), '../config/basemap.json')
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/postlogin2.ui'))
@@ -34,14 +34,16 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         self.canvas = iface.mapCanvas()
         self.setupUi(self)
         self.project = QgsProject
-        self.settings = QgsSettings()
 
+        
 
         # read settings: Jumlah Kantah Terdaftar atas nama user yang login
-        jumlah_kantor = self.settings.value("geokkp/jumlahkantor")
-        self.jsonKantor = self.settings.value("geokkp/listkantor")
+        jumlah_kantor = int(readSetting("geokkp/jumlahkantor"))
+        self.jsonKantor = readSetting("geokkp/listkantor")
         self.populateKantah(jumlah_kantor)
         self.simpanLayerSettings()
+        self.simpanBasemapSettings()
+        
 
 
     def closeEvent(self, event):
@@ -49,18 +51,14 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         event.accept()
 
     def populateKantah(self, jumlahKantor):
+        self.comboBoxKantah_3.clear()
         self.indexkantor = 0
-        if not jsonKantor or not jumlahKantor:
+        if not self.jsonKantor or not jumlahKantor:
             return
-        if int(jumlahKantor) > 1:
-            kantah = {}
-            for item in self.jsonKantor:
-                nama = item["nama"]
-                kantah[nama] = item
-            self._kantahs = kantah
+        if jumlahKantor > 1:
+            for i in self.jsonKantor:
+                self.comboBoxKantah_3.addItem(i["nama"])
             self.labelSatuKantah_3.hide()
-            for n in range(jumlahKantor):
-                self.comboBoxKantah_3.addItems(self._kantahs.keys())
         else:
             self.labelBeberapaKantah_4.hide()
             self.comboBoxKantah_3.addItems(self.jsonKantor[0])
@@ -79,9 +77,9 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
     def simpanUserSettings(self):
         username = app_state.get('username')
         kantorID = readSetting("geokkp/kantorterpilih")[0]
-        response = endpoints.get_user_entity_by_username(username, kantorID)
-        print(response)
-        response_json = json.loads(response.content)
+        #response = endpoints.get_user_entity_by_username(username.value, kantorID)
+        #print(response)
+        #response_json = json.loads(response.content)
         #print(response_json[0]["nama"])
         #storeSetting("geokkp/listkantor", response_json)
 
@@ -94,4 +92,9 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         storeSetting("geokkp/layers", data['layers'])
 
     def simpanBasemapSettings(self):
-        pass
+        f = open(basemap_json_file,)
+        data = json.load(f)
+        for i in data['basemaps']:
+            pass
+        f.close()
+        storeSetting("geokkp/basemaps", data['basemaps'])

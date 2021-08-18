@@ -187,7 +187,6 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
         self.populateDaftarLayer(data_layer)        
 
         
-
         self.cariDaftarLayer.valueChanged.connect(self.findLayer)
         #self.pushButtonAdd.clicked.connect(self.addSelectedLayer)
         #self.hapusSeleksi.clicked.connect(self.deleteSelection)

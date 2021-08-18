@@ -45,7 +45,7 @@ from qgis.PyQt.QtWidgets import (
     QLabel
 )
 
-from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
+from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem, QgsSettings
 from qgis.gui import QgsMapToolIdentify
 from qgis import utils as qgis_utils
 
@@ -54,6 +54,7 @@ from .geokkp_dockwidget import GeoKKPDockWidget
 
 # Modules
 from .modules.add_layer import AddLayerDialog
+from .modules.add_basemap import AddBasemapDialog
 from .modules.gotoxy import GotoXYDialog
 from .modules.plotcoord import PlotCoordinateDialog
 from .modules.login import LoginDialog, get_saved_credentials
@@ -137,6 +138,7 @@ class GeoKKP:
         # Set widgets
         self.dockwidget = GeoKKPDockWidget()
         self.addlayeraction = AddLayerDialog()
+        self.addbasemapaction = AddBasemapDialog()
         self.gotoxyaction = GotoXYDialog()
         self.plotxyaction = PlotCoordinateDialog()
         self.import_from_file_widget = ImportGeomFromFile(self)
@@ -277,7 +279,7 @@ class GeoKKP:
             iconPath("buatlayer.png"),
             text=self.tr(u'Layer Baru'),
             callback=self.add_layers,
-            need_auth=False,
+            need_auth=False,  #delete after debugging
             parent=self.iface.mainWindow().menuBar())
         # -------------------------------------------
 
@@ -292,6 +294,7 @@ class GeoKKP:
             callback=self.gotoxy,
             add_to_toolbar=False,
             parent=self.popupAddData,
+            need_auth=False,  #delete after debugging   
             add_to_menu=False
         )
         self.popupAddData.addAction(self.actionAddData)
@@ -313,9 +316,10 @@ class GeoKKP:
         self.actionTambahBasemap = self.add_action(
             icon("basemap.png"),
             text=self.tr(u"Tambah Basemap"),
-            callback=self.import_file,
+            callback=self.add_basemap,
             add_to_toolbar=False,
             parent=self.popupAddData,
+            need_auth=False,  #delete after debugging   
             add_to_menu=False
         )
         self.popupAddData.addAction(self.actionTambahBasemap)
@@ -328,6 +332,7 @@ class GeoKKP:
             add_to_toolbar=False,
             parent=self.popupAddData,
             add_to_menu=False
+
         )
         self.popupAddData.addAction(self.actionTambahOAM)
 
@@ -782,6 +787,11 @@ class GeoKKP:
         if self.addlayeraction is None:
             self.addlayeraction = AddLayerDialog()
         self.addlayeraction.show()
+
+    def add_basemap(self):
+        if self.addbasemapaction is None:
+            self.addbasemapaction = AddBasemapDialog()
+        self.addbasemapaction.show()
 
 
     def toggle_cad_mode(self):
