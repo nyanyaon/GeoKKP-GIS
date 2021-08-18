@@ -20,10 +20,12 @@ from qgis.core import (
                     QgsGeometry,
                     QgsFeature,
                     QgsApplication,
-                    QgsAuthMethodConfig)
+                    QgsAuthMethodConfig,
+                    QgsProcessingFeatureSourceDefinition)
 from qgis.utils import iface
 from qgis.gui import QgsMapToolIdentifyFeature
 from collections import namedtuple
+from qgis import processing
 
 """
 Kumpulan Utilities untuk GeoKKP-QGIS
@@ -384,3 +386,73 @@ def resolve_path(name, basepath=None):
 def set_project_crs_by_epsg(epsg):
     crs = QgsCoordinateReferenceSystem(epsg)
     QgsProject.instance().setCrs(crs)
+
+
+SNAP_ALIGNING_NODE_INSERT_WHEN_REQUIRED = 0
+SNAP_CLOSEST_NODE_INSERT_WHEN_REQUIRED = 1
+SNAP_ALIGNING_NODE_NOT_INSERT = 2
+SNAP_CLOSEST_NODE_NOT_INSERT = 3
+SNAP_MOVE_END_POINT_ALIGN_NODE = 4 
+SNAP_MOVE_END_CLOSEST_NODE = 5
+SNAP_ENDPOINT_TO_ENDPOINT = 6
+SNAP_ANCHOR_NODES = 7
+
+def snap_geometries_to_layer(layer, ref_layer, tolerance=1, behavior=SNAP_MOVE_END_POINT_ALIGN_NODE, output='memory:snap'):
+    if isinstance(layer, str):
+        layer = get_layer_by_id(layer)
+    is_selected = bool(layer.selectedFeatureCount())
+    
+    parameters = {
+        'INPUT': QgsProcessingFeatureSourceDefinition(layer.id(), is_selected),
+        'REFERENCE_LAYER': QgsProcessingFeatureSourceDefinition(ref_layer.id(), False),
+        'TOLERANCE': tolerance,
+        'BEHAVIOR': behavior,
+        'OUTPUT': output
+    }
+    print(parameters)
+    result = processing.run('qgis:snapgeometries', parameters)
+    
+    return result['OUTPUT']
+    
+def explode_polyline(layer, output='memory:explode'):
+    if isinstance(layer, str):
+        layer = get_layer_by_id(layer)
+    is_selected = bool(layer.selectedFeatureCount())
+    
+    parameters = {
+        'INPUT': QgsProcessingFeatureSourceDefinition(layer.id(), is_selected),
+        'OUTPUT': output
+    }
+    result = processing.run('native:explodelines', parameters)
+    
+    return result['OUTPUT']
+
+def polygonize(layer, output='memory:polygonize'):
+    if isinstance(layer, str):
+        layer = get_layer_by_id(layer)
+    is_selected = bool(layer.selectedFeatureCount())
+    
+    parameters = {
+        'INPUT': QgsProcessingFeatureSourceDefinition(layer.id(), is_selected),
+        'OUTPUT': output
+    }
+    result = processing.run('qgis:polygonize', parameters)
+    
+    return result['OUTPUT']
+
+def dissolve(layer, output='memory:dissolve'):
+    if isinstance(layer, str):
+        layer = get_layer_by_id(layer)
+    is_selected = bool(layer.selectedFeatureCount())
+    
+    parameters = {
+        'INPUT': QgsProcessingFeatureSourceDefinition(layer.id(), is_selected),
+        'OUTPUT': output
+    }
+    result = processing.run('native:dissolve', parameters)
+    
+    return result['OUTPUT']
+
+
+def get_layer_by_id(layer_id):
+    return QgsProject.instance().mapLayer(layer_id)
