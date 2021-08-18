@@ -184,7 +184,7 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
 
         self.itemChecklist = {'Item12': {'ItemEnabled': True}}
 
-        self.populateDaftarLayer(data_layer)        
+        # self.populateDaftarLayer(data_layer)        
 
         
 
