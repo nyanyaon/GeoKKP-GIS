@@ -81,16 +81,16 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 storeSetting("geokkp/isLoggedIn", content['status'])
             logMessage(str(content))
             self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
-            self.profilUser(username)
+            self.profilKantor(username)
             self.loginChanged.emit()
             app_state.set('username', username)
             app_state.set('logged_in', True)
             self.accept()
 
-    def profilUser(self, username):
+    def profilKantor(self, username):
         """
         user entity
-        API backend: {}/getEntityByUserName
+        API backend: {}/getUserEntityByUserName
         """
 
         response = endpoints.get_entity_by_username(username)
@@ -104,4 +104,4 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             level=Qgis.Success
         )
         
-
+    
