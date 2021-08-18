@@ -50,6 +50,8 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
 
     def populateKantah(self, jumlahKantor):
         self.indexkantor = 0
+        if not jsonKantor or not jumlahKantor:
+            return
         if int(jumlahKantor) > 1:
             kantah = {}
             for item in self.jsonKantor:
@@ -57,7 +59,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
                 kantah[nama] = item
             self._kantahs = kantah
             self.labelSatuKantah_3.hide()
-            for n in range(len(jumlahKantor)):
+            for n in range(jumlahKantor):
                 self.comboBoxKantah_3.addItems(self._kantahs.keys())
         else:
             self.labelBeberapaKantah_4.hide()

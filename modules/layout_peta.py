@@ -10,12 +10,12 @@ from qgis.utils import iface
 from .utils import icon
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/layout.ui'))
+    os.path.dirname(__file__), '../ui/layout_pbt.ui'))
 
 qpt_path = os.path.join(os.path.dirname(__file__), '../template/pbt.qpt')
 
 
-class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
+class LayoutPetaDialog(QtWidgets.QDialog, FORM_CLASS):
     """ Dialog for Zoom to Location """
 
     closingPlugin = pyqtSignal()
@@ -23,7 +23,7 @@ class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
     def __init__(self, parent=iface.mainWindow()):
         self.iface = iface
         self.canvas = iface.mapCanvas()
-        super(LayoutDialog, self).__init__(parent)
+        super(LayoutPetaDialog, self).__init__(parent)
         self.setupUi(self)
         self.setWindowIcon(icon("icon.png"))
 

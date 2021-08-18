@@ -62,7 +62,8 @@ from .modules.adjust import AdjustDialog
 from .modules.postlogin import PostLoginDock
 from .modules.import_from_file import ImportGeomFromFile
 from .modules.coordinate_transform import CoordinateTransformDialog
-from .modules.layout import LayoutDialog
+from .modules.layout_peta import LayoutPetaDialog
+from .modules.layout_gu import LayoutGUDialog
 from .modules.utils import (
     activate_editing,
     iconPath,
@@ -143,7 +144,8 @@ class GeoKKP:
         self.postloginaction = PostLoginDock()
         self.oamaction = OAMDialog()
         self.adjustaction = AdjustDialog()
-        self.layoutaction = LayoutDialog()
+        self.layoutpetaaction = LayoutPetaDialog()
+        self.layoutguaction = LayoutGUDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
 
     # noinspection PyMethodMayBeStatic
@@ -446,8 +448,8 @@ class GeoKKP:
         #  --- Sub-menu Cetak Peta ---
         self.actionCetakPeta = self.add_action(
             icon("layout.png"),
-            text=self.tr(u"Cetak Peta"),
-            callback=self.gotoxy,
+            text=self.tr(u"Cetak Gambar Ukur"),
+            callback=self.layout_gu,
             add_to_toolbar=False,
             add_to_menu=False,
             parent=self.popupPencetakan
@@ -469,7 +471,7 @@ class GeoKKP:
         self.actionCetakPBT = self.add_action(
             icon("layout.png"),
             text=self.tr(u"Cetak Peta Bidang Tanah"),
-            callback=self.gotoxy,
+            callback=self.layout_peta,
             add_to_toolbar=False,
             add_to_menu=False,
             parent=self.popupPencetakan
@@ -763,11 +765,17 @@ class GeoKKP:
         # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.postloginaction)
         self.postloginaction.show()
 
-    def layout(self):
-        if self.layoutaction is None:
+    def layout_peta(self):
+        if self.layoutpetaaction is None:
             # Create the dockwidget (after translation) and keep reference
-            self.layoutaction = LayoutDialog()
-        self.layoutaction.show()
+            self.layoutpetaaction = LayoutPetaDialog()
+        self.layoutpetaaction.show()
+
+    def layout_gu(self):
+        if self.layoutguaction is None:
+            # Create the dockwidget (after translation) and keep reference
+            self.layoutguaction = LayoutGUDialog()
+        self.layoutguaction.show()
 
 
     def add_layers(self):
