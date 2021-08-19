@@ -328,7 +328,7 @@ class GeoKKP:
         self.actionTambahOAM = self.add_action(
             icon("openaerialmap.png"),
             text=self.tr(u"Tambah OpenAerialMap"),
-            callback=self.gotoxy,
+            callback=self.loadoam,
             add_to_toolbar=False,
             parent=self.popupAddData,
             add_to_menu=False
@@ -356,7 +356,7 @@ class GeoKKP:
         self.actionManualDraw = self.add_action(
             icon("manualedit.png"),
             text=self.tr(u"Gambar Manual"),
-            callback=self.gotoxy,
+            callback=self.edit_parcel_attribute,
             add_to_toolbar=False,
             add_to_menu=False,
             parent=self.popupDraw
@@ -367,7 +367,7 @@ class GeoKKP:
         self.actionPlotCoordinate = self.add_action(
             icon("plotcoordinate.png"),
             text=self.tr(u"Plot Koordinat"),
-            callback=self.gotoxy,
+            callback=self.plotxy,
             add_to_toolbar=False,
             add_to_menu=False,
             parent=self.popupDraw
@@ -503,7 +503,7 @@ class GeoKKP:
         self.actionTransformasiKoordinat = self.add_action(
             icon("conversion.png"),
             text=self.tr(u"Transformasi Koordinat"),
-            callback=self.gotoxy,
+            callback=self.coordinate_transform,
             add_to_toolbar=False,
             add_to_menu=False,
             need_auth=False,
@@ -591,7 +591,7 @@ class GeoKKP:
 
         # ========== Menu: CADMode ==========
         self.add_action(
-            iconPath("autoadjust.png"),
+            iconPath("cad.png"),
             text=self.tr(u'CAD Mode'),
             callback=self.toggle_cad_mode,
             parent=self.iface.mainWindow(),
