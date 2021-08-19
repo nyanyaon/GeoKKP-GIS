@@ -60,7 +60,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
                 kantah[nama] = item
             self._kantahs = kantah
             self.labelSatuKantah_3.hide()
-            for n in range(jumlahKantor):
+            for n in range(int(jumlahKantor)):
                 self.comboBoxKantah_3.addItems(self._kantahs.keys())
         else:
             self.labelBeberapaKantah_4.hide()
