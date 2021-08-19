@@ -375,4 +375,13 @@ def save_credentials(username, password):
 
 def add_layer(layername, type, symbol, fields, crs, parent):
     QgsVectorLayer("Polygon?crs=epsg:" + str(crs.postgisSrid()), "Persil", "memory")
-    self.project.instance().addMapLayers(layers)
+    #self.project.instance().addMapLayers(layers)
+
+def resolve_path(name, basepath=None):
+    if not basepath:
+      basepath = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(basepath, name)
+
+def set_project_crs_by_epsg(epsg):
+    crs = QgsCoordinateReferenceSystem(epsg)
+    QgsProject.instance().setCrs(crs)
