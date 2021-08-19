@@ -65,6 +65,7 @@ from .modules.import_from_file import ImportGeomFromFile
 from .modules.coordinate_transform import CoordinateTransformDialog
 from .modules.layout_peta import LayoutPetaDialog
 from .modules.layout_gu import LayoutGUDialog
+from .modules.trilateration import TrilaterationDialog
 from .modules.utils import (
     activate_editing,
     iconPath,
@@ -148,6 +149,7 @@ class GeoKKP:
         self.adjustaction = AdjustDialog()
         self.layoutpetaaction = LayoutPetaDialog()
         self.layoutguaction = LayoutGUDialog()
+        self.trilaterationaction = TrilaterationDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
 
     # noinspection PyMethodMayBeStatic
@@ -378,7 +380,7 @@ class GeoKKP:
         self.actionTrilateration = self.add_action(
             icon("trilateration.png"),
             text=self.tr(u"Gambar dengan Trilaterasi"),
-            callback=self.gotoxy,
+            callback=self.trilateration,
             add_to_toolbar=False,
             add_to_menu=False,
             parent=self.popupDraw
@@ -782,6 +784,11 @@ class GeoKKP:
             self.layoutguaction = LayoutGUDialog()
         self.layoutguaction.show()
 
+    def trilateration(self):
+        if self.trilaterationaction is None:
+            # Create the dockwidget (after translation) and keep reference
+            self.trilaterationaction = TrilaterationDialog()
+        self.trilaterationaction.show()
 
     def add_layers(self):
         if self.addlayeraction is None:
