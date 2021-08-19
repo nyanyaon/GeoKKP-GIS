@@ -375,3 +375,4 @@ def save_credentials(username, password):
 
 def add_layer(layername, type, symbol, fields, crs, parent):
     QgsVectorLayer("Polygon?crs=epsg:" + str(crs.postgisSrid()), "Persil", "memory")
+    self.project.instance().addMapLayers(layers)

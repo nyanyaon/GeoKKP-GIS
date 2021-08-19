@@ -262,6 +262,7 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
         #self.layerTerpilih.clear()
 
     def addToQGIS(self):
+        
         root = self.daftarLayer.invisibleRootItem()
         group_count = root.childCount()
         for group in range(group_count):
