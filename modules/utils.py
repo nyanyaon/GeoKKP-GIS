@@ -373,9 +373,25 @@ def save_credentials(username, password):
     return auth_cfg.id()
 
 
-def add_layer(layername, type, symbol, fields, crs, parent):
-    QgsVectorLayer("Polygon?crs=epsg:" + str(crs.postgisSrid()), "Persil", "memory")
-    #self.project.instance().addMapLayers(layers)
+def add_layer(layername, type, symbol=None, fields=None, crs=None, parent=None):    
+    crs = iface.mapCanvas().mapSettings().destinationCrs()
+    print("CRSCRSCRSCRSCRSC",crs)
+
+    layer = QgsVectorLayer(f"{type}?crs=epsg:" + str(crs.postgisSrid()), layername, "memory")
+    layer_dataprovider = layer.dataProvider()
+    if not fields:
+        fields = [
+            QgsField("ID", QVariant.String),
+            QgsField("Keterangan", QVariant.String),
+        ]
+
+    if symbol:
+        symbolurl = os.path.join(os.path.dirname(__file__), '../styles/'+symbol)
+        layer.loadNamedStyle(symbolurl)
+        
+    layer_dataprovider.addAttributes(fields)
+    layer.updateFields()
+    QgsProject.instance().addMapLayer(layer)
 
 def resolve_path(name, basepath=None):
     if not basepath:

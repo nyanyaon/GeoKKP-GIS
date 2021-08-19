@@ -17,7 +17,7 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-from .utils import readSetting, logMessage
+from .utils import readSetting, logMessage, add_layer
 
 # using utils
 from .utils import icon
@@ -181,10 +181,7 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
         self._currentcrs = None
         self.setupUi(self)
 
-
-        self.itemChecklist = {'Item12': {'ItemEnabled': True}}
-
-        # self.populateDaftarLayer(data_layer)        
+        self.populateDaftarLayer(data_layer)        
 
         
         self.cariDaftarLayer.valueChanged.connect(self.findLayer)
@@ -262,7 +259,6 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
         #self.layerTerpilih.clear()
 
     def addToQGIS(self):
-        
         root = self.daftarLayer.invisibleRootItem()
         group_count = root.childCount()
         for group in range(group_count):
@@ -271,7 +267,12 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
             for layer in range(layer_count):
                 item = groupItem.child(layer)
                 if item.checkState(0) != 0:
+                    layername = item.text(0)
+                    layertype = item.text(1)
+                    layersymbology = item.text(2)
                     print(item.text(0), item.text(1), item.text(2), item.text(3))
+                    add_layer(layername, layertype, layersymbology)
+                    
                 
 
    
