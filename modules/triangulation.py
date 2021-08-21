@@ -2,11 +2,11 @@ import os
 import math
 
 from qgis.PyQt import QtWidgets, uic, QtXml
-from qgis.core import QgsProject, QgsPointXY, QgsFeature, QgsGeometry, QgsVectorLayer
+from qgis.core import QgsProject, QgsPointXY, QgsFeature, QgsGeometry, QgsVectorLayer, Qgis
 
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
-from qgis.gui import QgsVertexMarker
+from qgis.gui import QgsVertexMarker, QgsMessageBar
 
 from .maptools import MapTool
 # using utils
@@ -28,10 +28,12 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
         self.setWindowIcon(icon("icon.png"))
 
-        self.buttonBox.accepted.connect(self.accepted)
-        self.buttonBox.rejected.connect(self.rejected)
-
         self.list_vm = []
+
+        self.dialog_bar = QgsMessageBar()
+        self.dialog_bar.setSizePolicy( QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed )
+        self.layout().insertWidget(0, self.dialog_bar)#, 0, 1, 1)
+
 
     def on_btn_titik_1t_pressed(self):
         try:
@@ -73,12 +75,12 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.closingPlugin.emit()
         event.accept()  
 
-    def rejected(self):
+    def on_btn_cancel_pressed(self):
         print('cancel triggered')
         self.clear()
-        self.reject()
+        self.close()
             
-    def accepted(self):
+    def on_btn_ok_pressed(self):
         # create a memory vector
         project_crs = self.iface.mapCanvas().mapSettings().destinationCrs()
         project_epsg = project_crs.authid()
@@ -87,21 +89,24 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         p1 = self.point_1
         p2 = self.point_2
 
-        az1 = float(self.azimuth_1.text())
-        az2 = float(self.azimuth_2.text())
+        az1 = self.detect_az_format(self.azimuth_1.text())
+        az2 = self.detect_az_format(self.azimuth_2.text())
+        
+        if az1 and az2:
+            pt = self.triangulate(p1, p2, az1, az2)
 
-        pt = self.triangulate(p1, p2, az1, az2)
+            feat = QgsFeature()
+            feat.setGeometry(QgsGeometry.fromPointXY(pt))
 
-        feat = QgsFeature()
-        feat.setGeometry(QgsGeometry.fromPointXY(pt))
+            vl.startEditing()
+            vl.addFeatures([feat])
+            vl.commitChanges()  
 
-        vl.startEditing()
-        vl.addFeatures([feat])
-        vl.commitChanges()  
-
-        QgsProject.instance().addMapLayer(vl)
-        self.clear() 
-
+            QgsProject.instance().addMapLayer(vl)
+            self.clear()
+            self.close() 
+        else:
+            pass
         
     def triangulate(self, p1, p2, az1, az2):
         x1 = p1.x()
@@ -129,8 +134,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
 
         print('p3', x3,y3)
 
-        return QgsPointXY(x3, y3)
-        
+        return QgsPointXY(x3, y3)    
 
     def create_vertex_marker(self, type='BOX'):
         vm = QgsVertexMarker(self.canvas)
@@ -161,3 +165,18 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.iface.mapCanvas().scene().removeItem(vm)
             except:
                 pass
+    
+    def detect_az_format(self, az_str):
+        az_split = az_str.split(' ')
+        if len(az_split) == 3:
+            d = float(az_split[0])
+            m = float(az_split[1])
+            s = float(az_split[2])
+
+            return d + (m/60) + (s/3600)
+        elif len(az_split) == 1:
+            return float(az_str)
+        else:
+            message = "Format tidak dikenali. Gunakan spasi sebagai pemisah."
+            self.dialog_bar.pushMessage("Warning", message, level=Qgis.Warning)
+            return
