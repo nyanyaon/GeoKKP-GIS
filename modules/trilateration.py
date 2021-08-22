@@ -1,7 +1,7 @@
 import os
 import math
 
-from qgis.PyQt import QtWidgets, uic, QtXml
+from qgis.PyQt import QtWidgets, uic, QtXml, QtGui, QtCore
 from qgis.core import (
     QgsProject, QgsPrintLayout, QgsReadWriteContext, QgsExpressionContextUtils, 
     QgsPointXY, QgsFeature, QgsGeometry, QgsVectorLayer, Qgis
@@ -9,7 +9,7 @@ from qgis.core import (
 
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
-from qgis.gui import QgsVertexMarker, QgsMessageBar
+from qgis.gui import QgsVertexMarker, QgsMessageBar, QgsRubberBand
 
 from .maptools import MapTool
 # using utils
@@ -46,6 +46,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.input_jarak_3.textChanged.connect(self.update_jarak_3)
 
         self.list_vm = []
+        self.list_rb = []
 
         self.two_point_flag = False
         self.three_point_flag = False
@@ -53,11 +54,15 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
     def on_trilaterasi_titik_1_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_1)
+            self.iface.mapCanvas().scene().removeItem(self.rb_1)
         except:
             pass
         self.vm_1 = self.create_vertex_marker()
         self.list_vm.append(self.vm_1)
         self.point_tool_1 = MapTool(self.canvas, self.vm_1)
+        self.rb_1 = self.create_rubberband()
+        self.list_rb.append(self.rb_1)
+
         self.point_tool_1.map_clicked.connect(self.update_titik_1)
 
         self.point_tool_1.isEmittingPoint = True
@@ -80,6 +85,10 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
             self.jarak_1 = float(self.input_jarak_1.text())
             self.dialog_bar.clearWidgets()
             self.set_enabled(next_widget)
+            pt = self.point_1
+            buff_geom = QgsGeometry().fromPointXY(pt).buffer(self.jarak_1, 20)
+            self.rb_1.setToGeometry(buff_geom, None)
+
         except ValueError:
             self.dialog_bar.clearWidgets()
             message = """Terdapat kesalahan format jarak."""
@@ -91,10 +100,14 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
     def on_trilaterasi_titik_2_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_2)
+            self.iface.mapCanvas().scene().removeItem(self.rb_2)
         except:
             pass
         self.vm_2 = self.create_vertex_marker()
         self.list_vm.append(self.vm_2)
+        self.rb_2 = self.create_rubberband()
+        self.list_rb.append(self.rb_2)
+
         self.point_tool_2 = MapTool(self.canvas, self.vm_2)
         self.point_tool_2.map_clicked.connect(self.update_titik_2)
 
@@ -119,7 +132,13 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             self.jarak_2 = float(self.input_jarak_2.text())
             self.set_enabled(next_widget)
+            
+            pt = self.point_2
+            buff_geom = QgsGeometry().fromPointXY(pt).buffer(self.jarak_2, 20)
+            self.rb_2.setToGeometry(buff_geom, None)
+
             self.two_point_flag = True
+            
             self.dialog_bar.clearWidgets()
             message = """Klik OK untuk menggunakan mode dua titik atau tambahkan 
                         titik ketiga"""
@@ -134,10 +153,14 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
     def on_trilaterasi_titik_3_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_3)
+            self.iface.mapCanvas().scene().removeItem(self.rb_3)
         except:
             pass
         self.vm_3 = self.create_vertex_marker()
         self.list_vm.append(self.vm_3)
+        self.rb_3 = self.create_rubberband()
+        self.list_rb.append(self.rb_3)
+
         self.point_tool_3 = MapTool(self.canvas, self.vm_3)
         self.point_tool_3.map_clicked.connect(self.update_titik_3)
 
@@ -155,6 +178,11 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             self.jarak_3 = float(self.input_jarak_3.text())
             self.dialog_bar.clearWidgets()
+
+            pt = self.point_3
+            buff_geom = QgsGeometry().fromPointXY(pt).buffer(self.jarak_3, 20)
+            self.rb_3.setToGeometry(buff_geom, None)
+
             self.three_point_flag = True
         except ValueError:
             self.dialog_bar.clearWidgets()
@@ -331,6 +359,14 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         vm.setIconSize(7)
         return vm
     
+    def create_rubberband(self):
+        rb = QgsRubberBand(self.canvas, False)
+        rb.setStrokeColor(QtGui.QColor(128, 128, 128, 180)) # grey
+        rb.setFillColor(QtGui.QColor(0, 0, 0, 0))
+        rb.setWidth(1)
+        rb.setLineStyle(QtCore.Qt.DashLine)
+        return rb
+
     def clear(self):       
         self.trilaterasi_koord_1.clear()
         self.trilaterasi_koord_2.clear()
@@ -355,5 +391,10 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         for vm in self.list_vm:
             try:
                 self.iface.mapCanvas().scene().removeItem(vm)
+            except:
+                pass
+        for rb in self.list_rb:
+            try:
+                self.iface.mapCanvas().scene().removeItem(rb)
             except:
                 pass
