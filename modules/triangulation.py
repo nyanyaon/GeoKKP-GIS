@@ -2,7 +2,9 @@ import os
 import math
 
 from qgis.PyQt import QtWidgets, uic, QtXml
-from qgis.core import QgsProject, QgsPointXY, QgsFeature, QgsGeometry, QgsVectorLayer, Qgis
+from qgis.core import (
+    QgsProject, QgsPointXY, QgsFeature, QgsGeometry, QgsVectorLayer, Qgis
+)
 
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
