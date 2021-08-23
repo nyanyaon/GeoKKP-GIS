@@ -154,6 +154,9 @@
      </item>
      <item>
       <widget class="QPushButton" name="clear_titik_3">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="sizePolicy">
         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
          <horstretch>0</horstretch>

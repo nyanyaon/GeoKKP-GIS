@@ -17,7 +17,17 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
-      <widget class="QLineEdit" name="coord_point_1t">
+      <widget class="QPushButton" name="triangulasi_titik_1">
+       <property name="text">
+        <string>Titik 1</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="triangulasi_koord_1">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -27,7 +37,10 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="azimuth_1">
+      <widget class="QLineEdit" name="input_azimuth_1">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="toolTip">
         <string/>
        </property>
@@ -36,19 +49,25 @@
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QPushButton" name="btn_titik_1t">
-       <property name="text">
-        <string>Titik 1</string>
-       </property>
-      </widget>
-     </item>
     </layout>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
-      <widget class="QLineEdit" name="coord_point_2t">
+      <widget class="QPushButton" name="triangulasi_titik_2">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Titik 2</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="triangulasi_koord_2">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="readOnly">
         <bool>true</bool>
        </property>
@@ -58,19 +77,15 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="azimuth_2">
+      <widget class="QLineEdit" name="input_azimuth_2">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="toolTip">
         <string/>
        </property>
        <property name="placeholderText">
         <string>Azimuth titik 2</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="btn_titik_2t">
-       <property name="text">
-        <string>Titik 2</string>
        </property>
       </widget>
      </item>
@@ -92,14 +107,17 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="btn_ok">
+      <widget class="QPushButton" name="triangulasi_ok">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>OK</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="btn_cancel">
+      <widget class="QPushButton" name="triangulasi_cancel">
        <property name="text">
         <string>Cancel</string>
        </property>
