@@ -29,9 +29,18 @@ from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSy
 from qgis.gui import QgsMapToolIdentify
 from qgis import utils as qgis_utils
 
+
+
+
+
 # Import the code for the DockWidget
 import os
 from .geokkp_dockwidget import GeoKKPDockWidget
+
+
+
+
+
 
 # Modules
 from .modules.gotoxy import GotoXYDialog
