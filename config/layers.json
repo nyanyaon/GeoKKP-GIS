@@ -72,14 +72,14 @@
       {
          "Kode": 20200,
          "Nama Layer": "(20200) Batas Sub Persil",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "simplepersil.qml",
 		 "Attributes": ""
       },
       {
          "Kode": 20300,
          "Nama Layer": "(20300) Garis Garis Gambar Ukur",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": [
 			{
@@ -93,42 +93,42 @@
       {
          "Kode": 20400,
          "Nama Layer": "(20400) Dimensi Pengukuran",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": ""
       },
       {
          "Kode": 20500,
          "Nama Layer": "(20500) Pagar Tembok",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": ""
       },
       {
          "Kode": 20600,
          "Nama Layer": "(20600) Pagar Besi",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": ""
       },
       {
          "Kode": 20700,
          "Nama Layer": "(20700) Pagar Kayu",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": ""
       },
       {
          "Kode": 20800,
          "Nama Layer": "(20800) Pagar Bambu",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": ""
       },
       {
          "Kode": 20900,
          "Nama Layer": "(20900) Pagar Hidup",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": ""
       }
@@ -137,28 +137,28 @@
       {
          "Kode": 30100,
          "Nama Layer": "(30100) Batas Sungai",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": ""
       },
       {
          "Kode": 30200,
          "Nama Layer": "(30200) Garis Tengah Sungai",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": ""
       },
       {
          "Kode": 30300,
          "Nama Layer": "(30300) Batas Saluran Selokan",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": ""
       },
       {
          "Kode": 30400,
          "Nama Layer": "(30400) Garis Tengah Saluran Selokan",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": ""
       },
@@ -186,7 +186,7 @@
       {
          "Kode": 30800,
          "Nama Layer": "(30800) Batas Pantai",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": ""
       },
@@ -209,105 +209,105 @@
       {
          "Kode": 40100,
          "Nama Layer": "(40100) Batas Jalan Diperkeras",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       },
       {
          "Kode": 40200,
          "Nama Layer": "(40200) Garis Tengah Jalan Diperkeras",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       },
       {
          "Kode": 40300,
          "Nama Layer": "(40300) Batas Trotoar",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       },
       {
          "Kode": 40400,
          "Nama Layer": "(40400) Batas Jalan Tanah",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       },
       {
          "Kode": 40500,
          "Nama Layer": "(40500) Garis Tengah Jalan Tanah",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       },
       {
          "Kode": 40600,
          "Nama Layer": "(40600) Batas Jalan Tanah Di Pemukiman",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       },
       {
          "Kode": 40700,
          "Nama Layer": "(40700) Garis Tengah Jalan Tanah Di Pemukiman",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       },
       {
          "Kode": 40800,
          "Nama Layer": "(40800) Batas Jalan Setapak Di Sawah",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       },
       {
          "Kode": 40900,
          "Nama Layer": "(40900) Garis Tengah Jalan Setapak Di Sawah",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       },
       {
          "Kode": 41000,
          "Nama Layer": "(41000) Batas Rel Kereta Api",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       },
       {
          "Kode": 41100,
          "Nama Layer": "(41100) Garis Tengah Rel Kereta Api",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       },
       {
          "Kode": 41200,
          "Nama Layer": "(41200) Batas Rel Lori",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       },
       {
          "Kode": 41300,
          "Nama Layer": "(41300) Garis Tengah Rel Lori",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       },
       {
          "Kode": 41400,
          "Nama Layer": "(41400) Batas Jembatan",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       },
       {
          "Kode": 41500,
          "Nama Layer": "(41500) Garis Tengah Jembatan",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "transportasi.qml",
          "Attributes": ""
       }
@@ -425,7 +425,7 @@
       {
          "Kode": 70600,
          "Nama Layer": "(70600) Pipa",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": ""
       },
@@ -802,14 +802,14 @@
       {
          "Kode": 100100,
          "Nama Layer": "(100100) Garis Kontur",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": ""
       },
       {
          "Kode": 100200,
          "Nama Layer": "(100200) Garis Kontur Indeks",
-         "Tipe Layer": "Polyline",
+         "Tipe Layer": "LineString",
          "Style Path": "",
 		 "Attributes": ""
       }
