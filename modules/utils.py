@@ -3,9 +3,9 @@ import os
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
 
-from PyQt5.QtCore import QVariant
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QPushButton
+from qgis.PyQt.QtCore import QVariant
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QPushButton
 from qgis.core import (
                     QgsMessageLog,
                     QgsSettings,
@@ -106,9 +106,7 @@ def is_layer_exist(project, layername):
     Boolean check if layer exist
     """
     for layer in project.instance().mapLayers().values():
-        #print(layer.name(), " - ", layername)
         if (layer.name == layername):
-            #print("layer exist")
             return True
         else:
             return False
@@ -132,17 +130,12 @@ def properify(self, text):
     """
     text = re.sub(r"[^\w\s]", '', text)
     text = re.sub(r"\s+", '_', text)
-
     return text
 
 
 def edit_by_identify(mapcanvas, layer):
-    #print("identify", mapcanvas)
-    #print("layer", layer.name())
-
     layer = iface.activeLayer()
     mc = iface.mapCanvas()
-
     mapTool = QgsMapToolIdentifyFeature(mc)
     mapTool.setLayer(layer)
     mc.setMapTool(mapTool)
@@ -151,7 +144,7 @@ def edit_by_identify(mapcanvas, layer):
 
 def onFeatureIdentified(feature):
     fid = feature.id()
-    #print("feature selected : " + str(fid))
+    return fid
 
 
 def save_with_description(layer, outputfile):
@@ -373,13 +366,32 @@ def save_credentials(username, password):
     return auth_cfg.id()
 
 
-def add_layer(layername, type, symbol, fields, crs, parent):
-    QgsVectorLayer("Polygon?crs=epsg:" + str(crs.postgisSrid()), "Persil", "memory")
+def add_layer(layername, type, symbol=None, fields=None, crs=None, parent=None):
+    crs = iface.mapCanvas().mapSettings().destinationCrs()
+    print("CRSCRSCRSCRSCRSC", crs)
+
+    layer = QgsVectorLayer(f"{type}?crs=epsg:" + str(crs.postgisSrid()), layername, "memory")
+    layer_dataprovider = layer.dataProvider()
+    if not fields:
+        fields = [
+            QgsField("ID", QVariant.String),
+            QgsField("Keterangan", QVariant.String),
+        ]
+
+    if symbol:
+        symbolurl = os.path.join(os.path.dirname(__file__), '../styles/'+symbol)
+        layer.loadNamedStyle(symbolurl)
+
+    layer_dataprovider.addAttributes(fields)
+    layer.updateFields()
+    QgsProject.instance().addMapLayer(layer)
+
 
 def resolve_path(name, basepath=None):
     if not basepath:
-      basepath = os.path.dirname(os.path.realpath(__file__))
+        basepath = os.path.dirname(os.path.realpath(__file__))
     return os.path.join(basepath, name)
+
 
 def set_project_crs_by_epsg(epsg):
     crs = QgsCoordinateReferenceSystem(epsg)

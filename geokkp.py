@@ -45,7 +45,7 @@ from qgis.PyQt.QtWidgets import (
     QLabel
 )
 
-from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem, QgsSettings
+from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
 from qgis.gui import QgsMapToolIdentify
 from qgis import utils as qgis_utils
 
@@ -283,7 +283,6 @@ class GeoKKP:
             iconPath("buatlayer.png"),
             text=self.tr(u'Layer Baru'),
             callback=self.add_layers,
-            need_auth=False,  #delete after debugging
             parent=self.iface.mainWindow().menuBar())
         # -------------------------------------------
 
@@ -298,7 +297,6 @@ class GeoKKP:
             callback=self.gotoxy,
             add_to_toolbar=False,
             parent=self.popupAddData,
-            need_auth=False,  #delete after debugging   
             add_to_menu=False
         )
         self.popupAddData.addAction(self.actionAddData)
@@ -323,7 +321,6 @@ class GeoKKP:
             callback=self.add_basemap,
             add_to_toolbar=False,
             parent=self.popupAddData,
-            need_auth=False,  #delete after debugging   
             add_to_menu=False
         )
         self.popupAddData.addAction(self.actionTambahBasemap)
@@ -332,7 +329,7 @@ class GeoKKP:
         self.actionTambahOAM = self.add_action(
             icon("openaerialmap.png"),
             text=self.tr(u"Tambah OpenAerialMap"),
-            callback=self.gotoxy,
+            callback=self.loadoam,
             add_to_toolbar=False,
             parent=self.popupAddData,
             add_to_menu=False
@@ -360,7 +357,7 @@ class GeoKKP:
         self.actionManualDraw = self.add_action(
             icon("manualedit.png"),
             text=self.tr(u"Gambar Manual"),
-            callback=self.gotoxy,
+            callback=self.edit_parcel_attribute,
             add_to_toolbar=False,
             add_to_menu=False,
             parent=self.popupDraw
@@ -371,7 +368,7 @@ class GeoKKP:
         self.actionPlotCoordinate = self.add_action(
             icon("plotcoordinate.png"),
             text=self.tr(u"Plot Koordinat"),
-            callback=self.gotoxy,
+            callback=self.plotxy,
             add_to_toolbar=False,
             add_to_menu=False,
             parent=self.popupDraw
@@ -507,7 +504,7 @@ class GeoKKP:
         self.actionTransformasiKoordinat = self.add_action(
             icon("conversion.png"),
             text=self.tr(u"Transformasi Koordinat"),
-            callback=self.gotoxy,
+            callback=self.coordinate_transform,
             add_to_toolbar=False,
             add_to_menu=False,
             need_auth=False,
@@ -553,7 +550,6 @@ class GeoKKP:
         # ========== Label Toolbar GeoKKP ==========
         self.judul_aplikasi()
 
-
         # ======== Dropdown Menu: Workspace GeoKKP ========
         # Deklarasi menu Workspace
         self.popupWorkspace = QMenu("&Workspace", self.iface.mainWindow())
@@ -580,7 +576,6 @@ class GeoKKP:
         )
         self.popupWorkspace.addAction(self.actionWorkspacePartisipatif)
 
-
         # Pengaturan Dropdown menu Workspace
         self.WorkspaceButton = QToolButton()
         self.WorkspaceButton.setMenu(self.popupWorkspace)
@@ -595,7 +590,7 @@ class GeoKKP:
 
         # ========== Menu: CADMode ==========
         self.add_action(
-            iconPath("autoadjust.png"),
+            iconPath("cad.png"),
             text=self.tr(u'CAD Mode'),
             callback=self.toggle_cad_mode,
             parent=self.iface.mainWindow(),
@@ -701,7 +696,7 @@ class GeoKKP:
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
             self.dockwidget.show()
 
-            #print("run the plugin")
+            # print("run the plugin")
 
     def login_changed(self, state):
         # self._is_logged_in = readSetting("geokkp/isLoggedIn")
@@ -808,7 +803,6 @@ class GeoKKP:
             self.addbasemapaction = AddBasemapDialog()
         self.addbasemapaction.show()
 
-
     def toggle_cad_mode(self):
         if 'qad' in qgis_utils.active_plugins:
             for panel in self.iface.mainWindow().findChildren(QDockWidget):
@@ -837,10 +831,7 @@ class GeoKKP:
         if self.layer.selectedFeatures():
             fitur = self.layer.selectedFeatures()
             self.iface.openFeatureForm(self.layer, fitur[0])
-        #print("show")
-
         # self.mapToolIdentify.activate()
-
         # edit_by_identify(self.canvas, layer)
         # layer = self.iface.activeLayer()
 
@@ -848,16 +839,16 @@ class GeoKKP:
         self.layer = self.iface.activeLayer()
         # print(is_layer_exist(self.project, 'Persil'))
 
-        if self.actionAttribute.isChecked():
-            #print("it is checked")
-            self.layer.startEditing()
-            self.iface.actionSelect().trigger()
-            self.layer.selectionChanged.connect(self.show_atribute)
-        else:
-            #print("unchecked")
-            self.layer.selectionChanged.disconnect(self.show_atribute)
-            self.iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger()
-            #print("stop editing")
+        # if self.actionAttribute.isChecked():
+        #    print("it is checked")
+        # self.layer.startEditing()
+        # self.iface.actionSelect().trigger()
+        # self.layer.selectionChanged.connect(self.show_atribute)
+        # else:
+        #    print("unchecked")
+        #    self.layer.selectionChanged.disconnect(self.show_atribute)
+        self.iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger()
+        #   print("stop editing")
 
         # self.layer.startEditing()
         # f = self.layer.selectedFeatures()[0]
@@ -868,25 +859,25 @@ class GeoKKP:
 
     def start_editing(self):
         if self.actionDrawPoly.isChecked():
-            #print("it is checked")
+            # print("it is checked")
             layer = self.project.instance().mapLayersByName('Persil')[0]
             self.project.instance().setAvoidIntersectionsLayers([layer])
             activate_editing(layer)
         else:
-            #print("unchecked")
+            # print("unchecked")
             self.stop_editing()
 
     def stop_editing(self):
         self.iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger()
-        #print("stop editing")
+        # print("stop editing")
 
     def sudut_jarak(self):
-        #print("sudut jarak")
+        # print("sudut jarak")
         for x in self.iface.advancedDigitizeToolBar().actions():
-            #print(x.text())
+            # print(x.text())
             if x.text() == 'Enable advanced digitizing tools':
                 x.trigger()
-                #print(x)
+                # print(x)
 
     def auto_adjust(self):
         if self.adjustaction is None:
@@ -925,16 +916,15 @@ class GeoKKP:
 
     def delIfLayerExist(self, layername):
         for layer in QgsProject.instance().mapLayers().values():
-            #print(layer.name(), " - ", layername)
-            #print(layer.name() == layername)
+            # print(layer.name(), " - ", layername)
+            # print(layer.name() == layername)
             if (layer.name != layername):
-                #print("layer exist. deleting..", layername)
+                # print("layer exist. deleting..", layername)
                 to_be_deleted = QgsProject.instance().mapLayersByName(layer.name())[0]
                 self.root.removeLayer(to_be_deleted)
                 # self.project.removeMapLayer(to_be_deleted.id())
             else:
                 pass
-                #print('existing not deleting,', layer.name())
 
     def addWMSParcel(self):
         wms_url = "url=https://103.123.13.78/geoserver/umum/wms&format=image/png&layers=PersilHak&styles=&crs=EPSG:4326"

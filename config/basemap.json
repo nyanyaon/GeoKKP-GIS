@@ -49,7 +49,7 @@
 			"nama": "OpenStreetMap Default",
 			"url": "https://mt1.google.com/vt/lyrs=y&x=%7Bx%7D&y=%7By%7D&z=%7Bz%7D",
 			"type": "TMS",
-			"icon": "google.png",
+			"icon": "osm.png",
 			"zmin": 1,
 			"zmax": 19,
 			"keterangan": ""

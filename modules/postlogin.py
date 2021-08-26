@@ -55,16 +55,10 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         self.indexkantor = 0
         if not self.jsonKantor or not jumlahKantor:
             return
-        jumlahKantor = int(jumlahKantor)
         if jumlahKantor > 1:
-            kantah = {}
-            for item in self.jsonKantor:
-                nama = item["nama"]
-                kantah[nama] = item
-            self._kantahs = kantah
+            for i in self.jsonKantor:
+                self.comboBoxKantah_3.addItem(i["nama"])
             self.labelSatuKantah_3.hide()
-            for n in range(int(jumlahKantor)):
-                self.comboBoxKantah_3.addItems(self._kantahs.keys())
         else:
             self.labelBeberapaKantah_4.hide()
             self.comboBoxKantah_3.addItems(self.jsonKantor[0])
@@ -123,21 +117,23 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         response = endpoints.get_desa_by_kantor(kantor_id, str(tipe_kantor_id), kecamatan_id)
         response_json = json.loads(response.content)
         desa = None
-        print(len(response_json['DESA']))
+        #print("========================",len(response_json['DESA']))
+        print("========================",response_json['DESA'][0])
         if response_json and len(response_json['DESA']):
             desa = response_json['DESA'][0]
             storeSetting("geokkp/desaterpilih", desa)
         return desa
 
     def simpanSistemKoordinat(self, tm3_zone):
+        print("ZONA TM 3", tm3_zone)
         epsg = get_epsg_from_tm3_zone(tm3_zone)
         set_project_crs_by_epsg(epsg)
 
     def simpanUserSettings(self):
         username = app_state.get('username')
         kantorID = readSetting("geokkp/kantorterpilih")[0]
-        response = endpoints.get_user_entity_by_username(username.value, kantorID)
-        response_json = json.loads(response.content)
+        #response = endpoints.get_user_entity_by_username(username.value, kantorID)
+        #response_json = json.loads(response.content)
         #print(response_json[0]["nama"])
         #storeSetting("geokkp/listkantor", response_json)
 
