@@ -1,8 +1,18 @@
 import os
 import math
 
-from qgis.PyQt import QtWidgets, uic, QtXml
-from qgis.core import QgsProject, QgsPrintLayout, QgsReadWriteContext, QgsExpressionContextUtils, QgsPointXY, QgsFeature, QgsGeometry, QgsVectorLayer
+from qgis.PyQt import QtWidgets, uic
+from qgis.core import (
+    QgsProject,
+    # QgsPrintLayout,
+    # QgsReadWriteContext,
+    # QgsExpressionContextUtils,
+    QgsPointXY,
+    QgsFeature,
+    QgsGeometry,
+    QgsVectorLayer
+)
+
 
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
@@ -15,6 +25,7 @@ from .utils import icon
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/trilateration.ui'))
+
 
 class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
     """ Dialog for Peta Bidang """
@@ -36,7 +47,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
     def on_btn_titik_1_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_1)
-        except:
+        except: # noqa
             pass
         self.vm_1 = self.create_vertex_marker()
         self.list_vm.append(self.vm_1)
@@ -47,14 +58,14 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(self.point_tool_1)
 
     def update_titik_1(self, x, y):
-        self.point_1 = QgsPointXY(x,y)
+        self.point_1 = QgsPointXY(x, y)
         self.coord_point_1.setText(str(x) + ',' + str(y))
         self.iface.mapCanvas().unsetMapTool(self.point_tool_1)
 
     def on_btn_titik_2_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_2)
-        except:
+        except: # noqa
             pass
         self.vm_2 = self.create_vertex_marker()
         self.list_vm.append(self.vm_2)
@@ -65,14 +76,14 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(self.point_tool_2)
 
     def update_titik_2(self, x, y):
-        self.point_2 = QgsPointXY(x,y)
+        self.point_2 = QgsPointXY(x, y)
         self.coord_point_2.setText(str(x) + ',' + str(y))
         self.iface.mapCanvas().unsetMapTool(self.point_tool_2)
-    
+
     def on_btn_titik_3_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_3)
-        except:
+        except: # noqa
             pass
         self.vm_3 = self.create_vertex_marker()
         self.list_vm.append(self.vm_3)
@@ -83,7 +94,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(self.point_tool_3)
 
     def update_titik_3(self, x, y):
-        self.point_3 = QgsPointXY(x,y)
+        self.point_3 = QgsPointXY(x, y)
         self.coord_point_3.setText(str(x) + ',' + str(y))
         self.iface.mapCanvas().unsetMapTool(self.point_tool_3)
 
@@ -92,7 +103,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
     def on_btn_titik_1a_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_1a)
-        except:
+        except: # noqa
             pass
         self.vm_1a = self.create_vertex_marker()
         self.list_vm.append(self.vm_1a)
@@ -103,14 +114,14 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(self.point_tool_1a)
 
     def update_titik_1a(self, x, y):
-        self.point_1a = QgsPointXY(x,y)
+        self.point_1a = QgsPointXY(x, y)
         self.coord_point_1a.setText(str(x) + ',' + str(y))
         self.iface.mapCanvas().unsetMapTool(self.point_tool_1a)
 
     def on_btn_titik_2a_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_2a)
-        except:
+        except: # noqa
             pass
         self.vm_2a = self.create_vertex_marker()
         self.list_vm.append(self.vm_2a)
@@ -121,7 +132,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(self.point_tool_2a)
 
     def update_titik_2a(self, x, y):
-        self.point_2a = QgsPointXY(x,y)
+        self.point_2a = QgsPointXY(x, y)
         self.coord_point_2a.setText(str(x) + ',' + str(y))
         self.iface.mapCanvas().unsetMapTool(self.point_tool_2a)
 
@@ -150,7 +161,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
             # Distance
             d1 = float(self.distance_1a.text())
             d2 = float(self.distance_2a.text())
-            a,b = self.two_points(self.point_1a, self.point_2a, d1, d2)
+            a, b = self.two_points(self.point_1a, self.point_2a, d1, d2)
 
             # show result as vertex marker
             # self.vm_a = self.create_vertex_marker('CROSS')
@@ -219,7 +230,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         
         print(a, h, d)
 
-        return QgsPointXY(x3a,y3a),QgsPointXY(x3b,y3b)
+        return QgsPointXY(x3a, y3a), QgsPointXY(x3b, y3b)
 
     def three_points(self, p1, p2, p3, d1, d2, d3):
 
@@ -245,8 +256,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         y = (r*(o+p+q) - m*(t+u+v))/(2*(s*m - n*r))
         x = (2*y*n + o + p + q)/(2*m)
 
-        return QgsPointXY(x,y)
-        
+        return QgsPointXY(x, y)
 
     def create_vertex_marker(self, type='BOX'):
         vm = QgsVertexMarker(self.canvas)
@@ -264,11 +274,11 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         vm.setPenWidth(3)
         vm.setIconSize(7)
         return vm
-    
+
     def clear(self):
         self.coord_point_1a.clear()
         self.coord_point_2a.clear()
-        
+
         self.coord_point_1.clear()
         self.coord_point_2.clear()
         self.coord_point_3.clear()
@@ -282,5 +292,5 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         for vm in self.list_vm:
             try:
                 self.iface.mapCanvas().scene().removeItem(vm)
-            except:
+            except: # noqa
                 pass

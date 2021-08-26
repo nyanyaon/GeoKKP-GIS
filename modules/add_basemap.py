@@ -1,23 +1,14 @@
 import os
-import json
 
-from qgis.PyQt.QtCore import Qt, QTimer
-from qgis.PyQt.QtWidgets import QTreeWidgetItem
-from qgis.PyQt.QtGui import QIcon, QStandardItemModel, QStandardItem
+# from qgis.PyQt.QtCore import Qt, QTimer
+# from qgis.PyQt.QtWidgets import QTreeWidgetItem
+from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 
-from qgis.core import (
-    QgsCoordinateTransform,
-    QgsRectangle,
-    QgsPoint,
-    QgsPointXY,
-    QgsGeometry,
-    QgsWkbTypes,
-    QgsProject)
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-from .utils import readSetting, logMessage, loadXYZ
+from .utils import readSetting, loadXYZ
 
 # using utils
 from .utils import icon
@@ -67,5 +58,5 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
         for index in self.daftarBasemap.selectedIndexes():
             url = index.data(256)
             name = index.data()
-            #print(index.row(), index.data(256))
+            # print(index.row(), index.data(256))
             loadXYZ(url, name)

@@ -1,7 +1,7 @@
 import os
 import math
 
-from qgis.PyQt import QtWidgets, uic, QtXml
+from qgis.PyQt import QtWidgets, uic    # , QtXml
 from qgis.core import QgsProject, QgsPointXY, QgsFeature, QgsGeometry, QgsVectorLayer, Qgis
 
 from qgis.PyQt.QtCore import pyqtSignal
@@ -15,6 +15,7 @@ from .utils import icon
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/triangulation.ui'))
+
 
 class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
     """ Dialog for Peta Bidang """
@@ -31,14 +32,13 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.list_vm = []
 
         self.dialog_bar = QgsMessageBar()
-        self.dialog_bar.setSizePolicy( QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed )
-        self.layout().insertWidget(0, self.dialog_bar)#, 0, 1, 1)
-
+        self.dialog_bar.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed)
+        self.layout().insertWidget(0, self.dialog_bar)  # , 0, 1, 1)
 
     def on_btn_titik_1t_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_1)
-        except:
+        except: # noqa
             pass
         self.vm_1 = self.create_vertex_marker()
         self.list_vm.append(self.vm_1)
@@ -49,14 +49,14 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(self.point_tool_1)
 
     def update_titik_1(self, x, y):
-        self.point_1 = QgsPointXY(x,y)
+        self.point_1 = QgsPointXY(x, y)
         self.coord_point_1t.setText(str(x) + ',' + str(y))
         self.iface.mapCanvas().unsetMapTool(self.point_tool_1)
 
     def on_btn_titik_2t_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_2)
-        except:
+        except: # noqa
             pass
         self.vm_2 = self.create_vertex_marker()
         self.list_vm.append(self.vm_2)
@@ -67,13 +67,13 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(self.point_tool_2)
 
     def update_titik_2(self, x, y):
-        self.point_2 = QgsPointXY(x,y)
+        self.point_2 = QgsPointXY(x, y)
         self.coord_point_2t.setText(str(x) + ',' + str(y))
         self.iface.mapCanvas().unsetMapTool(self.point_tool_2)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
-        event.accept()  
+        event.accept()
 
     def on_btn_cancel_pressed(self):
         print('cancel triggered')
@@ -126,15 +126,15 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         b2 = -1/m2
         c2 = -b2*y2 - a2*x2
 
-        print('abcm1',a1,b1,c1,m1)
-        print('abcm2',a2,b2,c2,m2)
+        print('abcm1', a1, b1, c1, m1)
+        print('abcm2', a2, b2, c2, m2)
 
         x3 = ((b1*c2)-(b2*c1))/((a1*b2)-(a2*b1))
         y3 = ((c1*a2)-(c2*a1))/((a1*b2)-(a2*b1))
 
-        print('p3', x3,y3)
+        print('p3', x3, y3)
 
-        return QgsPointXY(x3, y3)    
+        return QgsPointXY(x3, y3) 
 
     def create_vertex_marker(self, type='BOX'):
         vm = QgsVertexMarker(self.canvas)
@@ -163,7 +163,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         for vm in self.list_vm:
             try:
                 self.iface.mapCanvas().scene().removeItem(vm)
-            except:
+            except: # noqa
                 pass
     
     def detect_az_format(self, az_str):
