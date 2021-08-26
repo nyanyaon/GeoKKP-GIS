@@ -5,7 +5,6 @@ from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtWidgets import QTreeWidgetItem
 from qgis.PyQt.QtGui import QIcon, QStandardItemModel, QStandardItem
 
-
 from qgis.core import (
     QgsCoordinateTransform,
     QgsRectangle,
@@ -42,6 +41,7 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
         # self.utils = Utilities
         self.setWindowIcon(icon("icon.png"))
         self.setupUi(self)
+
 
         self.populateDaftarBasemap(data_basemap)     
         self.buttonTambahLayer.clicked.connect(self.addToQGIS)
