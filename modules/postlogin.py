@@ -5,11 +5,10 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 from qgis.core import (
-    QgsProject,
-    QgsSettings
+    QgsProject
 )
 
-from .utils import readSetting, storeSetting, logMessage, get_epsg_from_tm3_zone, set_project_crs_by_epsg
+from .utils import readSetting, storeSetting, get_epsg_from_tm3_zone, set_project_crs_by_epsg
 from .api import endpoints
 from .memo import app_state
 
@@ -35,16 +34,12 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
         self.project = QgsProject
 
-
-
         # read settings: Jumlah Kantah Terdaftar atas nama user yang login
         jumlah_kantor = int(readSetting("geokkp/jumlahkantor", 0))
         self.jsonKantor = readSetting("geokkp/listkantor", {})
         self.populateKantah(jumlah_kantor)
         self.simpanLayerSettings()
         self.simpanBasemapSettings()
-
-
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -62,9 +57,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         else:
             self.labelBeberapaKantah_4.hide()
             self.comboBoxKantah_3.addItems(self.jsonKantor[0])
-
         self.buttonLanjut_3.clicked.connect(self.simpanKantorSettings)
-
 
     def simpanKantorSettings(self):
         index = self.comboBoxKantah_3.currentIndex()
@@ -117,8 +110,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         response = endpoints.get_desa_by_kantor(kantor_id, str(tipe_kantor_id), kecamatan_id)
         response_json = json.loads(response.content)
         desa = None
-        #print("========================",len(response_json['DESA']))
-        print("========================",response_json['DESA'][0])
+        print("========================", response_json['DESA'][0])
         if response_json and len(response_json['DESA']):
             desa = response_json['DESA'][0]
             storeSetting("geokkp/desaterpilih", desa)
@@ -132,10 +124,11 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
     def simpanUserSettings(self):
         username = app_state.get('username')
         kantorID = readSetting("geokkp/kantorterpilih")[0]
-        #response = endpoints.get_user_entity_by_username(username.value, kantorID)
-        #response_json = json.loads(response.content)
-        #print(response_json[0]["nama"])
-        #storeSetting("geokkp/listkantor", response_json)
+        print(username, kantorID)
+        # response = endpoints.get_user_entity_by_username(username.value, kantorID)
+        # response_json = json.loads(response.content)
+        # print(response_json[0]["nama"])
+        # storeSetting("geokkp/listkantor", response_json)
 
     def simpanLayerSettings(self):
         f = open(layer_json_file,)
