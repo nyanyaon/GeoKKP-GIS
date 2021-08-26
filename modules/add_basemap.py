@@ -43,7 +43,7 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
         self.setWindowIcon(icon("icon.png"))
         self.setupUi(self)
 
-        self.populateDaftarBasemap(data_basemap)        
+        self.populateDaftarBasemap(data_basemap)
 
         self.buttonTambahLayer.clicked.connect(self.addToQGIS)
 
@@ -53,21 +53,22 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def set_crs(self):
         self._currentcrs = self.selectProj.crs()
-    
+
     def populateDaftarBasemap(self, data):
-        items = []
-        model = QStandardItemModel(self.daftarBasemap)
-        #for row in data.items():
-        ##    item = QStandardItem(str(row[1]))
-        #    model.appendRow(item)
-        #self.listUser.setModel(mode    l)
-        for key, values in data.items():
-            for count, value in enumerate(values):
-                item = QStandardItem(value["nama"])
-                item.setText('Item text')
-                item.setIcon(some_QIcon)
-                model.appendRow(item)
-        self.daftarBasemap.setModel(model)
+        if data:
+            items = []
+            model = QStandardItemModel(self.daftarBasemap)
+            #for row in data.items():
+            ##    item = QStandardItem(str(row[1]))
+            #    model.appendRow(item)
+            #self.listUser.setModel(mode    l)
+            for key, values in data.items():
+                for count, value in enumerate(values):
+                    item = QStandardItem(value["nama"])
+                    item.setText('Item text')
+                    item.setIcon(some_QIcon)
+                    model.appendRow(item)
+            self.daftarBasemap.setModel(model)
 
 
             #print(value["nama"])
@@ -85,7 +86,7 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
         #self.daftarLayer.insertTopLevelItems(0, items)
         #self.daftarLayer.itemChanged.connect(self.treeWidgetItemChanged)
 
-   
+
     def addToQGIS(self):
         root = self.daftarLayer.invisibleRootItem()
         group_count = root.childCount()
@@ -96,10 +97,3 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
                 item = groupItem.child(layer)
                 if item.checkState(0) != 0:
                     print(item.text(0), item.text(1), item.text(2), item.text(3))
-                
-
-   
-        
-
-
-
