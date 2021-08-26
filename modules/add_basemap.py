@@ -42,7 +42,6 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
         self.setWindowIcon(icon("icon.png"))
         self.setupUi(self)
 
-
         self.populateDaftarBasemap(data_basemap)     
         self.buttonTambahLayer.clicked.connect(self.addToQGIS)
 
@@ -52,7 +51,7 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def set_crs(self):
         self._currentcrs = self.selectProj.crs()
-    
+
     def populateDaftarBasemap(self, data):
         self.model = QStandardItemModel(self.daftarBasemap)        
         for key, values in data.items():
@@ -70,13 +69,3 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
             name = index.data()
             #print(index.row(), index.data(256))
             loadXYZ(url, name)
-
-
-
-                
-
-   
-        
-
-
-

@@ -35,15 +35,15 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
         self.project = QgsProject
 
-        
+
 
         # read settings: Jumlah Kantah Terdaftar atas nama user yang login
-        jumlah_kantor = int(readSetting("geokkp/jumlahkantor"))
-        self.jsonKantor = readSetting("geokkp/listkantor")
+        jumlah_kantor = int(readSetting("geokkp/jumlahkantor", 0))
+        self.jsonKantor = readSetting("geokkp/listkantor", {})
         self.populateKantah(jumlah_kantor)
         self.simpanLayerSettings()
         self.simpanBasemapSettings()
-        
+
 
 
     def closeEvent(self, event):
@@ -79,7 +79,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         kabupaten = self.simpanKabupatenSettings(idKantorTerpilih, idTipeKantorTerpilih, provinsi['PROPINSIID'])
         kecamatan = self.simpanKecamatanSettings(idKantorTerpilih, idTipeKantorTerpilih, kabupaten['KABUPATENID'])
         desa = self.simpanDesaSettings(idKantorTerpilih, idTipeKantorTerpilih, kecamatan['KECAMATANID'])
-        
+
         self.simpanSistemKoordinat(desa['ZONATM3'])
         self.simpanUserSettings()
         self.accept()
@@ -92,7 +92,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
             provinsi = response_json['PROPINSI'][0]
             storeSetting("geokkp/provinsiterpilih", provinsi)
         return provinsi
-    
+
     def simpanKabupatenSettings(self, kantor_id, tipe_kantor_id, provinsi_id):
         response = endpoints.get_kabupaten_by_kantor(kantor_id, str(tipe_kantor_id), provinsi_id)
         response_json = json.loads(response.content)

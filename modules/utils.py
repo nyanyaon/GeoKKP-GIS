@@ -93,12 +93,12 @@ def storeSetting(key, value):
     settings.setValue(key, value)
 
 
-def readSetting(key):
+def readSetting(key, default_value=None):
     """
     Read value from QGIS Settings
     """
     settings = QgsSettings()
-    return settings.value(key)
+    return settings.value(key, default_value)
 
 
 def is_layer_exist(project, layername):
