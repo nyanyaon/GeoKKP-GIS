@@ -23,7 +23,7 @@ hasProcessingProvider=no
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=python
+tags=GeoKKP, National Land Agency, Parcels
 
 homepage=http://homepage
 category=Plugins
