@@ -33,7 +33,7 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
         self.setWindowIcon(icon("icon.png"))
         self.setupUi(self)
 
-        self.populateDaftarBasemap(data_basemap)     
+        self.populateDaftarBasemap(data_basemap)
         self.buttonTambahLayer.clicked.connect(self.addToQGIS)
 
     def closeEvent(self, event):
@@ -44,7 +44,7 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
         self._currentcrs = self.selectProj.crs()
 
     def populateDaftarBasemap(self, data):
-        self.model = QStandardItemModel(self.daftarBasemap)        
+        self.model = QStandardItemModel(self.daftarBasemap)
         for key, values in data.items():
             for count, value in enumerate(values):
                 icons = value["icon"]
@@ -53,7 +53,7 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
                 item.setIcon(icon(f"../images/basemap_icons/{icons}"))
                 self.model.appendRow(item)
         self.daftarBasemap.setModel(self.model)
-   
+
     def addToQGIS(self):
         for index in self.daftarBasemap.selectedIndexes():
             url = index.data(256)

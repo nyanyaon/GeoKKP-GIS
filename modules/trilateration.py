@@ -138,13 +138,13 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
-        event.accept()  
+        event.accept()
 
     def rejected(self):
         print('cancel triggered')
         self.clear()
         self.reject()
-            
+
     def accepted(self):
         # self.accept()
         # dist_12 = math.sqrt(self.point_1.sqrDist(self.point_2))
@@ -171,7 +171,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
 
             # self.vm_a.setCenter(a)
             # self.vm_b.setCenter(b)
-         
+
             feat_a = QgsFeature()
             feat_a.setGeometry(QgsGeometry.fromPointXY(a))
             feat_b = QgsFeature()
@@ -179,7 +179,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
 
             vl.startEditing()
             vl.addFeatures([feat_a, feat_b])
-            vl.commitChanges()       
+            vl.commitChanges()
 
         else:
             # three points result in a single points option
@@ -200,9 +200,9 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
             vl.startEditing()
             vl.addFeatures([feat_pt])
             vl.commitChanges()
-        
+
         QgsProject.instance().addMapLayer(vl)
-        self.clear()   
+        self.clear()
 
         print('accept triggered on tab ' + str(self.tabWidget.currentIndex()))
 
@@ -212,7 +212,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
 
         a = (d1*d1 - d2*d2 + d*d)/(2*d)
         h = math.sqrt(d1*d1 - a*a)
-        
+
         x1 = p1.x()
         y1 = p1.y()
 
@@ -221,13 +221,13 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
 
         xo = x1 + a*(x2-x1)/d
         yo = y1 + a*(y2-y1)/d
-        
+
         x3a = xo + h*(y2-y1)/d
         y3a = yo - h*(x2-x1)/d
 
         x3b = xo - h*(y2-y1)/d
         y3b = yo + h*(x2-x1)/d
-        
+
         print(a, h, d)
 
         return QgsPointXY(x3a, y3a), QgsPointXY(x3b, y3b)
@@ -247,7 +247,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         p = y1*y1 - y2*y2
         q = d2*d2 - d1*d1
 
-        r = x1-x3 
+        r = x1-x3
         s = y3-y1
         t = x1*x1 - x3*x3
         u = y1*y1 - y3*y3

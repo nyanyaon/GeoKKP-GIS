@@ -57,7 +57,7 @@ from .modules.add_layer import AddLayerDialog
 from .modules.add_basemap import AddBasemapDialog
 from .modules.gotoxy import GotoXYDialog
 from .modules.plotcoord import PlotCoordinateDialog
-from .modules.login import LoginDialog, get_saved_credentials
+from .modules.login import LoginDialog
 from .modules.openaerialmap import OAMDialog
 from .modules.adjust import AdjustDialog
 from .modules.postlogin import PostLoginDock
@@ -67,6 +67,7 @@ from .modules.layout_peta import LayoutPetaDialog
 from .modules.layout_gu import LayoutGUDialog
 from .modules.trilateration import TrilaterationDialog
 from .modules.triangulation import TriangulationDialog
+from .modules.workpanel import Workpanel
 from .modules.utils import (
     activate_editing,
     iconPath,
@@ -709,7 +710,8 @@ class GeoKKP:
                     and action_data['need_auth']:
                 action.setEnabled(state)
         if state:
-            self.postlogin()
+            self.show_workpanel()
+            # self.postlogin()
 
     def enable_button(self, loggedIn):
         # self.btnLogin.setVisible(not loggedIn)
@@ -886,7 +888,16 @@ class GeoKKP:
 
     def openhelp(self):
         # QDesktopServices.openUrl(QUrl('https://qgis-id.github.io/'))
-        get_saved_credentials()
+        pass
+
+    def show_workpanel(self):
+        login_state = app_state.get('logged_in')
+        if not login_state.value:
+            return
+
+        if getattr(self, 'workpanel', None) is None:
+            self.workpanel = Workpanel()
+        self.iface.addDockWidget(Qt.RightDockWidgetArea, self.workpanel)
 
 # TODO: Move to dockwidget
 # Methods for GeoKKP Dock Widget

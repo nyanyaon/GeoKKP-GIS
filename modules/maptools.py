@@ -21,7 +21,7 @@ class MapTool(QgsMapTool):
 
     def reset(self):
         self.isEmittingPoint = False
-    
+
     def canvasMoveEvent(self, event):
         if self.isEmittingPoint:
             self.point_snap = self.snapping_point(event.pos())
@@ -34,7 +34,7 @@ class MapTool(QgsMapTool):
 
     def deactivate(self):
         QgsMapTool.deactivate(self)
-    
+
     def snapping_point(self, point):
         snapped = self.canvas.snappingUtils().snapToMap(point)
 

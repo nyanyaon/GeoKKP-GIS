@@ -97,6 +97,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         # print(response_json[0]["nama"])
         storeSetting("geokkp/jumlahkantor", len(response_json))
         storeSetting("geokkp/listkantor", response_json)
+        print(response_json)
         self.iface.messageBar().pushMessage(
             "Simpan Data:",
             "Data kantor pengguna berhasil disimpan",

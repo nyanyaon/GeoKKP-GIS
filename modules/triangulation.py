@@ -79,7 +79,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         print('cancel triggered')
         self.clear()
         self.close()
-            
+
     def on_btn_ok_pressed(self):
         # create a memory vector
         project_crs = self.iface.mapCanvas().mapSettings().destinationCrs()
@@ -91,7 +91,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
 
         az1 = self.detect_az_format(self.azimuth_1.text())
         az2 = self.detect_az_format(self.azimuth_2.text())
-        
+
         if az1 and az2:
             pt = self.triangulate(p1, p2, az1, az2)
 
@@ -100,14 +100,14 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
 
             vl.startEditing()
             vl.addFeatures([feat])
-            vl.commitChanges()  
+            vl.commitChanges()
 
             QgsProject.instance().addMapLayer(vl)
             self.clear()
-            self.close() 
+            self.close()
         else:
             pass
-        
+
     def triangulate(self, p1, p2, az1, az2):
         x1 = p1.x()
         y1 = p1.y()
@@ -134,7 +134,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
 
         print('p3', x3, y3)
 
-        return QgsPointXY(x3, y3) 
+        return QgsPointXY(x3, y3)
 
     def create_vertex_marker(self, type='BOX'):
         vm = QgsVertexMarker(self.canvas)
@@ -152,11 +152,11 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         vm.setPenWidth(3)
         vm.setIconSize(7)
         return vm
-    
-    def clear(self):    
+
+    def clear(self):
         self.coord_point_1t.clear()
         self.coord_point_2t.clear()
-        
+
         self.azimuth_1.clear()
         self.azimuth_2.clear()
 
@@ -165,7 +165,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.iface.mapCanvas().scene().removeItem(vm)
             except: # noqa
                 pass
-    
+
     def detect_az_format(self, az_str):
         az_split = az_str.split(' ')
         if len(az_split) == 3:
