@@ -329,14 +329,14 @@ def sdo_to_layer(sdo, name, crs=None):
     return layer
 
 
-def get_epsg_from_tm3_zone(zone):
+def get_epsg_from_tm3_zone(zone, include_epsg_key=True):
     splitted_zone = zone.split('.')
     major = int(splitted_zone[0])
     minor = int(splitted_zone[1]) if len(splitted_zone) == 2 else 1
     if major < 46 or major > 54:
         return False
     magic = (major * 2 + minor) - 64
-    return f'EPSG:238{magic}'
+    return f'EPSG:238{magic}' if include_epsg_key else f'238{magic}'
 
 
 def get_saved_credentials():
