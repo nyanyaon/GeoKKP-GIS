@@ -1,5 +1,6 @@
 # GeoKKP-GIS
 
+
 ## Tentang Plugin ini
 GeoKKP-GIS adalah plugin QGIS yang digunakan dalam kegiatan pemetaan pertanahan yang dilakukan oleh Kementrian Agraria dan Tata Ruang/Badan Pertanahan Nasional (ATR/BPN) untuk keperluan pengolahan data dan pembuatan peta dari hasil akuisisi data di lapangan. Plugin ini menduplikasi fitur-fitur pemetaan yang dimiliki oleh GeoKKP yang sebelumnya digunakan pada perangkat CAD.
 
@@ -30,6 +31,7 @@ GNU AGPLv3
 
 Permissions of this strongest copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. When a modified version is used to provide a service over a network, the complete source code of the modified version must be made available.
 ```
+
 
 
 
