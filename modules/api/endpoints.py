@@ -1,6 +1,6 @@
 import platform
 from qgis.core import QgsExpressionContextUtils
-from modules.api import api
+from .base import api
 
 
 ARCH = platform.processor()
@@ -296,4 +296,14 @@ def get_zona_tm3_by_berkas(nomor_berkas, tahun_berkas, kantor_id, **kwargs):
         "nomorBerkas": nomor_berkas,
         "tahunBerkas": tahun_berkas,
         "kantorId": kantor_id
+    }
+
+
+# Wilayah
+@api(endpoint='unduhWilayahSdo')
+def get_wilayah_sdo(wilayah_id, tipe_wilayah, srs, **kwargs):
+    return {
+        "wilayahId": wilayah_id,
+        "tipeWilayah": tipe_wilayah,
+        "srsName": srs
     }

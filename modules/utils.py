@@ -3,11 +3,12 @@ import os
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
 
-from PyQt5.QtCore import QVariant
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QPushButton
+from qgis.PyQt.QtCore import QVariant
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QPushButton
 from qgis.core import (
                     QgsMessageLog,
+                    QgsSettings,
                     Qgis,
                     QgsCoordinateReferenceSystem,
                     QgsProject,
@@ -17,10 +18,24 @@ from qgis.core import (
                     QgsField,
                     QgsPointXY,
                     QgsGeometry,
-                    QgsFeature)
+                    QgsFeature,
+                    QgsApplication,
+                    QgsAuthMethodConfig,
+                    QgsProcessingFeatureSourceDefinition)
 from qgis.utils import iface
 from qgis.gui import QgsMapToolIdentifyFeature
 from collections import namedtuple
+from qgis import processing
+
+"""
+Kumpulan Utilities untuk GeoKKP-QGIS
+===========================================
+
+Variabel global dan modul global untuk digunakan di plugin GeoKKP-GIS
+
+TODO: Pindah variabel & konstanta global ke modul terpisah
+"""
+
 
 epsg4326 = QgsCoordinateReferenceSystem('EPSG:4326')
 
@@ -33,10 +48,16 @@ DefaultMessageBarButton.pressed.connect(iface.openMessageLog)
 
 
 def logMessage(message, level=Qgis.Info):
+    """
+    Logger untuk debugging
+    """
     QgsMessageLog.logMessage(message, 'GeoKKP', level=level)
 
 
 def display_message_bar(tag, message, parent=None, level=Qgis.Info, action=DefaultMessageBarButton, duration=5):
+    """
+    Wrapper untuk menampilkan pesan di message bar
+    """
     parent = parent if parent else iface.messageBar()
     widget = parent.createMessage(tag, message)
     if action:
@@ -46,11 +67,18 @@ def display_message_bar(tag, message, parent=None, level=Qgis.Info, action=Defau
 
 
 def loadXYZ(url, name):
+    """
+    Memuat layer dalam bentuk XYZ Tile
+    """
     rasterLyr = QgsRasterLayer("type=xyz&zmin=0&zmax=21&url=" + url, name, "wms")
     QgsProject.instance().addMapLayer(rasterLyr)
 
 
 def activate_editing(layer):
+    """
+    Activate layer editing tools
+    TODO: fix conflicts with built-in layer editing in QGIS
+    """
     QgsProject.instance().setTopologicalEditing(True)
     layer.startEditing()
     iface.layerTreeView().setCurrentLayer(layer)
@@ -59,23 +87,57 @@ def activate_editing(layer):
     # iface.actionVertexTool().trigger()
 
 
+def storeSetting(key, value):
+    """
+    Store value to QGIS Settings
+    """
+    settings = QgsSettings()
+    settings.setValue(key, value)
+
+
+def readSetting(key, default_value=None):
+    """
+    Read value from QGIS Settings
+    """
+    settings = QgsSettings()
+    return settings.value(key, default_value)
+
+
 def is_layer_exist(project, layername):
+    """
+    Boolean check if layer exist
+    """
     for layer in project.instance().mapLayers().values():
-        print(layer.name(), " - ", layername)
         if (layer.name == layername):
-            print("layer exist")
             return True
         else:
             return False
 
 
-def edit_by_identify(mapcanvas, layer):
-    print("identify", mapcanvas)
-    print("layer", layer.name())
+def set_symbology(self, layer, qml):
+    """
+    Set layer symbology based on QML files in ./styles folder
+    """
+    uri = os.path.join(os.path.dirname(__file__), 'styles/'+qml)
+    layer.loadNamedStyle(uri)
 
+
+def properify(self, text):
+    """
+    Filter text for OS's friendly directory format
+
+    Remove all non-word characters (everything except numbers and letters) and
+    replace all runs of whitespace with a single dash
+
+    """
+    text = re.sub(r"[^\w\s]", '', text)
+    text = re.sub(r"\s+", '_', text)
+    return text
+
+
+def edit_by_identify(mapcanvas, layer):
     layer = iface.activeLayer()
     mc = iface.mapCanvas()
-
     mapTool = QgsMapToolIdentifyFeature(mc)
     mapTool.setLayer(layer)
     mc.setMapTool(mapTool)
@@ -84,7 +146,7 @@ def edit_by_identify(mapcanvas, layer):
 
 def onFeatureIdentified(feature):
     fid = feature.id()
-    print("feature selected : " + str(fid))
+    return fid
 
 
 def save_with_description(layer, outputfile):
@@ -267,11 +329,151 @@ def sdo_to_layer(sdo, name, crs=None):
     return layer
 
 
-def get_epsg_from_tm3_zone(zone):
+def get_epsg_from_tm3_zone(zone, include_epsg_key=True):
     splitted_zone = zone.split('.')
     major = int(splitted_zone[0])
     minor = int(splitted_zone[1]) if len(splitted_zone) == 2 else 1
     if major < 46 or major > 54:
         return False
     magic = (major * 2 + minor) - 64
-    return f'EPSG:238{magic}'
+    return f'EPSG:238{magic}' if include_epsg_key else f'238{magic}'
+
+
+def get_saved_credentials():
+    auth_mgr = QgsApplication.authManager()
+    auth_id = readSetting('geokkp/authId')
+    auth_cfg = QgsAuthMethodConfig()
+    if auth_id:
+        auth_mgr.loadAuthenticationConfig(auth_id, auth_cfg, True)
+    return auth_cfg.configMap()
+
+
+def save_credentials(username, password):
+    auth_mgr = QgsApplication.authManager()
+    auth_id = readSetting('geokkp/authId')
+    auth_cfg = QgsAuthMethodConfig()
+    if not auth_id:
+        auth_id = auth_cfg.id()
+        auth_cfg.setName('geokkp')
+        auth_cfg.setMethod('Basic')
+    else:
+        auth_mgr.loadAuthenticationConfig(auth_id, auth_cfg, True)
+
+    auth_cfg.setConfig('username', username)
+    auth_cfg.setConfig('password', password)
+    assert auth_cfg.isValid()
+    auth_mgr.storeAuthenticationConfig(auth_cfg)
+    assert auth_cfg.id()
+    storeSetting('geokkp/authId', auth_cfg.id())
+    return auth_cfg.id()
+
+
+def add_layer(layername, type, symbol=None, fields=None, crs=None, parent=None):
+    crs = iface.mapCanvas().mapSettings().destinationCrs()
+    print("CRSCRSCRSCRSCRSC", crs)
+
+    layer = QgsVectorLayer(f"{type}?crs=epsg:" + str(crs.postgisSrid()), layername, "memory")
+    layer_dataprovider = layer.dataProvider()
+    if not fields:
+        fields = [
+            QgsField("ID", QVariant.String),
+            QgsField("Keterangan", QVariant.String),
+        ]
+
+    if symbol:
+        symbolurl = os.path.join(os.path.dirname(__file__), '../styles/'+symbol)
+        layer.loadNamedStyle(symbolurl)
+
+    layer_dataprovider.addAttributes(fields)
+    layer.updateFields()
+    QgsProject.instance().addMapLayer(layer)
+
+
+def resolve_path(name, basepath=None):
+    if not basepath:
+        basepath = os.path.dirname(os.path.realpath(__file__))
+    return os.path.join(basepath, name)
+
+
+def set_project_crs_by_epsg(epsg):
+    crs = QgsCoordinateReferenceSystem(epsg)
+    QgsProject.instance().setCrs(crs)
+
+
+SNAP_ALIGNING_NODE_INSERT_WHEN_REQUIRED = 0
+SNAP_CLOSEST_NODE_INSERT_WHEN_REQUIRED = 1
+SNAP_ALIGNING_NODE_NOT_INSERT = 2
+SNAP_CLOSEST_NODE_NOT_INSERT = 3
+SNAP_MOVE_END_POINT_ALIGN_NODE = 4
+SNAP_MOVE_END_CLOSEST_NODE = 5
+SNAP_ENDPOINT_TO_ENDPOINT = 6
+SNAP_ANCHOR_NODES = 7
+
+
+def snap_geometries_to_layer(
+        layer,
+        ref_layer,
+        tolerance=1,
+        behavior=SNAP_MOVE_END_POINT_ALIGN_NODE,
+        output='memory:snap'):
+    if isinstance(layer, str):
+        layer = get_layer_by_id(layer)
+    is_selected = bool(layer.selectedFeatureCount())
+
+    parameters = {
+        'INPUT': QgsProcessingFeatureSourceDefinition(layer.id(), is_selected),
+        'REFERENCE_LAYER': QgsProcessingFeatureSourceDefinition(ref_layer.id(), False),
+        'TOLERANCE': tolerance,
+        'BEHAVIOR': behavior,
+        'OUTPUT': output
+    }
+    print(parameters)
+    result = processing.run('qgis:snapgeometries', parameters)
+
+    return result['OUTPUT']
+
+
+def explode_polyline(layer, output='memory:explode'):
+    if isinstance(layer, str):
+        layer = get_layer_by_id(layer)
+    is_selected = bool(layer.selectedFeatureCount())
+
+    parameters = {
+        'INPUT': QgsProcessingFeatureSourceDefinition(layer.id(), is_selected),
+        'OUTPUT': output
+    }
+    result = processing.run('native:explodelines', parameters)
+
+    return result['OUTPUT']
+
+
+def polygonize(layer, output='memory:polygonize'):
+    if isinstance(layer, str):
+        layer = get_layer_by_id(layer)
+    is_selected = bool(layer.selectedFeatureCount())
+
+    parameters = {
+        'INPUT': QgsProcessingFeatureSourceDefinition(layer.id(), is_selected),
+        'OUTPUT': output
+    }
+    result = processing.run('qgis:polygonize', parameters)
+
+    return result['OUTPUT']
+
+
+def dissolve(layer, output='memory:dissolve'):
+    if isinstance(layer, str):
+        layer = get_layer_by_id(layer)
+    is_selected = bool(layer.selectedFeatureCount())
+
+    parameters = {
+        'INPUT': QgsProcessingFeatureSourceDefinition(layer.id(), is_selected),
+        'OUTPUT': output
+    }
+    result = processing.run('native:dissolve', parameters)
+
+    return result['OUTPUT']
+
+
+def get_layer_by_id(layer_id):
+    return QgsProject.instance().mapLayer(layer_id)

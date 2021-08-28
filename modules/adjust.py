@@ -34,7 +34,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         self._layer = None
         self.set_identify_layer()
 
-        self.layerAcuan.layerChanged.connect(self.set_reference_layer)
+        # self.layerAcuan.layerChanged.connect(self.set_reference_layer)
         # self.clickTool = QgsMapToolEmitPoint(self.iface.mapCanvas())
         self.identifyFeature = QgsMapToolIdentifyFeature(self.canvas, self._layer)
         # self.clickTool.canvasClicked.connect(self.test)
@@ -47,7 +47,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         for layer in self.project.instance().mapLayers().values():
             # print(layer.name(), " - ", layername)
             if (layer.name() == layername):
-                print("persilada")
+                # print("persilada")
                 self._layer = layer
         print(self._layer)
 
@@ -62,7 +62,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         print(self._refLayer.name())
 
     def activate_selection(self):
-        print("activate selection")
+        # print("activate selection")
         # self.iface.actionSelect().trigger()
         # features = self._layer.selectedFeatures()[0]
         # print(features)

@@ -23,12 +23,12 @@ hasProcessingProvider=no
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=python
+tags=GeoKKP, National Land Agency, Parcels
 
 homepage=http://homepage
 category=Plugins
 icon=images/icon.png
-# experimental flag
+# experimental flag 
 experimental=True
 
 # deprecated flag (applies to the whole plugin, not just a single version)
