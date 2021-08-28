@@ -77,7 +77,6 @@ class LayoutGUDialog(QtWidgets.QDialog, FORM_CLASS):
         self.gu_pu_surat_tugas.setText(self.project.readEntry('GeoKKP', "gu_pu_surat_tugas")[0])
         self.gu_pu_alat.setText(self.project.readEntry('GeoKKP', "gu_pu_alat")[0])
 
-
     def write_settings(self):
         self.project.writeEntry('GeoKKP', "nomor_gu", self.nomor_gu.text())
 

@@ -36,7 +36,7 @@ class OAMDialog(QtWidgets.QDialog, FORM_CLASS):
         self.loadXYZ(self._currentLink, self._currentName)
 
     def loadXYZ(self, url, name):
-        rasterLyr = QgsRasterLayer("type=xyz&zmin=0&zmax=21&url=" + url, name, "wms")
+        rasterLyr = QgsRasterLayer("type=xyz&url=" + url, name, "wms")
         self.project.instance().addMapLayer(rasterLyr)
 
 # uri="url=https://tiles.openaerialmap.org/5da45f5336266f000578cc3a/0/5da45f5336266f000578cc3b/{z}/{x}/{y}&zmax=19&zmin=0"  # noqa 121

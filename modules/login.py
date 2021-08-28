@@ -14,7 +14,7 @@ from .utils import (
     get_saved_credentials,
     save_credentials
 )
-from .postlogin import PostLoginDock
+
 from .api import endpoints
 from .memo import app_state
 
@@ -34,7 +34,6 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         self.canvas = iface.mapCanvas()
         super(LoginDialog, self).__init__(parent)
         self.setupUi(self)
-        #self.postloginaction = PostLoginDock()
 
         self.bar = QgsMessageBar()
 
@@ -103,5 +102,3 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             "Data kantor pengguna berhasil disimpan",
             level=Qgis.Success
         )
-        
-    

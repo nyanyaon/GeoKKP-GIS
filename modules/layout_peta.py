@@ -16,7 +16,7 @@ qpt_path = os.path.join(os.path.dirname(__file__), '../template/pbt.qpt')
 
 
 class LayoutPetaDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for Zoom to Location """
+    """ Dialog for Peta Bidang """
 
     closingPlugin = pyqtSignal()
 
