@@ -45,7 +45,7 @@ from qgis.PyQt.QtWidgets import (
     QLabel
 )
 
-from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem
+from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem, QgsVectorLayer
 from qgis.gui import QgsMapToolIdentify
 from qgis import utils as qgis_utils
 
@@ -70,7 +70,11 @@ from .modules.triangulation import TriangulationDialog
 from .modules.utils import (
     activate_editing,
     iconPath,
-    icon
+    icon,
+    explode_polyline,
+    snap_geometries_to_layer,
+    polygonize,
+    dissolve
 )
 from .modules.memo import app_state
 
@@ -428,7 +432,7 @@ class GeoKKP:
         self.actionAutoAdjust = self.add_action(
             icon("autoadjust.png"),
             text=self.tr(u"Auto Adjust"),
-            callback=self.gotoxy,
+            callback=self.auto_adjust,
             add_to_toolbar=False,
             add_to_menu=False,
             parent=self.popupValidasi
@@ -720,6 +724,31 @@ class GeoKKP:
     # Definisi Fungsi GeoKKP-GIS
     # ==============================================================
 
+    def auto_adjust(self):
+        canvas = self.iface.mapCanvas()
+        layer = canvas.currentLayer()
+
+        if not isinstance(layer, QgsVectorLayer):
+            return 
+
+        if layer.geometryType() != 1: # need polyline
+            return 
+
+        exploded = explode_polyline(layer)
+        QgsProject.instance().addMapLayer(exploded)
+
+        snapped = snap_geometries_to_layer(exploded, exploded)
+        QgsProject.instance().removeMapLayer(exploded)
+        QgsProject.instance().addMapLayer(snapped)
+        
+        polygonized = polygonize(snapped)
+        QgsProject.instance().removeMapLayer(snapped)
+        QgsProject.instance().addMapLayer(polygonized)
+
+        dissolved = dissolve(polygonized)
+        QgsProject.instance().removeMapLayer(polygonized)
+        QgsProject.instance().addMapLayer(dissolved)
+
     def gotoxy(self):
         if self.gotoxyaction is None:
             # Create the dockwidget (after translation) and keep reference
@@ -879,10 +908,10 @@ class GeoKKP:
                 x.trigger()
                 # print(x)
 
-    def auto_adjust(self):
-        if self.adjustaction is None:
-            self.adjustaction = AdjustDialog()
-        self.adjustaction.show()
+    # def auto_adjust(self):
+    #     if self.adjustaction is None:
+    #         self.adjustaction = AdjustDialog()
+    #     self.adjustaction.show()
 
     def openhelp(self):
         # QDesktopServices.openUrl(QUrl('https://qgis-id.github.io/'))
