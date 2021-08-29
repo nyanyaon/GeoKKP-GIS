@@ -1,5 +1,4 @@
 import os
-import re
 
 from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.gui import QgsRubberBand

@@ -49,17 +49,8 @@ from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSy
 from qgis.gui import QgsMapToolIdentify
 from qgis import utils as qgis_utils
 
-
-
-
-
 # Import the code for the DockWidget
 from .geokkp_dockwidget import GeoKKPDockWidget
-
-
-
-
-
 
 # Modules
 from .modules.add_layer import AddLayerDialog
@@ -740,10 +731,10 @@ class GeoKKP:
         layer = canvas.currentLayer()
 
         if not isinstance(layer, QgsVectorLayer):
-            return 
+            return
 
-        if layer.geometryType() != 1: # need polyline
-            return 
+        if layer.geometryType() != 1:  # need polyline
+            return
 
         exploded = explode_polyline(layer)
         QgsProject.instance().addMapLayer(exploded)
@@ -751,7 +742,7 @@ class GeoKKP:
         snapped = snap_geometries_to_layer(exploded, exploded)
         QgsProject.instance().removeMapLayer(exploded)
         QgsProject.instance().addMapLayer(snapped)
-        
+
         polygonized = polygonize(snapped)
         QgsProject.instance().removeMapLayer(snapped)
         QgsProject.instance().addMapLayer(polygonized)
