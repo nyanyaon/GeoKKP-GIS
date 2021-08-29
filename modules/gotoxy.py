@@ -17,7 +17,7 @@ from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
 # using utils
-from .utils import icon
+from .utils import icon, parse_raw_coordinate
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/goto.ui'))
@@ -51,16 +51,18 @@ class GotoXYDialog(QtWidgets.QDialog, FORM_CLASS):
         self._currentcrs = self.selectProj.crs()
         # print(self._currentcrs.description())
 
+    def parse_coordinate(self):
+        coordinate_text = self.mLineEditXY.text()
+        points = parse_raw_coordinate(coordinate_text)
+        # TODO: Extend with more than one coordinates
+        first_point = next(points)
+        return first_point
+
     def zoomtodialog(self):
-        text = self.mLineEditXY.text().strip()
-        # try:
-        coords = re.split(r'[\s,;:]+', text, 1)
-        lat = float(coords[0])
-        lon = float(coords[1])
-        # print("lat:", lat, " long:", lon)
+        point = self.parse_coordinate()
+        lon = point.x()
+        lat = point.y()
         self.zoomTo(self._currentcrs, lat, lon)
-        # except Exception:
-        #   pass
 
     def zoomTo(self, src_crs, lat, lon):
         self.canvas.zoomScale(1000)
