@@ -29,10 +29,11 @@ from qgis.PyQt.QtCore import (
     QTranslator,
     QCoreApplication,
     Qt,
-    QSize
+    QSize,
+    QUrl
 )
 
-from qgis.PyQt.QtGui import QIcon, QColor, QFont
+from qgis.PyQt.QtGui import QIcon, QColor, QFont, QDesktopServices
 from qgis.PyQt.QtWidgets import (
     QWidget,
     QAction,
@@ -916,7 +917,7 @@ class GeoKKP:
     #     self.adjustaction.show()
 
     def openhelp(self):
-        # QDesktopServices.openUrl(QUrl('https://qgis-id.github.io/'))
+        QDesktopServices.openUrl(QUrl('https://github.com/danylaksono/GeoKKP-GIS/blob/main/README.md'))
         pass
 
     def show_workpanel(self):
