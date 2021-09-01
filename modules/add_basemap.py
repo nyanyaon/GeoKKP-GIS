@@ -13,7 +13,7 @@ from .utils import readSetting, loadXYZ
 # using utils
 from .utils import icon
 
-data_basemap = readSetting("geokkp/basemaps")
+data_basemap = readSetting("geokkp/basemaps", {})
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
