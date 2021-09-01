@@ -39,7 +39,7 @@
     </rect>
    </property>
    <property name="placeholderText">
-    <string>Y (Lat), X (Lon)</string>
+    <string>X (Lon), Y (Lat)</string>
    </property>
    <property name="qgisRelation" stdset="0">
     <string notr="true"/>
