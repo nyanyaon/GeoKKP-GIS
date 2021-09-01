@@ -8,7 +8,7 @@ from qgis.utils import iface
 
 from .utils import readSetting, add_layer, icon
 
-data_layer = readSetting("geokkp/layers")
+data_layer = readSetting("geokkp/layers", default_value={})
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/addlayerv2.ui'))
