@@ -46,6 +46,15 @@ DefaultMessageBarButton = QPushButton()
 DefaultMessageBarButton.setText("Show Me")
 DefaultMessageBarButton.pressed.connect(iface.openMessageLog)
 
+# constants for NLP
+x_origin = 32000
+y_origin = 282000
+grid_10rb = 6000
+grid_2500 = 1500
+grid_1000 = 500
+grid_500 = 250
+grid_250 = 125
+
 
 def logMessage(message, level=Qgis.Info):
     """
@@ -477,3 +486,57 @@ def dissolve(layer, output='memory:dissolve'):
 
 def get_layer_by_id(layer_id):
     return QgsProject.instance().mapLayer(layer_id)
+
+
+def get_nlp(skala, x, y):
+    """
+    Cetak Nomor Lembar Peta berdasarkan skala
+
+    argumen:
+        skala   : skala peta dalam string
+        x       : koordinat x dalam CRS TM3
+        y       : koordinat y dalam CRS TM3
+    """
+
+    # Skala 10 ribu
+    k_10rb = int((x - x_origin)/grid_10rb)+1
+    b_10rb = int((y - y_origin)/grid_10rb)+1
+
+    # Skala 2500
+    k_2500 = int((x-(x_origin+(k_10rb - 1)*grid_10rb))/grid_2500)+1
+    b_2500 = int((y-(y_origin+(b_10rb - 1)*grid_10rb))/grid_2500)+1
+    nlp_2500 = 4*(b_2500-1)+k_2500
+
+    # Skala 1000
+    k_1000 = int((x-(x_origin+(k_10rb - 1)*grid_10rb + (k_2500-1)*grid_2500))/grid_1000)+1
+    b_1000 = int((y-(y_origin+(b_10rb - 1)*grid_10rb + (b_2500-1)*grid_2500))/grid_1000)+1
+    nlp_1000 = 3*(b_1000-1)+k_1000
+
+    # Skala 500
+    k_500 = int((x-(x_origin+(k_10rb - 1)*grid_10rb + ((k_2500-1)*grid_2500) + (k_1000-1)*grid_1000))/grid_500)+1
+    b_500 = int((y-(y_origin+(b_10rb - 1)*grid_10rb + ((b_2500-1)*grid_2500) + (b_1000-1)*grid_1000))/grid_500)+1
+    nlp_500 = 2*(b_500-1)+k_500
+
+    # Skala 250
+    k_250 = int((x-(x_origin+(k_10rb - 1)*grid_10rb
+            + ((k_2500-1)*grid_2500) # noqa
+            + ((k_1000-1)*grid_1000)
+            + (k_500-1)*grid_500))/grid_250)+1
+    b_250 = int((y-(y_origin+(b_10rb - 1)*grid_10rb
+            + ((b_2500-1)*grid_2500) # noqa
+            + ((b_1000-1)*grid_1000)
+            + (b_500-1)*grid_500))/grid_250)+1
+    nlp_250 = 2*(b_250-1)+k_250
+
+    if (skala == "10000"):
+        return f'{k_10rb:02d}.{b_10rb:03d}'
+    elif (skala == "2500"):
+        return f'{k_10rb:02d}.{b_10rb:03d}-{nlp_2500:02d}'
+    elif (skala == "1000"):
+        return f'{k_10rb:02d}.{b_10rb:03d}-{nlp_2500:02d}-{nlp_1000}'
+    elif (skala == "500"):
+        return f'{k_10rb:02d}.{b_10rb:03d}-{nlp_2500:02d}-{nlp_1000}-{nlp_500}'
+    elif (skala == "250"):
+        return f'{k_10rb:02d}.{b_10rb:03d}-{nlp_2500:02d}-{nlp_1000}-{nlp_500}-{nlp_250}'
+    else:
+        return "Kesalahan Penentuan skala"
