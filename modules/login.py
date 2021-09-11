@@ -80,7 +80,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 storeSetting("geokkp/isLoggedIn", content['status'])
             logMessage(str(content))
             self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
-            self.profilKantor(username)
+            # self.profilKantor(username)
             self.loginChanged.emit()
             app_state.set('username', username)
             app_state.set('logged_in', True)
@@ -92,12 +92,17 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         API backend: {}/getUserEntityByUserName
         """
 
-        response = endpoints.get_entity_by_username(username)
+        try:
+            response = endpoints.get_entity_by_username(username)
+        except Exception as e: # noqa
+            print(e)
+            self.iface.messageBar().pushMessage("Terjadi Kesalahan", "Data Pengguna gagal dimuat dari server",
+                level=Qgis.Error) # noqa
+        
         response_json = json.loads(response.content)
         # print(response_json[0]["nama"])
         storeSetting("geokkp/jumlahkantor", len(response_json))
         storeSetting("geokkp/listkantor", response_json)
-        print(response_json)
         self.iface.messageBar().pushMessage(
             "Simpan Data:",
             "Data kantor pengguna berhasil disimpan",
