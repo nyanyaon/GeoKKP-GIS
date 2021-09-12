@@ -84,7 +84,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             app_state.set('username', username)
             app_state.set('logged_in', True)
             self.accept()
-            self.profilKantor(username)
+            # self.profilKantor(username)
 
     def profilKantor(self, username):
         """
