@@ -44,7 +44,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         self.current_kecamatan_id = None
         self.current_kelurahan_id = None
 
-        self.mulaiGeokkp.clicked.connect(self.show_workpanel)
+        # self.mulaiGeokkp.clicked.connect(self.show_workpanel)
         self.btn_simpan_area_kerja.clicked.connect(self.simpan_area_kerja)
         self.stackedWidget.currentChanged.connect(self.setup_workpanel)
 
@@ -56,12 +56,16 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
+        self.stackedWidget.setCurrentIndex(0)
         event.accept()
 
     def show_workpanel(self):
         workspace = readSetting("geokkp/workspace_terpilih", "rutin")
         widget = getattr(self, workspace, self.rutin)
         self.stackedWidget.setCurrentWidget(widget)
+
+    def switch_panel(self, page):
+        self.stackedWidget.setCurrentIndex(page)
 
     def setup_workpanel(self, index):
         if index == STACKWIDGET_RUTIN:

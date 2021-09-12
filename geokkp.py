@@ -25,7 +25,7 @@ import os
 import json
 
 from qgis.PyQt.QtCore import (
-    QSettings,
+    # QSettings,
     QTranslator,
     QCoreApplication,
     Qt,
@@ -46,12 +46,24 @@ from qgis.PyQt.QtWidgets import (
     QLabel
 )
 
-from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem, QgsVectorLayer
+from qgis.core import (
+    Qgis,
+    QgsProject,
+    QgsRasterLayer,
+    QgsCoordinateReferenceSystem,
+    QgsVectorLayer,
+    QgsSettings
+)
 from qgis.gui import QgsMapToolIdentify
 from qgis import utils as qgis_utils
 
+from .modules.utils import (
+    storeSetting
+)
+
 # Import the code for the DockWidget
-from .geokkp_dockwidget import GeoKKPDockWidget
+from .modules.workpanel import Workpanel
+# from .geokkp_dockwidget import GeoKKPDockWidget
 
 # Modules
 from .modules.add_layer import AddLayerDialog
@@ -68,7 +80,6 @@ from .modules.layout_peta import LayoutPetaDialog
 from .modules.layout_gu import LayoutGUDialog
 from .modules.trilateration import TrilaterationDialog
 from .modules.triangulation import TriangulationDialog
-from .modules.workpanel import Workpanel
 from .modules.utils import (
     activate_editing,
     iconPath,
@@ -107,7 +118,7 @@ class GeoKKP:
         login_state.changed.connect(self.login_changed)
 
         # initialize locale
-        locale = QSettings().value('locale/userLocale')[0:2]
+        locale = QgsSettings().value('locale/userLocale')[0:2]
         locale_path = os.path.join(
             self.plugin_dir,
             'i18n',
@@ -134,7 +145,7 @@ class GeoKKP:
             self.iface.mainWindow().menuBar().insertMenu(lastAction, self.menu)
 
         # Change QGIS Title and Default Icon to GeoKKP
-        title = self.iface.mainWindow().windowTitle()
+        title = iface.mainWindow().windowTitle()
         new_title = title.replace('QGIS', 'GeoKKP-GIS')
         self.iface.mainWindow().setWindowTitle(new_title)
         self.iface.mainWindow().setWindowIcon(icon('icon.png'))
@@ -144,7 +155,8 @@ class GeoKKP:
         # self.canvasClicked = pyqtSignal('QgsPointXY')
 
         # Set widgets
-        self.dockwidget = GeoKKPDockWidget()
+        # self.dockwidget = GeoKKPDockWidget()
+        self.workpanel = Workpanel()
         self.addlayeraction = AddLayerDialog()
         self.addbasemapaction = AddBasemapDialog()
         self.gotoxyaction = GotoXYDialog()
@@ -649,7 +661,7 @@ class GeoKKP:
         Cleanup necessary items here when plugin dockwidget is closed
         """
         # disconnects
-        # self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
+        self.workpanel.closingPlugin.disconnect(self.onClosePlugin)
 
         # remove this statement if dockwidget is to remain
         # for reuse if plugin is reopened
@@ -664,18 +676,24 @@ class GeoKKP:
                 action)
             self.iface.removeToolBarIcon(action)
 
-        # remove the toolbar
-        # del self.dockwidget
+        # remove the dockwidget
+        if self.workpanel is not None:
+            del self.workpanel
+
+        # find remaining panels and clear them all
+        for panel in self.iface.mainWindow().findChildren(QDockWidget):
+            if panel.windowTitle() == 'Panel Kerja GeoKKP-GIS':
+                self.iface.mainWindow().removeDockWidget(panel)
+                panel.setVisible(False)
+                panel.destroy()
+                del panel
+
         # remove the toolbar
         if self.toolbar:
             del self.toolbar
-        if self.dockwidget:
-            self.dockwidget.deleteLater()
 
-        # remove panels registry
-        self.iface.mainWindow().removeDockWidget(self.dockwidget)
-        self.dockwidget.setVisible(False)
-        self.dockwidget.destroy()
+        # clear all previous user settings
+        storeSetting("geokkp", '')
 
         # remove menu
         if self.menu:
@@ -690,19 +708,20 @@ class GeoKKP:
             # dockwidget may not exist if:
             #    first run of plugin
             #    removed on close (see self.onClosePlugin method)
-            if self.dockwidget is None:
-                # Create the dockwidget (after translation) and keep reference
-                self.dockwidget = GeoKKPDockWidget()
+            # if self.workpanel is None:
+            #   Create the dockwidget (after translation) and keep reference
+            #   self.workpanel = Workpanel()
 
             # connect to provide cleanup on closing of dockwidget
-            self.dockwidget.closingPlugin.connect(self.onClosePlugin)
+            self.workpanel.closingPlugin.connect(self.onClosePlugin)
 
             # show the dockwidget
             # TODO: fix to allow choice of dock location
-            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
-            self.dockwidget.show()
+            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.workpanel)
+            self.workpanel.show()
+            self.workpanel.setVisible(True)
 
-            # print("run the plugin")
+            print("run the plugin")
 
     def login_changed(self, state):
         # self._is_logged_in = readSetting("geokkp/isLoggedIn")
@@ -715,6 +734,7 @@ class GeoKKP:
                     and action_data['need_auth']:
                 action.setEnabled(state)
         if state:
+            # should be switching page
             self.show_workpanel()
             # self.postlogin()
 
@@ -754,36 +774,28 @@ class GeoKKP:
 
     def gotoxy(self):
         if self.gotoxyaction is None:
-            # Create the dockwidget (after translation) and keep reference
             self.gotoxyaction = GotoXYDialog()
         self.gotoxyaction.selectProj.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
 
-        # connect to provide cleanup on closing of dockwidget
         # self.gotoxyaction.closingPlugin.connect(self.onClosePlugin)
 
         # show the dialog
-        # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.gotoxyaction.show()
 
     def coordinate_transform(self):
         if self.coordinate_transform_dialog is None:
-            # Create the dockwidget (after translation) and keep reference
             self.coordinate_transform_dialog = CoordinateTransformDialog()
-
         # show the dialog
         self.coordinate_transform_dialog.show()
 
     def plotxy(self):
         if self.plotxyaction is None:
-            # Create the dockwidget (after translation) and keep reference
             self.plotxyaction = PlotCoordinateDialog()
         self.plotxyaction.listCoordsProj.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
 
-        # connect to provide cleanup on closing of dockwidget
         # self.gotoxyaction.closingPlugin.connect(self.onClosePlugin)
 
         # show the dialog
-        # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.plotxyaction.show()
 
     def postlogin(self):
@@ -791,37 +803,30 @@ class GeoKKP:
         what to do if user is logged in
         """
         if self.postloginaction is None:
-            # Create the dockwidget (after translation) and keep reference
             self.postloginaction = PostLoginDock()
 
-        # connect to provide cleanup on closing of dockwidget
         self.postloginaction.closingPlugin.connect(self.onClosePlugin)
 
         # show the dialog
-        # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.postloginaction)
         self.postloginaction.show()
 
     def layout_peta(self):
         if self.layoutpetaaction is None:
-            # Create the dockwidget (after translation) and keep reference
             self.layoutpetaaction = LayoutPetaDialog()
         self.layoutpetaaction.show()
 
     def layout_gu(self):
         if self.layoutguaction is None:
-            # Create the dockwidget (after translation) and keep reference
             self.layoutguaction = LayoutGUDialog()
         self.layoutguaction.show()
 
     def trilateration(self):
         if self.trilaterationaction is None:
-            # Create the dockwidget (after translation) and keep reference
             self.trilaterationaction = TrilaterationDialog()
         self.trilaterationaction.show()
 
     def triangulation(self):
         if self.triangulationaction is None:
-            # Create the dockwidget (after translation) and keep reference
             self.triangulationaction = TriangulationDialog()
         self.triangulationaction.show()
 
@@ -852,7 +857,6 @@ class GeoKKP:
         if self.loginaction is None:
             self.loginaction = LoginDialog()
         self.loginaction.show()
-        self.loginaction
 
     def loadoam(self):
         if self.oamaction is None:
@@ -924,10 +928,11 @@ class GeoKKP:
         login_state = app_state.get('logged_in')
         if not login_state.value:
             return
+        self.workpanel.switch_panel(1)
 
-        if getattr(self, 'workpanel', None) is None:
-            self.workpanel = Workpanel()
-        self.iface.addDockWidget(Qt.RightDockWidgetArea, self.workpanel)
+        # if getattr(self, 'workpanel', None) is None:
+        #     self.workpanel = Workpanel()
+        # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.workpanel)
 
 # TODO: Move to dockwidget
 # Methods for GeoKKP Dock Widget
