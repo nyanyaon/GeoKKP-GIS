@@ -16,6 +16,9 @@
     <height>550</height>
    </size>
   </property>
+  <property name="allowedAreas">
+   <set>Qt::RightDockWidgetArea</set>
+  </property>
   <property name="windowTitle">
    <string>Panel Kerja GeoKKP-GIS</string>
   </property>
