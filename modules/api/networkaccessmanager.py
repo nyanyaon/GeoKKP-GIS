@@ -38,6 +38,7 @@ class RequestsException(Exception):
 
 
 class RequestsExceptionTimeout(RequestsException):
+    print("TIOMEOUT!!")
     pass
 
 

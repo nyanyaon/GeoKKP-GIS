@@ -80,31 +80,35 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 storeSetting("geokkp/isLoggedIn", content['status'])
             logMessage(str(content))
             self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
-            # self.profilKantor(username)
             self.loginChanged.emit()
             app_state.set('username', username)
             app_state.set('logged_in', True)
             self.accept()
+            self.profilKantor(username)
 
     def profilKantor(self, username):
         """
         user entity
         API backend: {}/getUserEntityByUserName
         """
-
         try:
             response = endpoints.get_entity_by_username(username)
+            response_json = json.loads(response.content)
+            # print(response_json[0]["nama"])
+            storeSetting("geokkp/jumlahkantor", len(response_json))
+            storeSetting("geokkp/listkantor", response_json)
+            self.iface.messageBar().pushMessage(
+                "Simpan Data:",
+                "Data kantor pengguna berhasil disimpan",
+                level=Qgis.Success
+            )
         except Exception as e: # noqa
-            print(e)
-            self.iface.messageBar().pushMessage("Terjadi Kesalahan", "Data Pengguna gagal dimuat dari server",
-                level=Qgis.Error) # noqa
+            print("ada error ketika login", e)
+            message2 = QMessageBox(parent=self)
+            message2.setIcon(QMessageBox.Warning)
+            message2.setText("Data Pengguna gagal dimuat dari server")
+            message2.setWindowTitle("Terjadi Kesalahan")
+            message2.setStandardButtons(QMessageBox.Ok)
+            message2.exec()
+            
         
-        response_json = json.loads(response.content)
-        # print(response_json[0]["nama"])
-        storeSetting("geokkp/jumlahkantor", len(response_json))
-        storeSetting("geokkp/listkantor", response_json)
-        self.iface.messageBar().pushMessage(
-            "Simpan Data:",
-            "Data kantor pengguna berhasil disimpan",
-            level=Qgis.Success
-        )
