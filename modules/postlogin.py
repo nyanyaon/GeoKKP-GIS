@@ -3,16 +3,26 @@ import json
 
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
+from qgis.PyQt.QtWidgets import (
+    QDockWidget
+)
 from qgis.utils import iface
 from qgis.core import (
     QgsProject
 )
 
-from .utils import readSetting, storeSetting, get_epsg_from_tm3_zone, set_project_crs_by_epsg
+from .utils import (
+    logMessage,
+    readSetting,
+    storeSetting,
+    get_epsg_from_tm3_zone,
+    set_project_crs_by_epsg
+)
+
 from .api import endpoints
 from .memo import app_state
 
-
+# file constants
 layer_json_file = os.path.join(
     os.path.dirname(__file__), '../config/layers.json')
 basemap_json_file = os.path.join(
@@ -34,10 +44,18 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
         self.project = QgsProject
 
+        for panel in self.iface.mainWindow().findChildren(QDockWidget):
+            if panel.windowTitle() == 'Panel Kerja GeoKKP-GIS':
+                self.panel = panel
+
+        if not self.panel:
+            logMessage("panel tidak terdeteksi atau tidak aktif")
+
         # read settings: Jumlah Kantah Terdaftar atas nama user yang login
-        jumlah_kantor = int(readSetting("geokkp/jumlahkantor", 0))
-        self.jsonKantor = readSetting("geokkp/listkantor", {})
-        self.populateKantah(jumlah_kantor)
+        if readSetting("geokkp/jumlahkantor") != '':
+            jumlah_kantor = int(readSetting("geokkp/jumlahkantor", 0))
+            self.jsonKantor = readSetting("geokkp/listkantor", {})
+            self.populateKantah(jumlah_kantor)
         # self.simpanLayerSettings()
         # self.simpanBasemapSettings()
 
@@ -48,16 +66,19 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
     def populateKantah(self, jumlahKantor):
         self.comboBoxKantah_3.clear()
         self.indexkantor = 0
-        if not self.jsonKantor or not jumlahKantor:
-            return
-        if jumlahKantor > 1:
-            for i in self.jsonKantor:
-                self.comboBoxKantah_3.addItem(i["nama"])
-            self.labelSatuKantah_3.hide()
-        else:
-            self.labelBeberapaKantah_4.hide()
-            self.comboBoxKantah_3.addItems(self.jsonKantor[0])
-        self.buttonLanjut_3.clicked.connect(self.simpanKantorSettings)
+        try:
+            self.jsonKantor
+            jumlahKantor
+            if jumlahKantor > 1:
+                for i in self.jsonKantor:
+                    self.comboBoxKantah_3.addItem(i["nama"])
+                self.labelSatuKantah_3.hide()
+            else:
+                self.labelBeberapaKantah_4.hide()
+                self.comboBoxKantah_3.addItems(self.jsonKantor[0])
+            self.buttonLanjut_3.clicked.connect(self.simpanKantorSettings)
+        except Exception:
+            logMessage("Jumlah kantor tidak terbaca")
 
     def simpanKantorSettings(self):
         index = self.comboBoxKantah_3.currentIndex()
@@ -76,6 +97,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         self.simpanSistemKoordinat(desa['ZONATM3'])
         self.simpanUserSettings()
         self.accept()
+        self.panel.switch_panel(1)
 
     def simpanProvinsiSettings(self, kantor_id, tipe_kantor_id):
         response = endpoints.get_provinsi_by_kantor(kantor_id, str(tipe_kantor_id))
@@ -118,8 +140,11 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
 
     def simpanSistemKoordinat(self, tm3_zone):
         print("ZONA TM 3", tm3_zone)
-        epsg = get_epsg_from_tm3_zone(tm3_zone)
-        set_project_crs_by_epsg(epsg)
+        try:
+            epsg = get_epsg_from_tm3_zone(tm3_zone)
+            set_project_crs_by_epsg(epsg)
+        except Exception:
+            logMessage("Zona TM3 tidak ditemukan pada data Desa di Server")
 
     def simpanUserSettings(self):
         username = app_state.get('username')

@@ -85,7 +85,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 app_state.set('username', username)
                 app_state.set('logged_in', True)
                 self.accept()
-                # self.profilKantor(username)
+                self.getKantorProfile(username)
         except Exception:
             message = QMessageBox(parent=self)
             message.setIcon(QMessageBox.Critical)
@@ -94,19 +94,17 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             message.setStandardButtons(QMessageBox.Ok)
             message.exec()
 
-    def profilKantor(self, username):
+    def getKantorProfile(self, username):
         """
         user entity
-        API backend: {}/getUserEntityByUserName
+        API backend: {}/getEntityByUserName
         """
         try:
             response = endpoints.get_entity_by_username(username)
             response_json = json.loads(response.content)
-            # print(response_json[0]["nama"])
             storeSetting("geokkp/jumlahkantor", len(response_json))
             storeSetting("geokkp/listkantor", response_json)
-            self.iface.messageBar().pushMessage(
-                "Simpan Data:",
+            logMessage(
                 "Data kantor pengguna berhasil disimpan",
                 level=Qgis.Success
             )
@@ -119,4 +117,3 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             message2.setStandardButtons(QMessageBox.Ok)
             message2.exec()
             
-        
