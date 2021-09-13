@@ -38,8 +38,8 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         jumlah_kantor = int(readSetting("geokkp/jumlahkantor", 0))
         self.jsonKantor = readSetting("geokkp/listkantor", {})
         self.populateKantah(jumlah_kantor)
-        self.simpanLayerSettings()
-        self.simpanBasemapSettings()
+        # self.simpanLayerSettings()
+        # self.simpanBasemapSettings()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -130,18 +130,4 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         # print(response_json[0]["nama"])
         # storeSetting("geokkp/listkantor", response_json)
 
-    def simpanLayerSettings(self):
-        f = open(layer_json_file,)
-        data = json.load(f)
-        for i in data['layers']:
-            pass
-        f.close()
-        storeSetting("geokkp/layers", data['layers'])
 
-    def simpanBasemapSettings(self):
-        f = open(basemap_json_file,)
-        data = json.load(f)
-        for i in data['basemaps']:
-            pass
-        f.close()
-        storeSetting("geokkp/basemaps", data['basemaps'])

@@ -57,15 +57,25 @@ from qgis.core import (
 from qgis.gui import QgsMapToolIdentify
 from qgis import utils as qgis_utils
 
+# import utilities
 from .modules.utils import (
-    storeSetting
+    clear_all_vars,
+    simpan_basemap_settings,
+    simpan_layer_settings,
+    storeSetting,
+    activate_editing,
+    iconPath,
+    icon,
+    explode_polyline,
+    snap_geometries_to_layer,
+    polygonize,
+    dissolve
 )
 
 # Import the code for the DockWidget
 from .modules.workpanel import Workpanel
-# from .geokkp_dockwidget import GeoKKPDockWidget
 
-# Modules
+# GeoKKP-GIS Modules
 from .modules.add_layer import AddLayerDialog
 from .modules.add_basemap import AddBasemapDialog
 from .modules.gotoxy import GotoXYDialog
@@ -80,20 +90,11 @@ from .modules.layout_peta import LayoutPetaDialog
 from .modules.layout_gu import LayoutGUDialog
 from .modules.trilateration import TrilaterationDialog
 from .modules.triangulation import TriangulationDialog
-from .modules.utils import (
-    activate_editing,
-    iconPath,
-    icon,
-    explode_polyline,
-    snap_geometries_to_layer,
-    polygonize,
-    dissolve
-)
 from .modules.memo import app_state
 
 
 class GeoKKP:
-    """GeoKKP QGIS Plugin Basic Implementation"""
+    """GeoKKP QGIS Plugin Main Implementation"""
 
     def __init__(self, iface):
         """Constructor.
@@ -117,6 +118,11 @@ class GeoKKP:
         login_state = app_state.set('logged_in', False)
         login_state.changed.connect(self.login_changed)
 
+        self.actionLoginUser = None
+        self.actionLogoutUser = None
+        self.userLoggedIn = None
+
+
         # initialize locale
         locale = QgsSettings().value('locale/userLocale')[0:2]
         locale_path = os.path.join(
@@ -127,6 +133,11 @@ class GeoKKP:
             self.translator = QTranslator()
             self.translator.load(locale_path)
             QCoreApplication.installTranslator(self.translator)
+
+        # load data for layers and basemaps
+        simpan_layer_settings()
+        simpan_basemap_settings()
+
 
         # Declare instance attributes
         self.actions = []
@@ -171,6 +182,7 @@ class GeoKKP:
         self.trilaterationaction = TrilaterationDialog()
         self.triangulationaction = TriangulationDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
+        # self.loginaction.loginChanged.connect()
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -278,17 +290,37 @@ class GeoKKP:
         self.run
 
         # ========== Menu: Login Pengguna ==========
-        self.add_action(
-            iconPath("login.png"),
-            text=self.tr(u'Login Pengguna'),
+        # self.add_action(
+        #    iconPath("login.png"),
+        #    text=self.tr(u'Login Pengguna'),
+        #    callback=self.login_geokkp,
+        #    parent=self.iface.mainWindow().menuBar(),
+        #    need_auth=False)
+        self.actionLoginUser = self.add_action(
+            icon("login.png"),
+            text=self.tr(u"Login Pengguna"),
             callback=self.login_geokkp,
             parent=self.iface.mainWindow().menuBar(),
-            need_auth=False)
+            add_to_menu=True,
+            need_auth=False
+        )
+
+        self.actionLogoutUser = self.add_action(
+            icon("keluar.png"),
+            text=self.tr(u"Logout Pengguna"),
+            callback=self.logout_user,
+            parent=self.iface.mainWindow().menuBar(),
+            add_to_menu=True,
+            need_auth=False
+        )
+        self.actionLogoutUser.setEnabled(False)
+        self.actionLogoutUser.setVisible(False)
+
         widget = QWidget()
         layout = QHBoxLayout()
-        self.labelLoggedIn = QLabel()
-        self.labelLoggedIn.setText("Masuk Pengguna")
-        layout.addWidget(self.labelLoggedIn)
+        self.userLoggedIn = QLabel()
+        self.userLoggedIn.setText("Masuk Pengguna")
+        layout.addWidget(self.userLoggedIn)
         widget.setLayout(layout)
         self.toolbar.addWidget(widget)
         # -------------------------------------------
@@ -723,10 +755,22 @@ class GeoKKP:
 
             print("run the plugin")
 
+    def logout_user(self):
+        login_state = app_state.get('logged_in')
+        if login_state.value:
+            login_state = app_state.set('logged_in', False)
+            print("checkout", login_state)
+            login_state.changed.connect(self.login_changed)
+            clear_all_vars()
+
     def login_changed(self, state):
         # self._is_logged_in = readSetting("geokkp/isLoggedIn")
         # print("successfully logged in")
         # print(self._is_logged_in)
+        self.actionLoginUser.setVisible(not state)
+        self.actionLogoutUser.setVisible(state)
+        self.actionLogoutUser.setEnabled(state)
+
         for action in self.actions:
             action_data = action.data()
             if isinstance(action_data, dict) \
@@ -734,14 +778,11 @@ class GeoKKP:
                     and action_data['need_auth']:
                 action.setEnabled(state)
         if state:
-            # should be switching page
+            self.userLoggedIn.setText("Welcome User")
             self.show_workpanel()
+        else:
+            self.userLoggedIn.setText("Masuk Pengguna")
             # self.postlogin()
-
-    def enable_button(self, loggedIn):
-        # self.btnLogin.setVisible(not loggedIn)
-        labelText = ("<b>Welcome to Planet</b>" if not loggedIn else "<b>Planet</b>")
-        self.labelLoggedIn.setText(labelText)
 
     # ==============================================================
     # Definisi Fungsi GeoKKP-GIS
