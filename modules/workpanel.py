@@ -7,6 +7,8 @@ from qgis.core import QgsProject
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
+from .login import LoginDialog
+
 # using utils
 from .utils import (
     icon,
@@ -37,6 +39,8 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         self.stackedWidget.setCurrentIndex(0)
         self.project = QgsProject
 
+        self.loginaction = LoginDialog()
+
         self.current_kantor_id = None
         self.current_tipe_kantor_id = None
         self.current_provinsi_id = None
@@ -44,7 +48,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         self.current_kecamatan_id = None
         self.current_kelurahan_id = None
 
-        # self.mulaiGeokkp.clicked.connect(self.show_workpanel)
+        self.mulaiGeokkp.clicked.connect(self.login_geokkp)
         self.btn_simpan_area_kerja.clicked.connect(self.simpan_area_kerja)
         self.stackedWidget.currentChanged.connect(self.setup_workpanel)
 
@@ -58,6 +62,11 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         self.closingPlugin.emit()
         self.stackedWidget.setCurrentIndex(0)
         event.accept()
+
+    def login_geokkp(self):
+        if self.loginaction is None:
+            self.loginaction = LoginDialog()
+        self.loginaction.show()
 
     def show_workpanel(self):
         workspace = readSetting("geokkp/workspace_terpilih", "rutin")

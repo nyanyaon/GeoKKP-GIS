@@ -60,6 +60,7 @@ from qgis import utils as qgis_utils
 # import utilities
 from .modules.utils import (
     clear_all_vars,
+    logMessage,
     simpan_basemap_settings,
     simpan_layer_settings,
     storeSetting,
@@ -122,7 +123,6 @@ class GeoKKP:
         self.actionLogoutUser = None
         self.userLoggedIn = None
 
-
         # initialize locale
         locale = QgsSettings().value('locale/userLocale')[0:2]
         locale_path = os.path.join(
@@ -137,7 +137,6 @@ class GeoKKP:
         # load data for layers and basemaps
         simpan_layer_settings()
         simpan_basemap_settings()
-
 
         # Declare instance attributes
         self.actions = []
@@ -697,7 +696,7 @@ class GeoKKP:
 
         # remove this statement if dockwidget is to remain
         # for reuse if plugin is reopened
-        # self.dockwidget = None
+        self.workpanel = None
         self.pluginIsActive = False
 
     def unload(self):
@@ -716,6 +715,7 @@ class GeoKKP:
         for panel in self.iface.mainWindow().findChildren(QDockWidget):
             if panel.windowTitle() == 'Panel Kerja GeoKKP-GIS':
                 self.iface.mainWindow().removeDockWidget(panel)
+                logMessage("duplicate panels found")
                 panel.setVisible(False)
                 panel.destroy()
                 del panel
@@ -723,9 +723,6 @@ class GeoKKP:
         # remove the toolbar
         if self.toolbar:
             del self.toolbar
-
-        # clear all previous user settings
-        storeSetting("geokkp", '')
 
         # remove menu
         if self.menu:
@@ -761,6 +758,7 @@ class GeoKKP:
             login_state = app_state.set('logged_in', False)
             print("checkout", login_state)
             login_state.changed.connect(self.login_changed)
+            self.workpanel.switch_panel(0)
             clear_all_vars()
 
     def login_changed(self, state):
@@ -778,12 +776,14 @@ class GeoKKP:
                     and action_data['need_auth']:
                 action.setEnabled(state)
         if state:
-            self.userLoggedIn.setText("Welcome User")
-            self.show_workpanel()
+            username = app_state.get('username')
+            self.userLoggedIn.setText(str(username))
+            self.postlogin()
+            # self.show_workpanel()
+            
         else:
             self.userLoggedIn.setText("Masuk Pengguna")
-            # self.postlogin()
-
+            
     # ==============================================================
     # Definisi Fungsi GeoKKP-GIS
     # ==============================================================
