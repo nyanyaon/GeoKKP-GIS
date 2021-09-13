@@ -1,5 +1,7 @@
 import re
 import os
+import json
+
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
 
@@ -55,12 +57,42 @@ grid_1000 = 500
 grid_500 = 250
 grid_250 = 125
 
+# list of layers and basemaps
+layer_json_file = os.path.join(
+    os.path.dirname(__file__), '../config/layers.json')
+basemap_json_file = os.path.join(
+    os.path.dirname(__file__), '../config/basemap.json')
+
+
+def simpan_layer_settings():
+    """
+    Panggil daftar layer dan simbologi dari file layers.json, simpan ke dalam pengaturan lokal
+    """
+    f = open(layer_json_file,)
+    data = json.load(f)
+    for i in data['layers']:
+        pass
+    f.close()
+    storeSetting("geokkp/layers", data['layers'])
+
+
+def simpan_basemap_settings():
+    """
+    Panggil daftar basemap dari file basemap.json, simpan ke dalam pengaturan lokal
+    """
+    f = open(basemap_json_file,)
+    data = json.load(f)
+    for i in data['basemaps']:
+        pass
+    f.close()
+    storeSetting("geokkp/basemaps", data['basemaps'])
+
 
 def logMessage(message, level=Qgis.Info):
     """
     Logger untuk debugging
     """
-    QgsMessageLog.logMessage(message, 'GeoKKP', level=level)
+    QgsMessageLog.logMessage(message, 'GeoKKP-GIS', level=level)
 
 
 def display_message_bar(tag, message, parent=None, level=Qgis.Info, action=DefaultMessageBarButton, duration=5):
@@ -110,6 +142,15 @@ def readSetting(key, default_value=None):
     """
     settings = QgsSettings()
     return settings.value(key, default_value)
+
+
+def clear_all_vars():
+    """ Hapus semua value dari QgsSettings yang digunakan oleh GeoKKP"""
+    s = QgsSettings()
+    for x in sorted(s.allKeys()):
+        if x.startswith("geokkp"):
+            s.setValue(x, "")
+    QgsMessageLog.logMessage("Flushed all user vars", 'GeoKKP-GIS', level=Qgis.Info)
 
 
 def is_layer_exist(project, layername):
