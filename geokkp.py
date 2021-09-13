@@ -122,7 +122,6 @@ class GeoKKP:
         self.actionLogoutUser = None
         self.userLoggedIn = None
 
-
         # initialize locale
         locale = QgsSettings().value('locale/userLocale')[0:2]
         locale_path = os.path.join(
@@ -137,7 +136,6 @@ class GeoKKP:
         # load data for layers and basemaps
         simpan_layer_settings()
         simpan_basemap_settings()
-
 
         # Declare instance attributes
         self.actions = []

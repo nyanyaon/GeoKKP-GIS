@@ -65,26 +65,34 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         username = self.inputUsername.text()
         password = self.inputPassword.text()
         logMessage(f'{username}, {password}')
-        response = endpoints.login(username, password)
-        content = json.loads(response.content)
-        if not content['status']:
+        try:
+            response = endpoints.login(username, password)
+            content = json.loads(response.content)
+            if not content['status']:
+                message = QMessageBox(parent=self)
+                message.setIcon(QMessageBox.Information)
+                message.setText(content['information'])
+                message.setWindowTitle("Peringatan")
+                message.setStandardButtons(QMessageBox.Ok)
+                message.exec()
+            else:
+                if self.checkboxSaveLogin.isChecked():
+                    save_credentials(username, password)
+                    storeSetting("geokkp/isLoggedIn", content['status'])
+                logMessage(str(content))
+                self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
+                self.loginChanged.emit()
+                app_state.set('username', username)
+                app_state.set('logged_in', True)
+                self.accept()
+                # self.profilKantor(username)
+        except Exception:
             message = QMessageBox(parent=self)
-            message.setIcon(QMessageBox.Information)
-            message.setText(content['information'])
-            message.setWindowTitle("Peringatan")
+            message.setIcon(QMessageBox.Critical)
+            message.setText("Kesalahan koneksi. Periksa sambungan Anda ke server GeoKKP")
+            message.setWindowTitle("Koneksi bermasalah")
             message.setStandardButtons(QMessageBox.Ok)
             message.exec()
-        else:
-            if self.checkboxSaveLogin.isChecked():
-                save_credentials(username, password)
-                storeSetting("geokkp/isLoggedIn", content['status'])
-            logMessage(str(content))
-            self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
-            self.loginChanged.emit()
-            app_state.set('username', username)
-            app_state.set('logged_in', True)
-            self.accept()
-            # self.profilKantor(username)
 
     def profilKantor(self, username):
         """

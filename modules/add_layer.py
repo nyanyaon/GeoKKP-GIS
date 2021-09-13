@@ -6,7 +6,7 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-from .utils import logMessage, readSetting, add_layer, icon
+from .utils import readSetting, add_layer, icon
 
 data_layer = readSetting("geokkp/layers", default_value={})
 
