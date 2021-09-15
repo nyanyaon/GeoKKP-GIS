@@ -116,4 +116,3 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             message2.setWindowTitle("Terjadi Kesalahan")
             message2.setStandardButtons(QMessageBox.Ok)
             message2.exec()
-            

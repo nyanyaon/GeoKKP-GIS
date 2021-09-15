@@ -63,7 +63,6 @@ from .modules.utils import (
     logMessage,
     simpan_basemap_settings,
     simpan_layer_settings,
-    storeSetting,
     activate_editing,
     iconPath,
     icon,
@@ -780,10 +779,10 @@ class GeoKKP:
             self.userLoggedIn.setText(str(username))
             self.postlogin()
             # self.show_workpanel()
-            
+
         else:
             self.userLoggedIn.setText("Masuk Pengguna")
-            
+
     # ==============================================================
     # Definisi Fungsi GeoKKP-GIS
     # ==============================================================
