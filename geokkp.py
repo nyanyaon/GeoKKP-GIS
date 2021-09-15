@@ -79,6 +79,7 @@ from .modules.workpanel import Workpanel
 from .modules.add_layer import AddLayerDialog
 from .modules.add_basemap import AddBasemapDialog
 from .modules.gotoxy import GotoXYDialog
+from .modules.settings import SettingsDialog
 from .modules.plotcoord import PlotCoordinateDialog
 from .modules.login import LoginDialog
 from .modules.openaerialmap import OAMDialog
@@ -169,6 +170,7 @@ class GeoKKP:
         self.addlayeraction = AddLayerDialog()
         self.addbasemapaction = AddBasemapDialog()
         self.gotoxyaction = GotoXYDialog()
+        self.setting_action = SettingsDialog()
         self.plotxyaction = PlotCoordinateDialog()
         self.import_from_file_widget = ImportGeomFromFile(self)
         self.loginaction = LoginDialog()
@@ -649,7 +651,7 @@ class GeoKKP:
         self.add_action(
             iconPath("settings.png"),
             text=self.tr(u'Pengaturan'),
-            callback=self.gotoxy,
+            callback=self.open_settings,
             parent=self.iface.mainWindow(),
             need_auth=False)
         # -------------------------------------------
@@ -821,6 +823,12 @@ class GeoKKP:
 
         # show the dialog
         self.gotoxyaction.show()
+
+    def open_settings(self):
+        if self.setting_action is None:
+            self.setting_action = SettingsDialog()
+
+        self.setting_action.show()
 
     def coordinate_transform(self):
         if self.coordinate_transform_dialog is None:
