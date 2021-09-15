@@ -63,7 +63,6 @@ from .modules.utils import (
     logMessage,
     simpan_basemap_settings,
     simpan_layer_settings,
-    storeSetting,
     activate_editing,
     iconPath,
     icon,
@@ -80,6 +79,7 @@ from .modules.workpanel import Workpanel
 from .modules.add_layer import AddLayerDialog
 from .modules.add_basemap import AddBasemapDialog
 from .modules.gotoxy import GotoXYDialog
+from .modules.settings import SettingsDialog
 from .modules.plotcoord import PlotCoordinateDialog
 from .modules.login import LoginDialog
 from .modules.openaerialmap import OAMDialog
@@ -170,6 +170,7 @@ class GeoKKP:
         self.addlayeraction = AddLayerDialog()
         self.addbasemapaction = AddBasemapDialog()
         self.gotoxyaction = GotoXYDialog()
+        self.setting_action = SettingsDialog()
         self.plotxyaction = PlotCoordinateDialog()
         self.import_from_file_widget = ImportGeomFromFile(self)
         self.loginaction = LoginDialog()
@@ -650,7 +651,7 @@ class GeoKKP:
         self.add_action(
             iconPath("settings.png"),
             text=self.tr(u'Pengaturan'),
-            callback=self.gotoxy,
+            callback=self.open_settings,
             parent=self.iface.mainWindow(),
             need_auth=False)
         # -------------------------------------------
@@ -780,10 +781,10 @@ class GeoKKP:
             self.userLoggedIn.setText(str(username))
             self.postlogin()
             # self.show_workpanel()
-            
+
         else:
             self.userLoggedIn.setText("Masuk Pengguna")
-            
+
     # ==============================================================
     # Definisi Fungsi GeoKKP-GIS
     # ==============================================================
@@ -822,6 +823,12 @@ class GeoKKP:
 
         # show the dialog
         self.gotoxyaction.show()
+
+    def open_settings(self):
+        if self.setting_action is None:
+            self.setting_action = SettingsDialog()
+
+        self.setting_action.show()
 
     def coordinate_transform(self):
         if self.coordinate_transform_dialog is None:
@@ -962,7 +969,7 @@ class GeoKKP:
     #     self.adjustaction.show()
 
     def openhelp(self):
-        QDesktopServices.openUrl(QUrl('https://github.com/danylaksono/GeoKKP-GIS/blob/main/README.md'))
+        QDesktopServices.openUrl(QUrl('https://geokkp-gis.github.io/docs/'))
         pass
 
     def show_workpanel(self):

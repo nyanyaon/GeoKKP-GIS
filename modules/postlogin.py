@@ -154,5 +154,3 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         # response_json = json.loads(response.content)
         # print(response_json[0]["nama"])
         # storeSetting("geokkp/listkantor", response_json)
-
-
