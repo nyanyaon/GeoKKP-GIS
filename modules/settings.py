@@ -1,22 +1,8 @@
 import os
 
-from qgis.PyQt.QtCore import Qt, QTimer
-from qgis.gui import QgsRubberBand
-
-from qgis.core import (
-    QgsCoordinateTransform,
-    QgsRectangle,
-    QgsPoint,
-    QgsPointXY,
-    QgsGeometry,
-    QgsWkbTypes,
-    QgsProject)
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
-
-# using utils
-from .utils import icon, parse_raw_coordinate
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/settings.ui'))
