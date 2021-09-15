@@ -961,7 +961,7 @@ class GeoKKP:
     #     self.adjustaction.show()
 
     def openhelp(self):
-        QDesktopServices.openUrl(QUrl('https://github.com/danylaksono/GeoKKP-GIS/blob/main/README.md'))
+        QDesktopServices.openUrl(QUrl('https://geokkp-gis.github.io/docs/'))
         pass
 
     def show_workpanel(self):
