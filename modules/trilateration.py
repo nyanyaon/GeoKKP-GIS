@@ -4,7 +4,8 @@ import math
 from qgis.PyQt import QtWidgets, uic, QtXml, QtGui, QtCore
 from qgis.core import (
     QgsProject, QgsPrintLayout, QgsReadWriteContext, QgsExpressionContextUtils, 
-    QgsPointXY, QgsFeature, QgsGeometry, QgsVectorLayer, Qgis
+    QgsPointXY, QgsFeature, QgsGeometry, QgsVectorLayer, Qgis, QgsCircle, 
+    QgsPoint
 )
 
 from qgis.PyQt.QtCore import pyqtSignal
@@ -85,7 +86,8 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
             self.jarak_1 = float(self.input_jarak_1.text())
             self.dialog_bar.clearWidgets()
             self.set_enabled(next_widget)
-            pt = self.point_1
+            pt = QgsPointXY(self.point_1)
+            # circle_geom = QgsCircle(pt, self.jarak_1, 0).toCircularString()
             buff_geom = QgsGeometry().fromPointXY(pt).buffer(self.jarak_1, 20)
             self.rb_1.setToGeometry(buff_geom, None)
 
@@ -133,8 +135,9 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
             self.jarak_2 = float(self.input_jarak_2.text())
             self.set_enabled(next_widget)
             
-            pt = self.point_2
+            pt = QgsPointXY(self.point_2)
             buff_geom = QgsGeometry().fromPointXY(pt).buffer(self.jarak_2, 20)
+            # circle_geom = QgsCircle(QgsPoint(pt), self.jarak_2, 0)
             self.rb_2.setToGeometry(buff_geom, None)
 
             self.two_point_flag = True
@@ -179,8 +182,9 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
             self.jarak_3 = float(self.input_jarak_3.text())
             self.dialog_bar.clearWidgets()
 
-            pt = self.point_3
+            pt = QgsPointXY(self.point_3)
             buff_geom = QgsGeometry().fromPointXY(pt).buffer(self.jarak_3, 20)
+            # circle_geom = QgsCircle(QgsPoint(pt), self.jarak_3, 0)
             self.rb_3.setToGeometry(buff_geom, None)
 
             self.three_point_flag = True
