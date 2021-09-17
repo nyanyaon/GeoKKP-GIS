@@ -14,7 +14,7 @@ from .utils import (
     get_saved_credentials,
     save_credentials
 )
-from .postlogin import PostLoginDock
+
 from .api import endpoints
 from .memo import app_state
 
@@ -34,7 +34,6 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         self.canvas = iface.mapCanvas()
         super(LoginDialog, self).__init__(parent)
         self.setupUi(self)
-        self.postloginaction = PostLoginDock()
 
         self.bar = QgsMessageBar()
 
@@ -66,54 +65,54 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         username = self.inputUsername.text()
         password = self.inputPassword.text()
         logMessage(f'{username}, {password}')
-        response = endpoints.login(username, password)
-        content = json.loads(response.content)
-        if not content['status']:
+        try:
+            response = endpoints.login(username, password)
+            content = json.loads(response.content)
+            if not content['status']:
+                message = QMessageBox(parent=self)
+                message.setIcon(QMessageBox.Information)
+                message.setText(content['information'])
+                message.setWindowTitle("Peringatan")
+                message.setStandardButtons(QMessageBox.Ok)
+                message.exec()
+            else:
+                if self.checkboxSaveLogin.isChecked():
+                    save_credentials(username, password)
+                    storeSetting("geokkp/isLoggedIn", content['status'])
+                logMessage(str(content))
+                self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
+                self.loginChanged.emit()
+                app_state.set('username', username)
+                app_state.set('logged_in', True)
+                self.accept()
+                self.getKantorProfile(username)
+        except Exception:
             message = QMessageBox(parent=self)
-            message.setIcon(QMessageBox.Information)
-            message.setText(content['information'])
-            message.setWindowTitle("Peringatan")
+            message.setIcon(QMessageBox.Critical)
+            message.setText("Kesalahan koneksi. Periksa sambungan Anda ke server GeoKKP")
+            message.setWindowTitle("Koneksi bermasalah")
             message.setStandardButtons(QMessageBox.Ok)
             message.exec()
-        else:
-            if self.checkboxSaveLogin.isChecked():
-                save_credentials(username, password)
-                storeSetting("geokkp/isLoggedIn", content['status'])
-            logMessage(str(content))
-            self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
-            self.profilUser(username)
-            self.loginChanged.emit()
-            app_state.set('username', username)
-            app_state.set('logged_in', True)
-            self.accept()
 
-    def profilUser(self, username):
+    def getKantorProfile(self, username):
         """
         user entity
         API backend: {}/getEntityByUserName
         """
-
-        response = endpoints.get_entity_by_username(username)
-        response_json = json.loads(response.content)
-        # print(response_json[0]["nama"])
-        storeSetting("geokkp/jumlahkantor", len(response_json))
-        storeSetting("geokkp/listkantor", response_json)
-        self.iface.messageBar().pushMessage(
-            "Simpan Data:",
-            "Data kantor pengguna berhasil disimpan",
-            level=Qgis.Success
-        )
-        self.postlogin()
-
-    def postlogin(self):
-        print("==========ps===========")
-
-        # if self.postloginaction is None:
-        # Create the dockwidget (after translation) and keep reference
-        #    self.postloginaction = PostLoginDock()
-
-        # connect to provide cleanup on closing of dockwidget
-        # self.postloginaction.closingPlugin.connect(self.onClosePlugin)
-
-        # show the dialog
-        # self.postloginaction.show()
+        try:
+            response = endpoints.get_entity_by_username(username)
+            response_json = json.loads(response.content)
+            storeSetting("geokkp/jumlahkantor", len(response_json))
+            storeSetting("geokkp/listkantor", response_json)
+            logMessage(
+                "Data kantor pengguna berhasil disimpan",
+                level=Qgis.Success
+            )
+        except Exception as e: # noqa
+            print("ada error ketika login", e)
+            message2 = QMessageBox(parent=self)
+            message2.setIcon(QMessageBox.Warning)
+            message2.setText("Data Pengguna gagal dimuat dari server")
+            message2.setWindowTitle("Terjadi Kesalahan")
+            message2.setStandardButtons(QMessageBox.Ok)
+            message2.exec()

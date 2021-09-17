@@ -20,6 +20,7 @@ from .utils import icon
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/trilateration.ui'))
 
+
 class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
     """ Dialog for Peta Bidang """
 
@@ -56,7 +57,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_1)
             self.iface.mapCanvas().scene().removeItem(self.rb_1)
-        except:
+        except: # noqa
             pass
         self.vm_1 = self.create_vertex_marker()
         self.list_vm.append(self.vm_1)
@@ -103,7 +104,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_2)
             self.iface.mapCanvas().scene().removeItem(self.rb_2)
-        except:
+        except: # noqa
             pass
         self.vm_2 = self.create_vertex_marker()
         self.list_vm.append(self.vm_2)
@@ -218,13 +219,13 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
-        event.accept()  
+        event.accept()
 
     def rejected(self):
         print('cancel triggered')
         self.clear()
         self.reject()
-            
+
     def accepted(self):
         # create a memory vector
         project_crs = self.iface.mapCanvas().mapSettings().destinationCrs()
@@ -281,7 +282,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
 
         a = (d1*d1 - d2*d2 + d*d)/(2*d)
         h = math.sqrt(d1*d1 - a*a)
-        
+
         x1 = p1.x()
         y1 = p1.y()
 
@@ -290,16 +291,16 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
 
         xo = x1 + a*(x2-x1)/d
         yo = y1 + a*(y2-y1)/d
-        
+
         x3a = xo + h*(y2-y1)/d
         y3a = yo - h*(x2-x1)/d
 
         x3b = xo - h*(y2-y1)/d
         y3b = yo + h*(x2-x1)/d
-        
+
         print(a, h, d)
 
-        return QgsPointXY(x3a,y3a),QgsPointXY(x3b,y3b)
+        return QgsPointXY(x3a, y3a), QgsPointXY(x3b, y3b)
 
     def three_points(self, p1, p2, p3, d1, d2, d3):
 
@@ -316,7 +317,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         p = y1*y1 - y2*y2
         q = d2*d2 - d1*d1
 
-        r = x1-x3 
+        r = x1-x3
         s = y3-y1
         t = x1*x1 - x3*x3
         u = y1*y1 - y3*y3
@@ -392,10 +393,11 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
 
         self.set_disabled(list_of_widget)
         self.dialog_bar.clearWidgets()
+
         for vm in self.list_vm:
             try:
                 self.iface.mapCanvas().scene().removeItem(vm)
-            except:
+            except: # noqa
                 pass
         for rb in self.list_rb:
             try:

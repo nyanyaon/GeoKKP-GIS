@@ -30,7 +30,7 @@ from qgis.utils import iface
 from qgis.core import QgsProject
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'ui/welcome_dock.ui'))
+    os.path.dirname(__file__), 'ui/panel_kerja.ui'))
 
 
 class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):

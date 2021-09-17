@@ -1,10 +1,13 @@
-from qgis.gui import QgsMapTool, QgsVertexMarker
-from qgis.core import QgsPointXY
-from qgis.PyQt.QtGui import QColor
+from qgis.gui import QgsMapTool  # , QgsVertexMarker
+# from qgis.core import QgsPointXY
+# from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtCore import pyqtSignal
 
-class MapTool(QgsMapTool):
 
+class MapTool(QgsMapTool):
+    '''
+    Docstring is needed here
+    '''
     map_clicked = pyqtSignal(float, float)
 
     def __init__(self, canvas, vm):
@@ -18,7 +21,7 @@ class MapTool(QgsMapTool):
 
     def reset(self):
         self.isEmittingPoint = False
-    
+
     def canvasMoveEvent(self, event):
         if self.isEmittingPoint:
             self.point_snap = self.snapping_point(event.pos())
@@ -31,7 +34,7 @@ class MapTool(QgsMapTool):
 
     def deactivate(self):
         QgsMapTool.deactivate(self)
-    
+
     def snapping_point(self, point):
         snapped = self.canvas.snappingUtils().snapToMap(point)
 

@@ -18,6 +18,7 @@ from .utils import icon
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/triangulation.ui'))
 
+
 class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
     """ Dialog for Peta Bidang """
 
@@ -47,7 +48,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
     def on_triangulasi_titik_1_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_1)
-        except:
+        except: # noqa
             pass
         self.vm_1 = self.create_vertex_marker()
         self.list_vm.append(self.vm_1)
@@ -88,7 +89,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
     def on_triangulasi_titik_2_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_2)
-        except:
+        except: # noqa
             pass
         self.vm_2 = self.create_vertex_marker()
         self.list_vm.append(self.vm_2)
@@ -129,7 +130,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
             
     def closeEvent(self, event):
         self.closingPlugin.emit()
-        event.accept()  
+        event.accept()
 
     def on_triangulasi_cancel_pressed(self):
         self.clear()
@@ -155,14 +156,14 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
 
             vl.startEditing()
             vl.addFeatures([feat])
-            vl.commitChanges()  
+            vl.commitChanges()
 
             QgsProject.instance().addMapLayer(vl)
             self.clear()
-            self.close() 
+            self.close()
         else:
             pass
-        
+
     def triangulate(self, p1, p2, az1, az2):
         x1 = p1.x()
         y1 = p1.y()
@@ -189,7 +190,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # print('p3', x3,y3)
 
-        return QgsPointXY(x3, y3)    
+        return QgsPointXY(x3, y3)
 
     def minmax_line(self, pt, az):
         xmin = self.canvas.extent().xMinimum()
@@ -267,7 +268,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         for vm in self.list_vm:
             try:
                 self.iface.mapCanvas().scene().removeItem(vm)
-            except:
+            except: # noqa
                 pass
         for rb in self.list_rb_line:
             try:
@@ -285,6 +286,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         if not az_str:
             return False
         az_split = az_str.strip().split(' ')
+
         if len(az_split) == 3:
             self.dialog_bar.clearWidgets()
             try:

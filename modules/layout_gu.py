@@ -45,14 +45,14 @@ class LayoutGUDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def set_variable(self):
         self.var_set('nomor_gu', self.nomor_gu.text())
-        
+
         self.var_set('gu_nama_kantah', self.gu_nama_kantah.text())
         self.var_set('gu_nama_kecamatan', self.gu_nama_kecamatan.text())
         self.var_set('gu_nama_desa', self.gu_nama_desa.text())
-        
+
         self.var_set('gu_no_peta_pendaftaran', self.gu_no_peta_pendaftaran.text())
         self.var_set('gu_no_peta_kerja', self.gu_no_peta_kerja.text())
-        
+
         self.var_set('gu_pu_nama', self.gu_pu_nama.text())
         self.var_set('gu_pu_status', self.gu_pu_status.text())
         self.var_set('gu_pu_instansi', self.gu_pu_instansi.text())
@@ -62,21 +62,20 @@ class LayoutGUDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def read_settings(self):
         self.nomor_gu.setText(self.project.readEntry('GeoKKP', "nomor_gu")[0])
-        
+
         self.gu_nama_kantah.setText(self.project.readEntry('GeoKKP', "gu_nama_kantah")[0])
         self.gu_nama_kecamatan.setText(self.project.readEntry('GeoKKP', "gu_nama_kecamatan")[0])
         self.gu_nama_desa.setText(self.project.readEntry('GeoKKP', "gu_nama_desa")[0])
-        
+
         self.gu_no_peta_pendaftaran.setText(self.project.readEntry('GeoKKP', "gu_no_peta_pendaftaran")[0])
         self.gu_no_peta_kerja.setText(self.project.readEntry('GeoKKP', "gu_no_peta_kerja")[0])
-        
+
         self.gu_pu_nama.setText(self.project.readEntry('GeoKKP', "gu_pu_nama")[0])
         self.gu_pu_status.setText(self.project.readEntry('GeoKKP', "gu_pu_status")[0])
         self.gu_pu_instansi.setText(self.project.readEntry('GeoKKP', "gu_pu_instansi")[0])
         self.gu_pu_nomor.setText(self.project.readEntry('GeoKKP', "gu_pu_nomor")[0])
         self.gu_pu_surat_tugas.setText(self.project.readEntry('GeoKKP', "gu_pu_surat_tugas")[0])
         self.gu_pu_alat.setText(self.project.readEntry('GeoKKP', "gu_pu_alat")[0])
-
 
     def write_settings(self):
         self.project.writeEntry('GeoKKP', "nomor_gu", self.nomor_gu.text())
@@ -87,7 +86,7 @@ class LayoutGUDialog(QtWidgets.QDialog, FORM_CLASS):
 
         self.project.writeEntry('GeoKKP', "gu_no_peta_pendaftaran", self.gu_no_peta_pendaftaran.text())
         self.project.writeEntry('GeoKKP', "gu_no_peta_kerja", self.gu_no_peta_kerja.text())
-        
+
         self.project.writeEntry('GeoKKP', "gu_pu_nama", self.gu_pu_nama.text())
         self.project.writeEntry('GeoKKP', "gu_pu_status", self.gu_pu_status.text())
         self.project.writeEntry('GeoKKP', "gu_pu_instansi", self.gu_pu_instansi.text())

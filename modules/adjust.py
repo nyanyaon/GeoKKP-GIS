@@ -34,7 +34,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         self._layer = None
         self.set_identify_layer()
 
-        self.layerAcuan.layerChanged.connect(self.set_reference_layer)
+        # self.layerAcuan.layerChanged.connect(self.set_reference_layer)
         # self.clickTool = QgsMapToolEmitPoint(self.iface.mapCanvas())
         self.identifyFeature = QgsMapToolIdentifyFeature(self.canvas, self._layer)
         # self.clickTool.canvasClicked.connect(self.test)
