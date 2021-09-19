@@ -90,6 +90,12 @@ from .modules.layout_gu import LayoutGUDialog
 from .modules.trilateration import TrilaterationDialog
 from .modules.triangulation import TriangulationDialog
 from .modules.pengaturan_lokasi import PengaturanLokasiDialog
+from .modules.draw_dimension import DrawDimensionDialog
+from .modules.utils import (
+    activate_editing,
+    iconPath,
+    icon
+)
 from .modules.memo import app_state
 
 
@@ -178,6 +184,8 @@ class GeoKKP:
         self.layoutguaction = LayoutGUDialog()
         self.trilaterationaction = TrilaterationDialog()
         self.triangulationaction = TriangulationDialog()
+        self.dimDistanceAction = DrawDimensionDialog()
+        self.dimAngleAction = DrawDimensionDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
         self.aturlokasi_action = PengaturanLokasiDialog()
         # self.loginaction.loginChanged.connect()
@@ -395,6 +403,44 @@ class GeoKKP:
         # Register menu to toolbar
         self.toolbar.addWidget(self.AddDataButton)
         self.menu.addMenu(self.popupAddData)
+        # -------------------------------------------
+
+        # ======== Dropdown Menu: Dimensi ========
+        # Deklarasi menu dimensi
+        self.popupDimension = QMenu("&Dimensi", self.iface.mainWindow())
+
+        #  --- Sub-menu Dimensi Jarak ---
+        self.actionDistanceDimension = self.add_action(
+            icon("dimension_distance.png"),
+            text=self.tr(u"Dimensi Jarak"),
+            callback=self.dimensiondistance, # dummy function
+            add_to_toolbar=False,
+            add_to_menu=False,
+            parent=self.popupDimension
+        )
+        self.popupDimension.addAction(self.actionDistanceDimension)
+
+        #  --- Sub-menu Dimensi Sudut ---
+        self.actionAngleDimension = self.add_action(
+            icon("dimension_angle.png"),
+            text=self.tr(u"Dimensi Sudut"),
+            callback=self.dimensionangle, # dummy function
+            add_to_toolbar=False,
+            add_to_menu=False,
+            parent=self.popupDimension
+        )
+        self.popupDimension.addAction(self.actionAngleDimension)
+
+        # Pengaturan Dropdown menu Dimensi
+        self.DimensionButton = QToolButton()
+        self.DimensionButton.setMenu(self.popupDimension)
+        self.DimensionButton.setIcon(icon("dimension.png"))
+        self.DimensionButton.setToolTip("Dimension")
+        self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
+        self.DimensionButton.setPopupMode(QToolButton.MenuButtonPopup)
+        # Register menu to toolbar
+        self.toolbar.addWidget(self.DimensionButton)
+        self.menu.addMenu(self.popupDimension)
         # -------------------------------------------
 
         # ======== Dropdown Menu: Penggambaran ========
@@ -825,6 +871,16 @@ class GeoKKP:
         dissolved = dissolve(polygonized)
         QgsProject.instance().removeMapLayer(polygonized)
         QgsProject.instance().addMapLayer(dissolved)
+        
+    def dimensiondistance(self):
+        if self.dimDistanceAction is None:
+            self.dimDistanceAction = DrawDimensionDialog()
+        self.dimDistanceAction.show()
+
+    def dimensionangle(self):
+        if self.dimAngleAction is None:
+            self.dimAngleAction = DrawDimensionDialog()
+        self.dimAngleAction.show()
 
     def aturlokasi(self):
         if self.aturlokasi_action is None:
