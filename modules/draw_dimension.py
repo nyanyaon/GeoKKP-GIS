@@ -91,13 +91,6 @@ class DimensionAngleTool(QgsMapTool):
             self.arc_chosen = 'long' 
             return long_arc
 
-    def angle_dd_to_dms(self, angle):
-        deg = math.floor(angle)
-        min_dd = angle%deg*60
-        min = math.floor(min_dd)
-        sec = min_dd%min
-        return deg, min, sec
-
     def canvasReleaseEvent(self, event):
         self.click_counter += 1
         point_snap, _ = snapping_point(self.canvas, event.pos())
