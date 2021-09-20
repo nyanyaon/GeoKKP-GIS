@@ -69,7 +69,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         self.loginaction.show()
 
     def show_workpanel(self):
-        workspace = readSetting("geokkp/workspace_terpilih", "rutin")
+        workspace = readSetting("workspace_terpilih", "rutin")
         widget = getattr(self, workspace, self.rutin)
         self.stackedWidget.setCurrentWidget(widget)
 
@@ -85,43 +85,43 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         self.populate_kantor()
 
     def kantor_changed(self, index):
-        data_kantor = readSetting("geokkp/listkantor", [])
+        data_kantor = readSetting("listkantor", [])
         kantor = data_kantor[index]
         self.current_kantor_id = kantor["kantorID"]
         self.current_tipe_kantor_id = kantor["tipeKantorId"]
-        storeSetting("geokkp/kantorterpilih", kantor)
+        storeSetting("kantorterpilih", kantor)
         self.populate_provinsi(self.current_kantor_id, self.current_tipe_kantor_id)
 
     def provinsi_changed(self, index):
-        data_provinsi = readSetting("geokkp/listprovinsi", [])
+        data_provinsi = readSetting("listprovinsi", [])
         provinsi = data_provinsi[index]
         self.current_provinsi_id = provinsi["PROPINSIID"]
-        storeSetting("geokkp/provinsiterpilih", provinsi)
+        storeSetting("provinsiterpilih", provinsi)
         self.populate_kabupaten(self.current_kantor_id, self.current_tipe_kantor_id, self.current_provinsi_id)
 
     def kabupaten_changed(self, index):
-        data_kabupaten = readSetting("geokkp/listkabupaten", [])
+        data_kabupaten = readSetting("listkabupaten", [])
         kabupaten = data_kabupaten[index]
         self.current_kabupaten_id = kabupaten["KABUPATENID"]
-        storeSetting("geokkp/kabupatenterpilih", kabupaten)
+        storeSetting("kabupatenterpilih", kabupaten)
         self.populate_kecamatan(self.current_kantor_id, self.current_tipe_kantor_id, self.current_kabupaten_id)
 
     def kecamatan_changed(self, index):
-        data_kecamatan = readSetting("geokkp/listkecamatan", [])
+        data_kecamatan = readSetting("listkecamatan", [])
         kecamatan = data_kecamatan[index]
         self.current_kecamatan_id = kecamatan["KECAMATANID"]
-        storeSetting("geokkp/kecamatanterpilih", kecamatan)
+        storeSetting("kecamatanterpilih", kecamatan)
         self.populate_kelurahan(self.current_kantor_id, self.current_tipe_kantor_id, self.current_kecamatan_id)
 
     def kelurahan_changed(self, index):
-        data_kelurahan = readSetting("geokkp/listkelurahan", [])
+        data_kelurahan = readSetting("listkelurahan", [])
         kelurahan = data_kelurahan[index]
         self.current_kelurahan_id = kelurahan["DESAID"]
-        storeSetting("geokkp/kelurahanterpilih", kelurahan)
+        storeSetting("kelurahanterpilih", kelurahan)
 
     def populate_kantor(self):
         self.combo_kantor.clear()
-        data_kantor = readSetting("geokkp/listkantor", [])
+        data_kantor = readSetting("listkantor", [])
         for kantor in data_kantor:
             self.combo_kantor.addItem(kantor["nama"])
 
@@ -131,7 +131,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         response_json = json.loads(response.content)
         if response_json and len(response_json['PROPINSI']):
             data_provinsi = response_json['PROPINSI']
-            storeSetting("geokkp/listprovinsi", data_provinsi)
+            storeSetting("listprovinsi", data_provinsi)
             for provinsi in data_provinsi:
                 self.combo_provinsi.addItem(provinsi["PROPNAMA"])
 
@@ -141,7 +141,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         response_json = json.loads(response.content)
         if response_json and len(response_json['KABUPATEN']):
             data_kabupaten = response_json['KABUPATEN']
-            storeSetting("geokkp/listkabupaten", data_kabupaten)
+            storeSetting("listkabupaten", data_kabupaten)
             for kabupaten in data_kabupaten:
                 self.combo_kabupaten.addItem(kabupaten["KABUNAMA"])
 
@@ -151,7 +151,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         response_json = json.loads(response.content)
         if response_json and len(response_json['KECAMATAN']):
             data_kecamatan = response_json['KECAMATAN']
-            storeSetting("geokkp/listkecamatan", data_kecamatan)
+            storeSetting("listkecamatan", data_kecamatan)
             for kecamatan in data_kecamatan:
                 self.combo_kecamatan.addItem(kecamatan["KECANAMA"])
 
@@ -161,13 +161,13 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         response_json = json.loads(response.content)
         if response_json and len(response_json['DESA']):
             data_kelurahan = response_json['DESA']
-            storeSetting("geokkp/listkelurahan", data_kelurahan)
+            storeSetting("listkelurahan", data_kelurahan)
             for kelurahan in data_kelurahan:
                 self.combo_kelurahan.addItem(kelurahan["DESANAMA"])
 
     def simpan_area_kerja(self):
-        kabupaten = readSetting("geokkp/kabupatenterpilih")
-        kelurahan = readSetting("geokkp/kelurahanterpilih")
+        kabupaten = readSetting("kabupatenterpilih")
+        kelurahan = readSetting("kelurahanterpilih")
         tm3_zone = kelurahan['ZONATM3'] if kelurahan['ZONATM3'] else kabupaten['ZONATM3']
         if tm3_zone:
             epsg = get_epsg_from_tm3_zone(tm3_zone, False)

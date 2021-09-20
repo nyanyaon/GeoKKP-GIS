@@ -3,11 +3,11 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=GeoKKP-GIS-2
+name=GeoKKP-GIS
 qgisMinimumVersion=3.0
 description=This plugin ports GeoKKP for National Land Agency of Indonesia
 version=0.1.0
-author=Dany Laksono
+author=Dany Laksono, Ivan Busthomi, Nur Izzahudin, Ismail Sunni
 email=danylaksono@ugm.ac.id
 
 about=This plugin serves as a port of GeoKKP for GIS purposes in QGIS

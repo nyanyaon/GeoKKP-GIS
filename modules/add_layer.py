@@ -6,9 +6,9 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-from .utils import readSetting, add_layer, icon
+from .utils import logMessage, readSetting, add_layer, icon
 
-data_layer = readSetting("geokkp/layers", default_value={})
+data_layer = readSetting("layers")
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/addlayerv2.ui'))
@@ -28,7 +28,10 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
         self._currentcrs = None
         self.setupUi(self)
 
-        self.populateDaftarLayer(data_layer)
+        try:
+            self.populateDaftarLayer(data_layer)
+        except Exception:
+            logMessage("daftar layer gagal dimuat")
 
         self.cariDaftarLayer.valueChanged.connect(self.findLayer)
         self.pushButtonAddtoQGIS.clicked.connect(self.addToQGIS)
@@ -43,18 +46,21 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def populateDaftarLayer(self, data):
         items = []
-        for key, values in data.items():
-            item = QTreeWidgetItem([key])
-            for count, value in enumerate(values):
-                nama_layer = value["Nama Layer"]
-                tipe_layer = value["Tipe Layer"]
-                style_path = value["Style Path"]
-                child = QTreeWidgetItem([nama_layer, tipe_layer, style_path])
-                child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
-                child.setCheckState(0, Qt.Unchecked)
-                item.addChild(child)
-            items.append(item)
-        self.daftarLayer.insertTopLevelItems(0, items)
+        if data:
+            for key, values in data.items():
+                item = QTreeWidgetItem([key])
+                for count, value in enumerate(values):
+                    nama_layer = value["Nama Layer"]
+                    tipe_layer = value["Tipe Layer"]
+                    style_path = value["Style Path"]
+                    child = QTreeWidgetItem([nama_layer, tipe_layer, style_path])
+                    child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
+                    child.setCheckState(0, Qt.Unchecked)
+                    item.addChild(child)
+                items.append(item)
+            self.daftarLayer.insertTopLevelItems(0, items)
+        else:
+            logMessage("data tidak dijumpai pada memory")
 
     def findLayer(self):
         textto_find = self.cariDaftarLayer.value()

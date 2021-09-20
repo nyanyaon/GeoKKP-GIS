@@ -8,12 +8,12 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-from .utils import readSetting, loadXYZ
+from .utils import logMessage, readSetting, loadXYZ
 
 # using utils
 from .utils import icon
 
-data_basemap = readSetting("geokkp/basemaps", {})
+data_basemap = readSetting("basemaps")
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -44,15 +44,18 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
         self._currentcrs = self.selectProj.crs()
 
     def populateDaftarBasemap(self, data):
-        self.model = QStandardItemModel(self.daftarBasemap)
-        for key, values in data.items():
-            for count, value in enumerate(values):
-                icons = value["icon"]
-                item = QStandardItem(value["nama"])
-                item.setData(value["url"], 256)
-                item.setIcon(icon(f"../images/basemap_icons/{icons}"))
-                self.model.appendRow(item)
-        self.daftarBasemap.setModel(self.model)
+        if data:
+            self.model = QStandardItemModel(self.daftarBasemap)
+            for key, values in data.items():
+                for count, value in enumerate(values):
+                    icons = value["icon"]
+                    item = QStandardItem(value["nama"])
+                    item.setData(value["url"], 256)
+                    item.setIcon(icon(f"../images/basemap_icons/{icons}"))
+                    self.model.appendRow(item)
+            self.daftarBasemap.setModel(self.model)
+        else:
+            logMessage("data tidak dijumpai pada memory")
 
     def addToQGIS(self):
         for index in self.daftarBasemap.selectedIndexes():
