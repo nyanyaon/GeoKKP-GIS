@@ -20,7 +20,7 @@
    <enum>Qt::StrongFocus</enum>
   </property>
   <property name="features">
-   <set>QDockWidget::NoDockWidgetFeatures</set>
+   <set>QDockWidget::AllDockWidgetFeatures</set>
   </property>
   <property name="allowedAreas">
    <set>Qt::RightDockWidgetArea</set>
