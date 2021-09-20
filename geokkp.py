@@ -894,16 +894,6 @@ class GeoKKP:
             self.dimension_layer
         )
         self.iface.mapCanvas().setMapTool(self.distanceTool)
-        # self.distanceTool.completed.connect(self.dim_dist_process)
-
-    # def dim_dist_process(self, feat):
-    #     self.iface.mapCanvas().unsetMapTool(self.distanceTool)
-    #     # dimension_layer = self.iface.activeLayer()
-        
-    #     self.dimension_layer_prov = self.dimension_layer.dataProvider()
-    #     self.dimension_layer.startEditing()
-    #     self.dimension_layer_prov.addFeatures([feat])
-    #     self.dimension_layer.commitChanges()
 
     def dimension_angle(self):
         # get dimension layer by name 
@@ -927,15 +917,6 @@ class GeoKKP:
             self.dimension_layer
         )
         self.iface.mapCanvas().setMapTool(self.angleTool)
-        # self.angleTool.completed.connect(self.dim_angle_process)
-
-    # def dim_angle_process(self, feat):
-    #     self.iface.mapCanvas().unsetMapTool(self.angleTool)
-
-    #     self.dimension_layer_prov = self.dimension_layer.dataProvider()
-    #     self.dimension_layer.startEditing()
-    #     self.dimension_layer_prov.addFeatures([feat])
-    #     self.dimension_layer.commitChanges()
 
     def aturlokasi(self):
         if self.aturlokasi_action is None:
