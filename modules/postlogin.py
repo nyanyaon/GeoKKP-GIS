@@ -13,6 +13,7 @@ from qgis.core import (
 )
 
 from .utils import (
+    add_google_basemap,
     logMessage,
     readSetting,
     storeSetting,
@@ -75,7 +76,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         # self.simpanLayerSettings()
         # self.simpanBasemapSettings()
 
-        self.buttonLanjut_3.clicked.connect(self.dummyfunction)
+        self.buttonLanjut_3.clicked.connect(self.pengaturan_lokasi)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -99,10 +100,11 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         if self.comboBoxKantah_3.count() > 0:
             return True
 
-    def dummyfunction(self):
+    def pengaturan_lokasi(self):
         self.accept()
         if self.atur_lokasi is None:
             self.atur_lokasi = PengaturanLokasiDialog()
+        add_google_basemap()
         self.atur_lokasi.show()
 
     def simpanKantorSettings(self):
