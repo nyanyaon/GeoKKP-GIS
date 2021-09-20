@@ -177,17 +177,17 @@
           <item row="1" column="0">
            <layout class="QHBoxLayout" name="horizontalLayout_5">
             <item>
-             <widget class="QCheckBox" name="checkbox_btsadmin">
-              <property name="toolTip">
-               <string>Tambahkan batas admin sebagai layer</string>
+             <spacer name="horizontalSpacer_5">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
               </property>
-              <property name="text">
-               <string>Plot Layer Batas Kabupaten</string>
+              <property name="sizeHint" stdset="0">
+               <size>
+                <width>40</width>
+                <height>20</height>
+               </size>
               </property>
-              <property name="checked">
-               <bool>true</bool>
-              </property>
-             </widget>
+             </spacer>
             </item>
             <item>
              <widget class="QToolButton" name="terapkan_btsadmin">
