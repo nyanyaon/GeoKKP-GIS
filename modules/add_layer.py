@@ -1,5 +1,5 @@
 import os
-
+import json
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QTreeWidgetItem
 from qgis.PyQt import QtWidgets, uic
@@ -48,19 +48,24 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
         items = []
         if data:
             for key, values in data.items():
-                item = QTreeWidgetItem([key])
-                for count, value in enumerate(values):
-                    nama_layer = value["Nama Layer"]
-                    tipe_layer = value["Tipe Layer"]
-                    style_path = value["Style Path"]
-                    child = QTreeWidgetItem([nama_layer, tipe_layer, style_path])
-                    child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
-                    child.setCheckState(0, Qt.Unchecked)
-                    item.addChild(child)
-                items.append(item)
+            item = QTreeWidgetItem([key])
+            for count, value in enumerate(values):
+                nama_layer = value["Nama Layer"]
+                tipe_layer = value["Tipe Layer"]
+                style_path = value["Style Path"]
+                try:
+                    attr_theme = str(value["Attributes"][0])
+                except IndexError:
+                    attr_theme = None
+                child = QTreeWidgetItem([nama_layer, tipe_layer, style_path, attr_theme])
+                child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
+                child.setCheckState(0, Qt.Unchecked)
+                item.addChild(child)
+            items.append(item)
             self.daftarLayer.insertTopLevelItems(0, items)
         else:
             logMessage("data tidak dijumpai pada memory")
+        
 
     def findLayer(self):
         textto_find = self.cariDaftarLayer.value()
@@ -105,5 +110,9 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
                     layername = item.text(0)
                     layertype = item.text(1)
                     layersymbology = item.text(2)
-                    print(item.text(0), item.text(1), item.text(2), item.text(3))
-                    add_layer(layername, layertype, layersymbology)
+                    if item.text(3):
+                        fields = json.loads(item.text(3).replace("'",'"'))
+                    else:
+                        fields = None
+                    print(item.text(0), item.text(1), item.text(2), fields)
+                    add_layer(layername, layertype, layersymbology, fields)

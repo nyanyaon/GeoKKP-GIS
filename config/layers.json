@@ -95,7 +95,13 @@
          "Nama Layer": "(20400) Dimensi Pengukuran",
          "Tipe Layer": "LineString",
          "Style Path": "",
-		 "Attributes": ""
+		 "Attributes": [
+			{
+				"Type"			: "String",	 
+				"Dimensi"		: "String"
+			}
+		 
+		 ]
       },
       {
          "Kode": 20500,
