@@ -75,6 +75,9 @@ from .modules.workpanel import Workpanel
 
 # GeoKKP-GIS Modules
 from .modules.initialization import Initialize
+
+Initialize()
+
 from .modules.add_layer import AddLayerDialog
 from .modules.add_basemap import AddBasemapDialog
 from .modules.gotoxy import GotoXYDialog
@@ -164,8 +167,8 @@ class GeoKKP:
         self.pluginIsActive = False
 
         # == Initialization and Data Preparation ==
-        self.initialize = Initialize
-        self.initialize()
+        # self.initialize = Initialize
+        # self.initialize()
 
         # self.canvasClicked = pyqtSignal('QgsPointXY')
 
