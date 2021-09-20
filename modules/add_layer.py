@@ -48,20 +48,20 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
         items = []
         if data:
             for key, values in data.items():
-            item = QTreeWidgetItem([key])
-            for count, value in enumerate(values):
-                nama_layer = value["Nama Layer"]
-                tipe_layer = value["Tipe Layer"]
-                style_path = value["Style Path"]
-                try:
-                    attr_theme = str(value["Attributes"][0])
-                except IndexError:
-                    attr_theme = None
-                child = QTreeWidgetItem([nama_layer, tipe_layer, style_path, attr_theme])
-                child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
-                child.setCheckState(0, Qt.Unchecked)
-                item.addChild(child)
-            items.append(item)
+                item = QTreeWidgetItem([key])
+                for count, value in enumerate(values):
+                    nama_layer = value["Nama Layer"]
+                    tipe_layer = value["Tipe Layer"]
+                    style_path = value["Style Path"]
+                    try:
+                        attr_theme = str(value["Attributes"][0])
+                    except IndexError:
+                        attr_theme = None
+                    child = QTreeWidgetItem([nama_layer, tipe_layer, style_path, attr_theme])
+                    child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
+                    child.setCheckState(0, Qt.Unchecked)
+                    item.addChild(child)
+                items.append(item)
             self.daftarLayer.insertTopLevelItems(0, items)
         else:
             logMessage("data tidak dijumpai pada memory")
