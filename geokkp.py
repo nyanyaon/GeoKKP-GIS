@@ -727,9 +727,9 @@ class GeoKKP:
             if panel.windowTitle() == 'Panel Kerja GeoKKP-GIS':
                 self.iface.mainWindow().removeDockWidget(panel)
                 logMessage("duplicate panels found: " + str(panel.windowTitle()))
-                panel.setVisible(False)
-                panel.destroy()
                 del panel
+                # panel.setVisible(False)
+                # panel.destroy()
 
         if not self.pluginIsActive:
             self.pluginIsActive = True

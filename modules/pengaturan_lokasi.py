@@ -6,9 +6,19 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtWidgets import QLineEdit
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
+from qgis.core import QgsCoordinateReferenceSystem
 
 # using utils
-from .utils import icon, readSetting, dialogBox, get_tm3_zone
+from .utils import (
+    get_epsg_from_tm3_zone,
+    icon,
+    logMessage,
+    readSetting,
+    dialogBox,
+    get_tm3_zone,
+    set_project_crs_by_epsg,
+    set_symbology
+)
 
 adm_district_file = os.path.join(
     os.path.dirname(__file__), '../data/idn_adm_lv2.json')
@@ -31,6 +41,7 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # setup crs
         self._currentcrs = None
+        self.zone = None
 
         self.list_kantor_dict = readSetting("list_kantor_id")
 
@@ -102,15 +113,34 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
             geom = feature.GetGeometryRef()
             # print(geom.Centroid().GetX())
             long = geom.Centroid().GetX()
-            zone = get_tm3_zone(long)
-            self.btsadmin_tm3.setText(zone)
+            self.zone = get_tm3_zone(long)
+            self.btsadmin_tm3.setText(self.zone)
         layer.ResetReading()
 
     def plot_lokasi(self):
         """ Eksekusi pencarian lokasi """
-        adm_district_file
+        currentKabupaten = self.cari_kabupaten.currentText()
         self.iface.mainWindow().blockSignals(True)
-        
+        layer = self.iface.addVectorLayer(adm_district_file, currentKabupaten, "ogr")
+        if not layer or not layer.isValid():
+            dialogBox("Layer gagal dibaca dari Plugin GeoKKP!")
+        crs = QgsCoordinateReferenceSystem("EPSG:4326")
+        layer.setCrs(crs)
+        # QgsProject.instance().addMapLayer(layer)
+        self.iface.mainWindow().blockSignals(False)
 
+        layer.setSubsetString(f"WAK = '{currentKabupaten}'")
+        set_symbology(layer, 'administrasi.qml')
+        self.iface.actionZoomToLayer().trigger()
 
-        
+        # for feature in layer.getFeatures():
+        #    print(feature["WAK"])
+
+        try:
+            epsg = get_epsg_from_tm3_zone(self.zone)
+            set_project_crs_by_epsg(epsg)
+        except Exception:
+            logMessage("Zona TM-3 tidak ditemukan!")
+
+        self.accept()
+
