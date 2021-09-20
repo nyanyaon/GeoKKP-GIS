@@ -230,11 +230,11 @@ def is_layer_exist(project, layername):
             return False
 
 
-def set_symbology(self, layer, qml):
+def set_symbology(layer, qml):
     """
     Set layer symbology based on QML files in ./styles folder
     """
-    uri = os.path.join(os.path.dirname(__file__), 'styles/'+qml)
+    uri = os.path.join(os.path.dirname(__file__), '../styles/'+qml)
     layer.loadNamedStyle(uri)
 
 
@@ -494,8 +494,13 @@ def resolve_path(name, basepath=None):
 
 
 def set_project_crs_by_epsg(epsg):
-    crs = QgsCoordinateReferenceSystem(epsg)
-    QgsProject.instance().setCrs(crs)
+    print(epsg)
+    
+    try:
+        crs = QgsCoordinateReferenceSystem(str(epsg))
+        QgsProject.instance().setCrs(crs)
+    except Exception as e:
+        print(e)
 
 
 def snap_geometries_to_layer(

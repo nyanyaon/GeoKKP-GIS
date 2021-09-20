@@ -6,6 +6,7 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtWidgets import QLineEdit
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
+from qgis.core import QgsCoordinateReferenceSystem
 
 # using utils
 from .utils import (
@@ -15,7 +16,8 @@ from .utils import (
     readSetting,
     dialogBox,
     get_tm3_zone,
-    set_project_crs_by_epsg
+    set_project_crs_by_epsg,
+    set_symbology
 )
 
 adm_district_file = os.path.join(
@@ -118,22 +120,21 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
     def plot_lokasi(self):
         """ Eksekusi pencarian lokasi """
         currentKabupaten = self.cari_kabupaten.currentText()
-
-        print("kabupaten saat ini: ", currentKabupaten)
-
         self.iface.mainWindow().blockSignals(True)
         layer = self.iface.addVectorLayer(adm_district_file, currentKabupaten, "ogr")
         if not layer or not layer.isValid():
             dialogBox("Layer gagal dibaca dari Plugin GeoKKP!")
-        crs = layer.crs()
-        crs.createFromId(4326)
+        crs = QgsCoordinateReferenceSystem("EPSG:4326")
         layer.setCrs(crs)
         # QgsProject.instance().addMapLayer(layer)
         self.iface.mainWindow().blockSignals(False)
 
         layer.setSubsetString(f"WAK = '{currentKabupaten}'")
-        for feature in layer.getFeatures():
-            print(feature["WAK"])
+        set_symbology(layer, 'administrasi.qml')
+        self.iface.actionZoomToLayer().trigger()
+
+        # for feature in layer.getFeatures():
+        #    print(feature["WAK"])
 
         try:
             epsg = get_epsg_from_tm3_zone(self.zone)
@@ -142,4 +143,4 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
             logMessage("Zona TM-3 tidak ditemukan!")
 
         self.accept()
-        
+
