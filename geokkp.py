@@ -90,7 +90,7 @@ from .modules.layout_gu import LayoutGUDialog
 from .modules.trilateration import TrilaterationDialog
 from .modules.triangulation import TriangulationDialog
 from .modules.pengaturan_lokasi import PengaturanLokasiDialog
-from .modules.draw_dimension import DrawDimensionDialog
+from .modules.draw_dimension import DimensionDistanceTool, DimensionAngleTool
 from .modules.utils import (
     activate_editing,
     iconPath,
@@ -184,8 +184,8 @@ class GeoKKP:
         self.layoutguaction = LayoutGUDialog()
         self.trilaterationaction = TrilaterationDialog()
         self.triangulationaction = TriangulationDialog()
-        self.dimDistanceAction = DrawDimensionDialog()
-        self.dimAngleAction = DrawDimensionDialog()
+        # self.dimDistanceAction = DrawDimensionDialog()
+        # self.dimAngleAction = DrawDimensionDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
         self.aturlokasi_action = PengaturanLokasiDialog()
         # self.loginaction.loginChanged.connect()
@@ -413,7 +413,7 @@ class GeoKKP:
         self.actionDistanceDimension = self.add_action(
             icon("dimension_distance.png"),
             text=self.tr(u"Dimensi Jarak"),
-            callback=self.dimensiondistance, # dummy function
+            callback=self.dimension_distance, 
             add_to_toolbar=False,
             add_to_menu=False,
             parent=self.popupDimension
@@ -424,7 +424,7 @@ class GeoKKP:
         self.actionAngleDimension = self.add_action(
             icon("dimension_angle.png"),
             text=self.tr(u"Dimensi Sudut"),
-            callback=self.dimensionangle, # dummy function
+            callback=self.dimension_angle, 
             add_to_toolbar=False,
             add_to_menu=False,
             parent=self.popupDimension
@@ -434,8 +434,8 @@ class GeoKKP:
         # Pengaturan Dropdown menu Dimensi
         self.DimensionButton = QToolButton()
         self.DimensionButton.setMenu(self.popupDimension)
-        self.DimensionButton.setIcon(icon("dimension.png"))
-        self.DimensionButton.setToolTip("Dimension")
+        # self.DimensionButton.setIcon(icon("dimension.png"))
+        # self.DimensionButton.setToolTip("Dimension")
         self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
         self.DimensionButton.setPopupMode(QToolButton.MenuButtonPopup)
         # Register menu to toolbar
@@ -871,16 +871,40 @@ class GeoKKP:
         dissolved = dissolve(polygonized)
         QgsProject.instance().removeMapLayer(polygonized)
         QgsProject.instance().addMapLayer(dissolved)
-        
-    def dimensiondistance(self):
-        if self.dimDistanceAction is None:
-            self.dimDistanceAction = DrawDimensionDialog()
-        self.dimDistanceAction.show()
+            
+    def dimension_distance(self):
+        # enable last chosen tools as default in toolbar
+        self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
 
-    def dimensionangle(self):
-        if self.dimAngleAction is None:
-            self.dimAngleAction = DrawDimensionDialog()
-        self.dimAngleAction.show()
+        self.distanceTool = DimensionDistanceTool(self.iface)
+        self.iface.mapCanvas().setMapTool(self.distanceTool)
+        self.distanceTool.completed.connect(self.dim_dist_process)
+
+    def dim_dist_process(self, feat):
+        self.iface.mapCanvas().unsetMapTool(self.distanceTool)
+        dimension_layer = self.iface.activeLayer()
+        
+        dimension_layer_prov = dimension_layer.dataProvider()
+        dimension_layer.startEditing()
+        dimension_layer_prov.addFeatures([feat])
+        dimension_layer.commitChanges()
+
+    def dimension_angle(self):
+        # enable last chosen tools as default in toolbar
+        self.DimensionButton.setDefaultAction(self.actionAngleDimension)
+        
+        self.angleTool = DimensionAngleTool(self.iface)
+        self.iface.mapCanvas().setMapTool(self.angleTool)
+        self.angleTool.completed.connect(self.dim_angle_process)
+
+    def dim_angle_process(self, feat):
+        self.iface.mapCanvas().unsetMapTool(self.angleTool)
+        dimension_layer = self.iface.activeLayer()
+        
+        dimension_layer_prov = dimension_layer.dataProvider()
+        dimension_layer.startEditing()
+        dimension_layer_prov.addFeatures([feat])
+        dimension_layer.commitChanges()
 
     def aturlokasi(self):
         if self.aturlokasi_action is None:
