@@ -94,11 +94,11 @@
          "Kode": 20400,
          "Nama Layer": "(20400) Dimensi Pengukuran",
          "Tipe Layer": "LineString",
-         "Style Path": "",
+         "Style Path": "dimension.qml",
 		 "Attributes": [
 			{
-				"Type"			: "String",	 
-				"Dimensi"		: "String"
+				"Nilai"		: "String",	 
+				"Jenis"		: "String"
 			}
 		 
 		 ]

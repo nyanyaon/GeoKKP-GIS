@@ -873,38 +873,69 @@ class GeoKKP:
         QgsProject.instance().addMapLayer(dissolved)
             
     def dimension_distance(self):
+        # get dimension layer by name 
+        self.dimension_layer = None
+        all_layers = QgsProject.instance().mapLayers().values()
+        for layer in all_layers:
+            if layer.name() == '(20400) Dimensi Pengukuran':
+                self.dimension_layer = layer
+                break
+        if not self.dimension_layer:
+            self.iface.messageBar().pushMessage(
+                "Peringatan", 
+                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.", 
+                level=Qgis.Warning)
+            return
         # enable last chosen tools as default in toolbar
         self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
 
-        self.distanceTool = DimensionDistanceTool(self.iface)
+        self.distanceTool = DimensionDistanceTool(
+            self.iface.mapCanvas(), 
+            self.dimension_layer
+        )
         self.iface.mapCanvas().setMapTool(self.distanceTool)
-        self.distanceTool.completed.connect(self.dim_dist_process)
+        # self.distanceTool.completed.connect(self.dim_dist_process)
 
-    def dim_dist_process(self, feat):
-        self.iface.mapCanvas().unsetMapTool(self.distanceTool)
-        dimension_layer = self.iface.activeLayer()
+    # def dim_dist_process(self, feat):
+    #     self.iface.mapCanvas().unsetMapTool(self.distanceTool)
+    #     # dimension_layer = self.iface.activeLayer()
         
-        dimension_layer_prov = dimension_layer.dataProvider()
-        dimension_layer.startEditing()
-        dimension_layer_prov.addFeatures([feat])
-        dimension_layer.commitChanges()
+    #     self.dimension_layer_prov = self.dimension_layer.dataProvider()
+    #     self.dimension_layer.startEditing()
+    #     self.dimension_layer_prov.addFeatures([feat])
+    #     self.dimension_layer.commitChanges()
 
     def dimension_angle(self):
+        # get dimension layer by name 
+        self.dimension_layer = None
+        all_layers = QgsProject.instance().mapLayers().values()
+        for layer in all_layers:
+            if layer.name() == '(20400) Dimensi Pengukuran':
+                self.dimension_layer = layer
+                break
+        if not self.dimension_layer:
+            self.iface.messageBar().pushMessage(
+                "Peringatan", 
+                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.", 
+                level=Qgis.Warning)
+            return
         # enable last chosen tools as default in toolbar
         self.DimensionButton.setDefaultAction(self.actionAngleDimension)
         
-        self.angleTool = DimensionAngleTool(self.iface)
+        self.angleTool = DimensionAngleTool(
+            self.iface.mapCanvas(), 
+            self.dimension_layer
+        )
         self.iface.mapCanvas().setMapTool(self.angleTool)
-        self.angleTool.completed.connect(self.dim_angle_process)
+        # self.angleTool.completed.connect(self.dim_angle_process)
 
-    def dim_angle_process(self, feat):
-        self.iface.mapCanvas().unsetMapTool(self.angleTool)
-        dimension_layer = self.iface.activeLayer()
-        
-        dimension_layer_prov = dimension_layer.dataProvider()
-        dimension_layer.startEditing()
-        dimension_layer_prov.addFeatures([feat])
-        dimension_layer.commitChanges()
+    # def dim_angle_process(self, feat):
+    #     self.iface.mapCanvas().unsetMapTool(self.angleTool)
+
+    #     self.dimension_layer_prov = self.dimension_layer.dataProvider()
+    #     self.dimension_layer.startEditing()
+    #     self.dimension_layer_prov.addFeatures([feat])
+    #     self.dimension_layer.commitChanges()
 
     def aturlokasi(self):
         if self.aturlokasi_action is None:
