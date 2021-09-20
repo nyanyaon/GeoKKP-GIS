@@ -1,11 +1,12 @@
 import re
 import os
 import math
+import urllib.parse
 
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
 
-from qgis.PyQt.QtCore import QVariant
+from qgis.PyQt.QtCore import QVariant, QUrl # noqa
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QPushButton, QMessageBox
 from qgis.core import (
@@ -170,8 +171,19 @@ def loadXYZ(url, name):
     """
     Memuat layer dalam bentuk XYZ Tile
     """
-    rasterLyr = QgsRasterLayer("type=xyz&zmin=0&zmax=21&url=" + url, name, "wms")
+    encodedUrl = urllib.parse.quote(url)
+    urlString = "type=xyz&zmin=0&zmax=21&url=" + encodedUrl
+    logMessage("Loaded url: " + urlString)
+    rasterLyr = QgsRasterLayer(urlString, name, "wms")
     QgsProject.instance().addMapLayer(rasterLyr)
+
+
+def add_google_basemap():
+    """
+    Tambahkan layer basemap default: Google Basemap
+    """
+    url = "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+    loadXYZ(url, "Google Satellite")
 
 
 def activate_editing(layer):
