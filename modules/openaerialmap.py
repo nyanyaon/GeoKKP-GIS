@@ -2,11 +2,11 @@ import os
 import xml.etree.ElementTree as ET
 
 from qgis.PyQt import QtWidgets, uic
-from qgis.core import QgsProject, QgsRasterLayer
+from qgis.core import QgsProject
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-from .utils import dialogBox
+from .utils import dialogBox, logMessage
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -25,10 +25,10 @@ class OAMDialog(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
         self.project = QgsProject
 
-        self.url = self.OAMLink.text()
+        # clear
+        self.OAMLink.clear()
+        self.OAMLayerName.clear()
 
-        self._currentLink = None
-        self._currentName = None
         self.LoadOAMButton.clicked.connect(self.loadWMTS)
 
     def closeEvent(self, event):
@@ -36,20 +36,21 @@ class OAMDialog(QtWidgets.QDialog, FORM_CLASS):
         event.accept()
 
     def loadWMTS(self):
-        self.url = self.OAMLink.text()
-        dialogBox(self.url)
+        url = self.OAMLink.text()
+        name = self.OAMLayerName.text()
+        # dialogBox(self.url)
         # self.parse_capabilities()
         params = "crs=EPSG:3857&dpiMode=7&format=image/png&layers=None&styles=default&tileMatrixSet=GoogleMapsCompatible&url="
-        full_url = params+self.url
+        full_url = params+url
 
-        oam_layer = iface.addRasterLayer(full_url, "teswmts", "wms")
-        
+        oam_layer = iface.addRasterLayer(full_url, name, "wms")
+
         if oam_layer.isValid():
-            print("This is a valid raster layer!")
+            logMessage("OAM raster is valid")
         else:
-            print("This raster layer is invalid!")
-        self.accept()
+            dialogBox("Link OAM tidak valid. Periksa tautan WMTS yang diinputkan!", "Warning")
 
+        self.accept()
 
     """
     TODO: Sanitize input and read layer from capabilities

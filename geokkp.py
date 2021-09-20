@@ -635,15 +635,27 @@ class GeoKKP:
 
         #  --- Sub-menu Geocoding ---
         self.actionGeocoding = self.add_action(
-            icon("georef.png"),
-            text=self.tr(u"Geocoding"),
-            callback=self.gotoxy,
+            icon("carialamat.png"),
+            text=self.tr(u"Pencarian Alamat"),
+            callback=self.geocoding,
             add_to_toolbar=False,
             add_to_menu=False,
             need_auth=False,
             parent=self.popupPeralatan
         )
         self.popupPeralatan.addAction(self.actionGeocoding)
+
+        #  --- Sub-menu Georeferencing/Rubbersheet ---
+        self.actionGeoreference = self.add_action(
+            icon("nailer.png"),
+            text=self.tr(u"Georeference/Rubbersheet"),
+            callback=self.georeferencer,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            need_auth=False,
+            parent=self.popupPeralatan
+        )
+        self.popupPeralatan.addAction(self.actionGeoreference)
 
         # Pengaturan Dropdown menu Peralatan
         self.PeralatanButton = QToolButton()
@@ -1067,6 +1079,18 @@ class GeoKKP:
     #     if self.adjustaction is None:
     #         self.adjustaction = AdjustDialog()
     #     self.adjustaction.show()
+
+    def georeferencer(self):
+        for action in self.iface.mainWindow().findChildren(QAction):
+            # print(action.text())
+            if action.text() == "Georeferencer…":
+                action.trigger()
+
+    def geocoding(self):
+        for action in self.iface.mainWindow().findChildren(QAction):
+            # print(action.text())
+            if action.text() == "&GeoCoding":
+                action.trigger()
 
     def openhelp(self):
         QDesktopServices.openUrl(QUrl('https://geokkp-gis.github.io/docs/'))
