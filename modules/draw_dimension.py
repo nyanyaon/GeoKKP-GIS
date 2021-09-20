@@ -5,7 +5,8 @@ from qgis.PyQt import QtWidgets, uic, QtXml, QtGui, QtCore
 
 from qgis.core import (
     QgsCircle, QgsPoint, QgsPointXY, QgsFeature, QgsGeometry, QgsVectorLayer,
-    QgsCircularString, QgsFeature, QgsField, QgsFields
+    QgsCircularString, QgsFeature, QgsField, QgsFields, QgsSnappingConfig,
+    QgsProject, QgsTolerance
 )
 
 from qgis.PyQt.QtCore import pyqtSignal, QVariant
@@ -24,10 +25,13 @@ class DimensionAngleTool(QgsMapTool):
 
     completed = pyqtSignal(QgsFeature)
 
-    def __init__(self, iface):
-        QgsMapTool.__init__(self, iface)
-        self.iface = iface
-        self.canvas = iface.mapCanvas()
+    def __init__(self, canvas, dimension_layer):
+        QgsMapTool.__init__(self, canvas)
+        self.canvas = canvas
+
+        enable_snapping()
+
+        self.dimension_layer = dimension_layer
 
         self.vm_center = create_vertex_marker(self.canvas, 'CIRCLE')
         self.vm_1 = create_vertex_marker(self.canvas, 'CROSS')
@@ -68,9 +72,9 @@ class DimensionAngleTool(QgsMapTool):
         elif self.click_counter == 4: # choose segment
             p = QgsPoint(point_snap)
             
-            nearest_arc = self.check_arc(p, self.shortest_arc, self.longest_arc)
+            arc = self.check_arc(p, self.shortest_arc, self.longest_arc)
             self.canvas.refresh()
-            self.final_arc = nearest_arc
+            self.final_arc = arc
 
     def check_arc(self, point_check, short_arc, long_arc):
         a1, b1, c1, d1 = short_arc.closestSegment(point_check)
@@ -79,11 +83,20 @@ class DimensionAngleTool(QgsMapTool):
         if a1 < a2:
             arc_highlight(self.geomrb_short_arc)
             arc_dehighlight(self.geomrb_long_arc)
+            self.arc_chosen = 'short'
             return short_arc
         elif a1 > a2:
             arc_highlight(self.geomrb_long_arc)
             arc_dehighlight(self.geomrb_short_arc)
+            self.arc_chosen = 'long' 
             return long_arc
+
+    def angle_dd_to_dms(self, angle):
+        deg = math.floor(angle)
+        min_dd = angle%deg*60
+        min = math.floor(min_dd)
+        sec = min_dd%min
+        return deg, min, sec
 
     def canvasReleaseEvent(self, event):
         self.click_counter += 1
@@ -115,15 +128,26 @@ class DimensionAngleTool(QgsMapTool):
             self.geomrb_short_arc.setGeometry(self.shortest_arc)
             self.geomrb_long_arc.setGeometry(self.longest_arc)
         elif self.click_counter == 5: # arc finalised
-            # fields = QgsFields()
-            # fields.append(QgsField("dimtype", QVariant.String))
-            # fields.append(QgsField("dimvalue", QVariant.String))
-            # angle_feat = QgsFeature(fields)
+            start_az = self.center_pt.azimuth(self.start_arc_pt)
+            end_az = self.center_pt.azimuth(self.end_arc_pt)
+
+            delta_az = abs(start_az - end_az)
+            print(start_az, end_az, delta_az)
+            
+            small_angle = delta_az
+            large_angle = 360 - delta_az
+            
+            if self.arc_chosen == 'short':
+                angle = small_angle
+            elif self.arc_chosen == 'long':
+                angle = large_angle
+
             angle_feat = QgsFeature()
             angle_feat.setGeometry(self.final_arc)
-            # angle_feat['dimtype'] = 'angle'
-            # angle_feat['dimvalue'] = 'test value'
-            self.completed.emit(angle_feat)
+            angle_value = angle
+            angle_feat.setAttributes(['Sudut', str(angle_value)])
+
+            # self.completed.emit(angle_feat)
             
             try:
                 self.canvas.scene().removeItem(self.vm_center)
@@ -136,6 +160,12 @@ class DimensionAngleTool(QgsMapTool):
             except:
                 pass
 
+            self.canvas.unsetMapTool(self)
+
+            self.dimension_layer_prov = self.dimension_layer.dataProvider()
+            self.dimension_layer.startEditing()
+            self.dimension_layer_prov.addFeatures([angle_feat])
+            self.dimension_layer.commitChanges()
 
         
 # ----------------------------------------------------------- #
@@ -145,10 +175,12 @@ class DimensionDistanceTool(QgsMapTool):
 
     completed = pyqtSignal(QgsFeature)
 
-    def __init__(self, iface):
-        QgsMapTool.__init__(self, iface)
-        self.iface = iface
-        self.canvas = iface.mapCanvas()
+    def __init__(self, canvas, dimension_layer):
+        QgsMapTool.__init__(self, canvas)
+        self.canvas = canvas
+        self.dimension_layer = dimension_layer
+
+        enable_snapping()
 
         self.vm_1 = create_vertex_marker(self.canvas, 'CROSS')
         self.vm_2 = create_vertex_marker(self.canvas, 'CIRCLE')
@@ -218,10 +250,28 @@ class DimensionDistanceTool(QgsMapTool):
             except:
                 pass
 
-            final_feat = QgsFeature()
-            final_feat.setGeometry(self.offset_geom)
+            start_feat = QgsFeature()
+            start_feat.setGeometry(self.start_geom)
+            start_feat.setAttributes(['-', '-'])
 
-            self.completed.emit(final_feat)
+            end_feat = QgsFeature()
+            end_feat.setGeometry(self.end_geom)
+            end_feat.setAttributes(['-', '-'])
+
+            offset_feat = QgsFeature()
+            offset_feat.setGeometry(self.offset_geom)
+            distance_value = round(self.offset_geom.length(),3)
+            offset_feat.setAttributes(['Jarak', str(distance_value)])
+
+            self.canvas.unsetMapTool(self)
+            
+            result_feat = [start_feat, end_feat, offset_feat]
+
+            self.dimension_layer_prov = self.dimension_layer.dataProvider()
+            self.dimension_layer.startEditing()
+            self.dimension_layer_prov.addFeatures(result_feat)
+            self.dimension_layer.commitChanges()
+
 
 def snapping_point(canvas, point):
     map_coord = canvas.getCoordinateTransform().toMapCoordinates(point) 
@@ -287,3 +337,17 @@ def arc_highlight(arc):
 def arc_dehighlight(arc):
     arc.setStrokeWidth(1)
     arc.setStrokeColor(QtGui.QColor(128, 128, 128, 180))
+
+def snapping_config():
+    config = QgsSnappingConfig()
+    config.setType(QgsSnappingConfig.VertexAndSegment)
+    config.setUnits(QgsTolerance.Pixels)
+    config.setTolerance(15)
+    config.setIntersectionSnapping(True)
+    config.setMode(QgsSnappingConfig.AllLayers)
+    return config
+
+def enable_snapping(value=True):
+    config = snapping_config()
+    config.setEnabled(value)
+    QgsProject.instance().setSnappingConfig(config)
