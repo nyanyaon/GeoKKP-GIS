@@ -1,13 +1,13 @@
 import re
 import os
-import json
+import math
 
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
 
 from qgis.PyQt.QtCore import QVariant
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QPushButton
+from qgis.PyQt.QtWidgets import QPushButton, QMessageBox
 from qgis.core import (
                     QgsMessageLog,
                     QgsSettings,
@@ -57,35 +57,64 @@ grid_1000 = 500
 grid_500 = 250
 grid_250 = 125
 
-# list of layers and basemaps
-layer_json_file = os.path.join(
-    os.path.dirname(__file__), '../config/layers.json')
-basemap_json_file = os.path.join(
-    os.path.dirname(__file__), '../config/basemap.json')
+# constants for Zone
+zona_TM3 = {
+    "46.2": "epsg:23830",
+    "47.1": "epsg:23831",
+    "47.2": "epsg:23832",
+    "48.1": "epsg:23833",
+    "48.2": "epsg:23834",
+    "49.1": "epsg:23835",
+    "49.2": "epsg:23836",
+    "50.1": "epsg:23837",
+    "50.2": "epsg:23838",
+    "51.1": "epsg:23839",
+    "51.2": "epsg:23840",
+    "52.1": "epsg:23841",
+    "52.2": "epsg:23842",
+    "53.1": "epsg:23843",
+    "53.2": "epsg:23844",
+    "54.1": "epsg:23845"
+}
+
+# constants for SDO Geometries
+GPOINT = 'Point'
+GLINESTRING = 'LineString'
+GPOLYGON = 'Polygon'
+SDO_GTYPE_MAP = {
+    '00': 'Unknown',
+    '01': GPOINT,
+    '02': GLINESTRING,
+    '03': GPOLYGON,
+    '04': 'Collection',
+    '05': 'MultiPoint',
+    '06': 'MultiLine',
+    '07': 'MultiPolygon',
+    '08': 'Solid',
+    '09': 'MultiSolid',
+}
+SDO_FIELD_EXCLUDE = ['text', 'boundary', 'rotation', 'height']
 
 
-def simpan_layer_settings():
-    """
-    Panggil daftar layer dan simbologi dari file layers.json, simpan ke dalam pengaturan lokal
-    """
-    f = open(layer_json_file,)
-    data = json.load(f)
-    for i in data['layers']:
-        pass
-    f.close()
-    storeSetting("geokkp/layers", data['layers'])
+# constants for processing snap parameter (auto-adjust)
+SNAP_ALIGNING_NODE_INSERT_WHEN_REQUIRED = 0
+SNAP_CLOSEST_NODE_INSERT_WHEN_REQUIRED = 1
+SNAP_ALIGNING_NODE_NOT_INSERT = 2
+SNAP_CLOSEST_NODE_NOT_INSERT = 3
+SNAP_MOVE_END_POINT_ALIGN_NODE = 4
+SNAP_MOVE_END_CLOSEST_NODE = 5
+SNAP_ENDPOINT_TO_ENDPOINT = 6
+SNAP_ANCHOR_NODES = 7
 
 
-def simpan_basemap_settings():
-    """
-    Panggil daftar basemap dari file basemap.json, simpan ke dalam pengaturan lokal
-    """
-    f = open(basemap_json_file,)
-    data = json.load(f)
-    for i in data['basemaps']:
-        pass
-    f.close()
-    storeSetting("geokkp/basemaps", data['basemaps'])
+# global settings variable
+settings = QgsSettings()
+
+
+"""
+Definisi Fungsi
+TODO: buat kelas untuk tiap kategori
+"""
 
 
 def logMessage(message, level=Qgis.Info):
@@ -93,6 +122,24 @@ def logMessage(message, level=Qgis.Info):
     Logger untuk debugging
     """
     QgsMessageLog.logMessage(message, 'GeoKKP-GIS', level=level)
+
+
+def dialogBox(text, title="Peringatan GeoKKP", type="Information"):
+    """
+    Kotak peringatan
+    """
+    message = QMessageBox(parent=iface.mainWindow())
+
+    if type == "Information":
+        icon = QMessageBox.Information
+    elif type == "Warning":
+        icon = QMessageBox.Critical
+
+    message.setIcon(icon)
+    message.setText(text)
+    message.setWindowTitle(title)
+    message.setStandardButtons(QMessageBox.Ok)
+    message.exec()
 
 
 def display_message_bar(tag, message, parent=None, level=Qgis.Info, action=DefaultMessageBarButton, duration=5):
@@ -105,6 +152,18 @@ def display_message_bar(tag, message, parent=None, level=Qgis.Info, action=Defau
         action.setParent(widget)
         widget.layout().addWidget(action)
     parent.pushWidget(widget, level, duration=duration)
+
+
+def get_tm3_zone(long):
+    """
+    Get TM-3 Zone from long
+    """
+    nom = math.floor((long - 90)/6) + 46
+    if math.floor((long - 93)/3) % 2 == 0:
+        denom = 2
+    else:
+        denom = 1
+    return (f'{nom}.{denom}')
 
 
 def loadXYZ(url, name):
@@ -132,25 +191,32 @@ def storeSetting(key, value):
     """
     Store value to QGIS Settings
     """
-    settings = QgsSettings()
-    settings.setValue(key, value)
+    settings.setValue("geokkp/"+str(key), value)
+    logMessage('Menyimpan data '+str(key)+' pada memory proyek QGIS')
+    settings.sync()
 
 
-def readSetting(key, default_value=None):
+def readSetting(key):
     """
     Read value from QGIS Settings
     """
-    settings = QgsSettings()
-    return settings.value(key, default_value)
+    logMessage('Mengambil data '+str(key)+' dari memory proyek QGIS')
+    try:
+        return settings.value("geokkp/"+str(key))
+    except Exception:
+        logMessage("gagal memuat data")
+    settings.sync()
 
 
 def clear_all_vars():
     """ Hapus semua value dari QgsSettings yang digunakan oleh GeoKKP"""
-    s = QgsSettings()
-    for x in sorted(s.allKeys()):
-        if x.startswith("geokkp"):
-            s.setValue(x, "")
-    QgsMessageLog.logMessage("Flushed all user vars", 'GeoKKP-GIS', level=Qgis.Info)
+    for key in sorted(settings.allKeys()):
+        if key.startswith("geokkp"):
+            settings.remove(key)
+            # s.setValue(x, "")
+    if not settings.contains("geokkp"):
+        logMessage("Flushed all GeoKKP vars")
+    settings.sync()
 
 
 def is_layer_exist(project, layername):
@@ -215,7 +281,7 @@ def save_with_description(layer, outputfile):
 
 
 def iconPath(name):
-    logMessage(os.path.join(os.path.dirname(__file__), "images", name))
+    # logMessage(os.path.join(os.path.dirname(__file__), "images", name))
     return os.path.join(os.path.dirname(__file__), "..", "images", name)
 
 
@@ -283,6 +349,7 @@ def validate_raw_coordinates(raw_coords):
 
 
 def parse_raw_coordinate(coordList):
+    """ sanitasi input koordinat """
     stripped_coords = coordList.strip()
     splitted_coords = stripped_coords.split(';')
     for coords in splitted_coords:
@@ -291,24 +358,6 @@ def parse_raw_coordinate(coordList):
             raise ValueError("Coordinate pair must be consist of two number separated by comma")
         point = QgsPointXY(float(coord_components[0]), float(coord_components[1]))
         yield point
-
-
-GPOINT = 'Point'
-GLINESTRING = 'LineString'
-GPOLYGON = 'Polygon'
-SDO_GTYPE_MAP = {
-    '00': 'Unknown',
-    '01': GPOINT,
-    '02': GLINESTRING,
-    '03': GPOLYGON,
-    '04': 'Collection',
-    '05': 'MultiPoint',
-    '06': 'MultiLine',
-    '07': 'MultiPolygon',
-    '08': 'Solid',
-    '09': 'MultiSolid',
-}
-SDO_FIELD_EXCLUDE = ['text', 'boundary', 'rotation', 'height']
 
 
 def parse_sdo_geometry_type(sdo_gtype):
@@ -391,7 +440,7 @@ def get_epsg_from_tm3_zone(zone, include_epsg_key=True):
 
 def get_saved_credentials():
     auth_mgr = QgsApplication.authManager()
-    auth_id = readSetting('geokkp/authId')
+    auth_id = readSetting('authId')
     auth_cfg = QgsAuthMethodConfig()
     if auth_id:
         auth_mgr.loadAuthenticationConfig(auth_id, auth_cfg, True)
@@ -400,7 +449,7 @@ def get_saved_credentials():
 
 def save_credentials(username, password):
     auth_mgr = QgsApplication.authManager()
-    auth_id = readSetting('geokkp/authId')
+    auth_id = readSetting('authId')
     auth_cfg = QgsAuthMethodConfig()
     if not auth_id:
         auth_id = auth_cfg.id()
@@ -414,13 +463,12 @@ def save_credentials(username, password):
     assert auth_cfg.isValid()
     auth_mgr.storeAuthenticationConfig(auth_cfg)
     assert auth_cfg.id()
-    storeSetting('geokkp/authId', auth_cfg.id())
+    storeSetting('authId', auth_cfg.id())
     return auth_cfg.id()
 
 
 def add_layer(layername, type, symbol=None, fields=None, crs=None, parent=None):
     crs = iface.mapCanvas().mapSettings().destinationCrs()
-    print("CRSCRSCRSCRSCRSC", crs)
 
     layer = QgsVectorLayer(f"{type}?crs=epsg:" + str(crs.postgisSrid()), layername, "memory")
     layer_dataprovider = layer.dataProvider()
@@ -450,16 +498,6 @@ def set_project_crs_by_epsg(epsg):
     QgsProject.instance().setCrs(crs)
 
 
-SNAP_ALIGNING_NODE_INSERT_WHEN_REQUIRED = 0
-SNAP_CLOSEST_NODE_INSERT_WHEN_REQUIRED = 1
-SNAP_ALIGNING_NODE_NOT_INSERT = 2
-SNAP_CLOSEST_NODE_NOT_INSERT = 3
-SNAP_MOVE_END_POINT_ALIGN_NODE = 4
-SNAP_MOVE_END_CLOSEST_NODE = 5
-SNAP_ENDPOINT_TO_ENDPOINT = 6
-SNAP_ANCHOR_NODES = 7
-
-
 def snap_geometries_to_layer(
         layer,
         ref_layer,
@@ -477,7 +515,7 @@ def snap_geometries_to_layer(
         'BEHAVIOR': behavior,
         'OUTPUT': output
     }
-    print(parameters)
+    # print(parameters)
     result = processing.run('qgis:snapgeometries', parameters)
 
     return result['OUTPUT']

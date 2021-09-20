@@ -25,7 +25,6 @@ import os
 import json
 
 from qgis.PyQt.QtCore import (
-    # QSettings,
     QTranslator,
     QCoreApplication,
     Qt,
@@ -61,8 +60,6 @@ from qgis import utils as qgis_utils
 from .modules.utils import (
     clear_all_vars,
     logMessage,
-    simpan_basemap_settings,
-    simpan_layer_settings,
     activate_editing,
     iconPath,
     icon,
@@ -76,6 +73,7 @@ from .modules.utils import (
 from .modules.workpanel import Workpanel
 
 # GeoKKP-GIS Modules
+from .modules.initialization import Initialize
 from .modules.add_layer import AddLayerDialog
 from .modules.add_basemap import AddBasemapDialog
 from .modules.gotoxy import GotoXYDialog
@@ -84,7 +82,6 @@ from .modules.plotcoord import PlotCoordinateDialog
 from .modules.login import LoginDialog
 from .modules.openaerialmap import OAMDialog
 from .modules.adjust import AdjustDialog
-from .modules.postlogin import PostLoginDock
 from .modules.import_from_file import ImportGeomFromFile
 from .modules.coordinate_transform import CoordinateTransformDialog
 from .modules.layout_peta import LayoutPetaDialog
@@ -123,6 +120,9 @@ class GeoKKP:
         self.actionLogoutUser = None
         self.userLoggedIn = None
 
+        # Declare instance attributes
+        self.actions = []
+
         # initialize locale
         locale = QgsSettings().value('locale/userLocale')[0:2]
         locale_path = os.path.join(
@@ -133,13 +133,6 @@ class GeoKKP:
             self.translator = QTranslator()
             self.translator.load(locale_path)
             QCoreApplication.installTranslator(self.translator)
-
-        # load data for layers and basemaps
-        simpan_layer_settings()
-        simpan_basemap_settings()
-
-        # Declare instance attributes
-        self.actions = []
 
         # Add GeoKKP Toolbar
         self.toolbar = self.iface.addToolBar(u'GeoKKP')
@@ -162,10 +155,13 @@ class GeoKKP:
 
         self.pluginIsActive = False
 
+        # == Initialization and Data Preparation ==
+        self.initialize = Initialize
+        self.initialize()
+
         # self.canvasClicked = pyqtSignal('QgsPointXY')
 
         # Set widgets
-        # self.dockwidget = GeoKKPDockWidget()
         self.workpanel = Workpanel()
         self.addlayeraction = AddLayerDialog()
         self.addbasemapaction = AddBasemapDialog()
@@ -174,7 +170,6 @@ class GeoKKP:
         self.plotxyaction = PlotCoordinateDialog()
         self.import_from_file_widget = ImportGeomFromFile(self)
         self.loginaction = LoginDialog()
-        self.postloginaction = PostLoginDock()
         self.oamaction = OAMDialog()
         self.adjustaction = AdjustDialog()
         self.layoutpetaaction = LayoutPetaDialog()
@@ -287,7 +282,7 @@ class GeoKKP:
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
         # start the deck
-        self.run
+        self.run()
 
         # ========== Menu: Login Pengguna ==========
         # self.add_action(
@@ -697,7 +692,7 @@ class GeoKKP:
 
         # remove this statement if dockwidget is to remain
         # for reuse if plugin is reopened
-        self.workpanel = None
+        # self.workpanel = None
         self.pluginIsActive = False
 
     def unload(self):
@@ -712,15 +707,6 @@ class GeoKKP:
         if self.workpanel is not None:
             del self.workpanel
 
-        # find remaining panels and clear them all
-        for panel in self.iface.mainWindow().findChildren(QDockWidget):
-            if panel.windowTitle() == 'Panel Kerja GeoKKP-GIS':
-                self.iface.mainWindow().removeDockWidget(panel)
-                logMessage("duplicate panels found")
-                panel.setVisible(False)
-                panel.destroy()
-                del panel
-
         # remove the toolbar
         if self.toolbar:
             del self.toolbar
@@ -730,40 +716,52 @@ class GeoKKP:
             # self.menu.clear()
             self.menu = None
 
+        # clear all local variables
+        clear_all_vars()
+
     def run(self):
         """Run method that loads and starts the plugin"""
+        
+        # find remaining panels and clear them all
+        for panel in self.iface.mainWindow().findChildren(QDockWidget):
+            if panel.windowTitle() == 'Panel Kerja GeoKKP-GIS':
+                self.iface.mainWindow().removeDockWidget(panel)
+                logMessage("duplicate panels found: " + str(panel.windowTitle()))
+                panel.setVisible(False)
+                panel.destroy()
+                del panel
 
         if not self.pluginIsActive:
             self.pluginIsActive = True
             # dockwidget may not exist if:
             #    first run of plugin
             #    removed on close (see self.onClosePlugin method)
-            # if self.workpanel is None:
-            #   Create the dockwidget (after translation) and keep reference
-            #   self.workpanel = Workpanel()
+            if self.workpanel is None:
+                # Create the dockwidget (after translation) and keep reference
+                self.workpanel = Workpanel()
 
             # connect to provide cleanup on closing of dockwidget
             self.workpanel.closingPlugin.connect(self.onClosePlugin)
 
-            # show the dockwidget
-            # TODO: fix to allow choice of dock location
+        # show the dockwidget
+        # TODO: fix to allow choice of dock location
+        try:
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.workpanel)
             self.workpanel.show()
             self.workpanel.setVisible(True)
-
-            print("run the plugin")
+        except Exception as e:
+            print(e)
 
     def logout_user(self):
         login_state = app_state.get('logged_in')
         if login_state.value:
             login_state = app_state.set('logged_in', False)
-            print("checkout", login_state)
+            logMessage("User keluar aplikasi")
             login_state.changed.connect(self.login_changed)
             self.workpanel.switch_panel(0)
-            clear_all_vars()
 
     def login_changed(self, state):
-        # self._is_logged_in = readSetting("geokkp/isLoggedIn")
+        # self._is_logged_in = readSetting("isLoggedIn")
         # print("successfully logged in")
         # print(self._is_logged_in)
         self.actionLoginUser.setVisible(not state)
@@ -779,9 +777,7 @@ class GeoKKP:
         if state:
             username = app_state.get('username')
             self.userLoggedIn.setText(str(username))
-            self.postlogin()
             # self.show_workpanel()
-
         else:
             self.userLoggedIn.setText("Masuk Pengguna")
 
@@ -845,18 +841,6 @@ class GeoKKP:
 
         # show the dialog
         self.plotxyaction.show()
-
-    def postlogin(self):
-        """
-        what to do if user is logged in
-        """
-        if self.postloginaction is None:
-            self.postloginaction = PostLoginDock()
-
-        self.postloginaction.closingPlugin.connect(self.onClosePlugin)
-
-        # show the dialog
-        self.postloginaction.show()
 
     def layout_peta(self):
         if self.layoutpetaaction is None:

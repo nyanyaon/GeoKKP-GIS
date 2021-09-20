@@ -3,7 +3,6 @@ import json
 
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
-from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.utils import iface
 from qgis.core import Qgis
 from qgis.gui import QgsMessageBar
@@ -11,12 +10,14 @@ from qgis.gui import QgsMessageBar
 from .utils import (
     storeSetting,
     logMessage,
+    dialogBox,
     get_saved_credentials,
     save_credentials
 )
 
 from .api import endpoints
 from .memo import app_state
+from .postlogin import PostLoginDock
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -34,6 +35,8 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         self.canvas = iface.mapCanvas()
         super(LoginDialog, self).__init__(parent)
         self.setupUi(self)
+
+        self.postlogin = PostLoginDock()
 
         self.bar = QgsMessageBar()
 
@@ -69,30 +72,20 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             response = endpoints.login(username, password)
             content = json.loads(response.content)
             if not content['status']:
-                message = QMessageBox(parent=self)
-                message.setIcon(QMessageBox.Information)
-                message.setText(content['information'])
-                message.setWindowTitle("Peringatan")
-                message.setStandardButtons(QMessageBox.Ok)
-                message.exec()
+                dialogBox(content['information'],)
             else:
                 if self.checkboxSaveLogin.isChecked():
                     save_credentials(username, password)
-                    storeSetting("geokkp/isLoggedIn", content['status'])
+                    storeSetting("isLoggedIn", content['status'])
                 logMessage(str(content))
                 self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
                 self.loginChanged.emit()
                 app_state.set('username', username)
                 app_state.set('logged_in', True)
-                self.accept()
                 self.getKantorProfile(username)
-        except Exception:
-            message = QMessageBox(parent=self)
-            message.setIcon(QMessageBox.Critical)
-            message.setText("Kesalahan koneksi. Periksa sambungan Anda ke server GeoKKP")
-            message.setWindowTitle("Koneksi bermasalah")
-            message.setStandardButtons(QMessageBox.Ok)
-            message.exec()
+        except Exception as e:
+            print(e)
+            dialogBox("Kesalahan koneksi. Periksa sambungan Anda ke server GeoKKP", "Koneksi Bermasalah", "Warning")
 
     def getKantorProfile(self, username):
         """
@@ -101,18 +94,29 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         """
         try:
             response = endpoints.get_entity_by_username(username)
+        except Exception as e:
+            print(e)
+            dialogBox("Data Pengguna gagal dimuat dari server",
+                      "Koneksi Bermasalah",
+                      "Warning")
+
+        if response is not None:
             response_json = json.loads(response.content)
-            storeSetting("geokkp/jumlahkantor", len(response_json))
-            storeSetting("geokkp/listkantor", response_json)
-            logMessage(
-                "Data kantor pengguna berhasil disimpan",
-                level=Qgis.Success
-            )
-        except Exception as e: # noqa
-            print("ada error ketika login", e)
-            message2 = QMessageBox(parent=self)
-            message2.setIcon(QMessageBox.Warning)
-            message2.setText("Data Pengguna gagal dimuat dari server")
-            message2.setWindowTitle("Terjadi Kesalahan")
-            message2.setStandardButtons(QMessageBox.Ok)
-            message2.exec()
+            storeSetting("jumlahkantor", len(response_json))
+            storeSetting("listkantor", response_json)
+            if self.postlogin.populateKantah(response_json):
+                self.postuserlogin()
+        else:
+            dialogBox("Data Pengguna gagal disimpan ke dalam QGIS",
+                      "Koneksi Bermasalah",
+                      "Warning")
+
+    def postuserlogin(self):
+        """
+        what to do when user is logged in
+        """
+        self.accept()
+        if self.postlogin is None:
+            self.postlogin = PostLoginDock()
+        # show the dialog
+        self.postlogin.show()

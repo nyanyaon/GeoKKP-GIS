@@ -16,14 +16,17 @@
     <height>550</height>
    </size>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::StrongFocus</enum>
+  </property>
   <property name="features">
-   <set>QDockWidget::AllDockWidgetFeatures</set>
+   <set>QDockWidget::NoDockWidgetFeatures</set>
   </property>
   <property name="allowedAreas">
    <set>Qt::RightDockWidgetArea</set>
   </property>
   <property name="windowTitle">
-   <string>Panel Kerja GeoKKP-GIS</string>
+   <string notr="true">Panel Kerja GeoKKP-GIS</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout">
@@ -298,6 +301,9 @@ color:rgb(23, 145, 205)</string>
             </property>
             <property name="text">
              <string>Bantuan</string>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
