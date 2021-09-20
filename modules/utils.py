@@ -485,16 +485,26 @@ def add_layer(layername, type, symbol=None, fields=None, crs=None, parent=None):
     layer = QgsVectorLayer(f"{type}?crs=epsg:" + str(crs.postgisSrid()), layername, "memory")
     layer_dataprovider = layer.dataProvider()
     if not fields:
-        fields = [
+        field_list = [
             QgsField("ID", QVariant.String),
             QgsField("Keterangan", QVariant.String),
         ]
-
+    else:
+        field_list = []
+        for key,value in fields.items():
+            if value == 'String':
+                field_type = QVariant.String
+            elif value == 'Int':
+                field_type = QVariant.Int
+            elif value == 'Double':
+                field_type = QVariant.Double
+            field = QgsField(key, field_type)
+            field_list.append(field)
     if symbol:
         symbolurl = os.path.join(os.path.dirname(__file__), '../styles/'+symbol)
         layer.loadNamedStyle(symbolurl)
 
-    layer_dataprovider.addAttributes(fields)
+    layer_dataprovider.addAttributes(field_list)
     layer.updateFields()
     QgsProject.instance().addMapLayer(layer)
 

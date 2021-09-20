@@ -75,6 +75,9 @@ from .modules.workpanel import Workpanel
 
 # GeoKKP-GIS Modules
 from .modules.initialization import Initialize
+
+Initialize()
+
 from .modules.add_layer import AddLayerDialog
 from .modules.add_basemap import AddBasemapDialog
 from .modules.gotoxy import GotoXYDialog
@@ -90,6 +93,12 @@ from .modules.layout_gu import LayoutGUDialog
 from .modules.trilateration import TrilaterationDialog
 from .modules.triangulation import TriangulationDialog
 from .modules.pengaturan_lokasi import PengaturanLokasiDialog
+from .modules.draw_dimension import DimensionDistanceTool, DimensionAngleTool
+from .modules.utils import (
+    activate_editing,
+    iconPath,
+    icon
+)
 from .modules.memo import app_state
 
 
@@ -158,8 +167,8 @@ class GeoKKP:
         self.pluginIsActive = False
 
         # == Initialization and Data Preparation ==
-        self.initialize = Initialize
-        self.initialize()
+        # self.initialize = Initialize
+        # self.initialize()
 
         # self.canvasClicked = pyqtSignal('QgsPointXY')
 
@@ -178,6 +187,8 @@ class GeoKKP:
         self.layoutguaction = LayoutGUDialog()
         self.trilaterationaction = TrilaterationDialog()
         self.triangulationaction = TriangulationDialog()
+        # self.dimDistanceAction = DrawDimensionDialog()
+        # self.dimAngleAction = DrawDimensionDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
         self.aturlokasi_action = PengaturanLokasiDialog()
         # self.loginaction.loginChanged.connect()
@@ -395,6 +406,44 @@ class GeoKKP:
         # Register menu to toolbar
         self.toolbar.addWidget(self.AddDataButton)
         self.menu.addMenu(self.popupAddData)
+        # -------------------------------------------
+
+        # ======== Dropdown Menu: Dimensi ========
+        # Deklarasi menu dimensi
+        self.popupDimension = QMenu("&Dimensi", self.iface.mainWindow())
+
+        #  --- Sub-menu Dimensi Jarak ---
+        self.actionDistanceDimension = self.add_action(
+            icon("dimension_distance.png"),
+            text=self.tr(u"Dimensi Jarak"),
+            callback=self.dimension_distance, 
+            add_to_toolbar=False,
+            add_to_menu=False,
+            parent=self.popupDimension
+        )
+        self.popupDimension.addAction(self.actionDistanceDimension)
+
+        #  --- Sub-menu Dimensi Sudut ---
+        self.actionAngleDimension = self.add_action(
+            icon("dimension_angle.png"),
+            text=self.tr(u"Dimensi Sudut"),
+            callback=self.dimension_angle, 
+            add_to_toolbar=False,
+            add_to_menu=False,
+            parent=self.popupDimension
+        )
+        self.popupDimension.addAction(self.actionAngleDimension)
+
+        # Pengaturan Dropdown menu Dimensi
+        self.DimensionButton = QToolButton()
+        self.DimensionButton.setMenu(self.popupDimension)
+        # self.DimensionButton.setIcon(icon("dimension.png"))
+        # self.DimensionButton.setToolTip("Dimension")
+        self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
+        self.DimensionButton.setPopupMode(QToolButton.MenuButtonPopup)
+        # Register menu to toolbar
+        self.toolbar.addWidget(self.DimensionButton)
+        self.menu.addMenu(self.popupDimension)
         # -------------------------------------------
 
         # ======== Dropdown Menu: Penggambaran ========
@@ -825,6 +874,52 @@ class GeoKKP:
         dissolved = dissolve(polygonized)
         QgsProject.instance().removeMapLayer(polygonized)
         QgsProject.instance().addMapLayer(dissolved)
+            
+    def dimension_distance(self):
+        # get dimension layer by name 
+        self.dimension_layer = None
+        all_layers = QgsProject.instance().mapLayers().values()
+        for layer in all_layers:
+            if layer.name() == '(20400) Dimensi Pengukuran':
+                self.dimension_layer = layer
+                break
+        if not self.dimension_layer:
+            self.iface.messageBar().pushMessage(
+                "Peringatan", 
+                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.", 
+                level=Qgis.Warning)
+            return
+        # enable last chosen tools as default in toolbar
+        self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
+
+        self.distanceTool = DimensionDistanceTool(
+            self.iface.mapCanvas(), 
+            self.dimension_layer
+        )
+        self.iface.mapCanvas().setMapTool(self.distanceTool)
+
+    def dimension_angle(self):
+        # get dimension layer by name 
+        self.dimension_layer = None
+        all_layers = QgsProject.instance().mapLayers().values()
+        for layer in all_layers:
+            if layer.name() == '(20400) Dimensi Pengukuran':
+                self.dimension_layer = layer
+                break
+        if not self.dimension_layer:
+            self.iface.messageBar().pushMessage(
+                "Peringatan", 
+                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.", 
+                level=Qgis.Warning)
+            return
+        # enable last chosen tools as default in toolbar
+        self.DimensionButton.setDefaultAction(self.actionAngleDimension)
+        
+        self.angleTool = DimensionAngleTool(
+            self.iface.mapCanvas(), 
+            self.dimension_layer
+        )
+        self.iface.mapCanvas().setMapTool(self.angleTool)
 
     def aturlokasi(self):
         if self.aturlokasi_action is None:
