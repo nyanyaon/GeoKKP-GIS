@@ -495,9 +495,8 @@ def resolve_path(name, basepath=None):
 
 def set_project_crs_by_epsg(epsg):
     print(epsg)
-    
     try:
-        crs = QgsCoordinateReferenceSystem(str(epsg))
+        crs = QgsCoordinateReferenceSystem(epsg)
         QgsProject.instance().setCrs(crs)
     except Exception as e:
         print(e)

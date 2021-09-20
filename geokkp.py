@@ -21,6 +21,7 @@
  ***************************************************************************/
 """
 
+
 import os
 import json
 
@@ -88,6 +89,7 @@ from .modules.layout_peta import LayoutPetaDialog
 from .modules.layout_gu import LayoutGUDialog
 from .modules.trilateration import TrilaterationDialog
 from .modules.triangulation import TriangulationDialog
+from .modules.pengaturan_lokasi import PengaturanLokasiDialog
 from .modules.memo import app_state
 
 
@@ -177,6 +179,7 @@ class GeoKKP:
         self.trilaterationaction = TrilaterationDialog()
         self.triangulationaction = TriangulationDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
+        self.aturlokasi_action = PengaturanLokasiDialog()
         # self.loginaction.loginChanged.connect()
 
     # noinspection PyMethodMayBeStatic
@@ -569,6 +572,18 @@ class GeoKKP:
         )
         self.popupPeralatan.addAction(self.actionGotoXY)
 
+        #  --- Sub-menu Pengaturan Lokasi ---
+        self.actionAturLokasi = self.add_action(
+            icon("georef.png"),
+            text=self.tr(u"Atur Lokasi Kerja"),
+            callback=self.aturlokasi,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            need_auth=False,
+            parent=self.popupPeralatan
+        )
+        self.popupPeralatan.addAction(self.actionAturLokasi)
+
         #  --- Sub-menu Geocoding ---
         self.actionGeocoding = self.add_action(
             icon("georef.png"),
@@ -576,6 +591,7 @@ class GeoKKP:
             callback=self.gotoxy,
             add_to_toolbar=False,
             add_to_menu=False,
+            need_auth=False,
             parent=self.popupPeralatan
         )
         self.popupPeralatan.addAction(self.actionGeocoding)
@@ -688,7 +704,7 @@ class GeoKKP:
         Cleanup necessary items here when plugin dockwidget is closed
         """
         # disconnects
-        self.workpanel.closingPlugin.disconnect(self.onClosePlugin)
+        # self.workpanel.closingPlugin.disconnect(self.onClosePlugin)
 
         # remove this statement if dockwidget is to remain
         # for reuse if plugin is reopened
@@ -705,6 +721,7 @@ class GeoKKP:
 
         # remove the dockwidget
         if self.workpanel is not None:
+            print("not none")
             del self.workpanel
 
         # remove the toolbar
@@ -716,21 +733,20 @@ class GeoKKP:
             # self.menu.clear()
             self.menu = None
 
-        # clear all local variables
-        clear_all_vars()
-
-    def run(self):
-        """Run method that loads and starts the plugin"""
-        
         # find remaining panels and clear them all
         for panel in self.iface.mainWindow().findChildren(QDockWidget):
             if panel.windowTitle() == 'Panel Kerja GeoKKP-GIS':
                 self.iface.mainWindow().removeDockWidget(panel)
                 logMessage("duplicate panels found: " + str(panel.windowTitle()))
+                panel.setVisible(False)
+                panel.deleteLater()
                 del panel
-                # panel.setVisible(False)
-                # panel.destroy()
 
+        # clear all local variables
+        clear_all_vars()
+
+    def run(self):
+        """Run method that loads and starts the plugin"""
         if not self.pluginIsActive:
             self.pluginIsActive = True
             # dockwidget may not exist if:
@@ -809,6 +825,11 @@ class GeoKKP:
         dissolved = dissolve(polygonized)
         QgsProject.instance().removeMapLayer(polygonized)
         QgsProject.instance().addMapLayer(dissolved)
+
+    def aturlokasi(self):
+        if self.aturlokasi_action is None:
+            self.aturlokasi_action = PengaturanLokasiDialog()
+        self.aturlokasi_action.show()
 
     def gotoxy(self):
         if self.gotoxyaction is None:
