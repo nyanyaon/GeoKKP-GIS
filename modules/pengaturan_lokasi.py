@@ -6,7 +6,7 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtWidgets import QLineEdit
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
-from qgis.core import QgsCoordinateReferenceSystem
+from qgis.core import QgsCoordinateReferenceSystem, QgsProject
 
 # using utils
 from .utils import (
@@ -38,6 +38,7 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
         super(PengaturanLokasiDialog, self).__init__(parent)
         self.setWindowIcon(icon("icon.png"))
         self.setupUi(self)
+        self.project = QgsProject()
 
         # setup crs
         self._currentcrs = None
@@ -135,6 +136,10 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
 
         # for feature in layer.getFeatures():
         #    print(feature["WAK"])
+
+        epsg = get_epsg_from_tm3_zone(self.zone)
+        crs = QgsCoordinateReferenceSystem(str(epsg))
+        self.project.instance().setCrs(crs)
 
         try:
             epsg = get_epsg_from_tm3_zone(self.zone)

@@ -19,6 +19,9 @@
   <property name="focusPolicy">
    <enum>Qt::StrongFocus</enum>
   </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::DefaultContextMenu</enum>
+  </property>
   <property name="features">
    <set>QDockWidget::AllDockWidgetFeatures</set>
   </property>
