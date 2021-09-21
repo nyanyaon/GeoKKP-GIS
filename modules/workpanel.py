@@ -21,7 +21,7 @@ from .utils import (
 from .api import endpoints
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/panel_kerja.ui'))
+    os.path.dirname(__file__), '../ui/panel_kerjav2.ui'))
 
 
 STACKWIDGET_RUTIN = 1

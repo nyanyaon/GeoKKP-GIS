@@ -22,6 +22,7 @@
 """
 
 
+
 import os
 import json
 
@@ -60,6 +61,7 @@ from qgis import utils as qgis_utils
 # import utilities
 from .modules.utils import (
     clear_all_vars,
+    dialogBox,
     logMessage,
     activate_editing,
     iconPath,
@@ -75,6 +77,7 @@ from .modules.workpanel import Workpanel
 
 # GeoKKP-GIS Modules
 from .modules.initialization import Initialize
+from .modules.featuresearch import FeatureSearchDialog
 
 Initialize()
 
@@ -191,6 +194,7 @@ class GeoKKP:
         # self.dimAngleAction = DrawDimensionDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
         self.aturlokasi_action = PengaturanLokasiDialog()
+        self.pencarianlokasi_action = FeatureSearchDialog()
         # self.loginaction.loginChanged.connect()
 
     # noinspection PyMethodMayBeStatic
@@ -657,6 +661,18 @@ class GeoKKP:
         )
         self.popupPeralatan.addAction(self.actionGeoreference)
 
+        #  --- Sub-menu Pencarian Fitur ---
+        self.actionFeatureSearch = self.add_action(
+            icon("nailer.png"),
+            text=self.tr(u"Pencarian Atribut"),
+            callback=self.search_for_feature,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            need_auth=False,
+            parent=self.popupPeralatan
+        )
+        self.popupPeralatan.addAction(self.actionFeatureSearch)
+
         # Pengaturan Dropdown menu Peralatan
         self.PeralatanButton = QToolButton()
         self.PeralatanButton.setMenu(self.popupPeralatan)
@@ -854,7 +870,7 @@ class GeoKKP:
         if state:
             username = app_state.get('username')
             self.userLoggedIn.setText(str(username))
-            # self.show_workpanel()
+            self.show_workpanel()
         else:
             self.userLoggedIn.setText("Masuk Pengguna")
 
@@ -953,6 +969,13 @@ class GeoKKP:
             self.setting_action = SettingsDialog()
 
         self.setting_action.show()
+
+    def search_for_feature(self):
+        try:
+            self.iface.showAttributeTable(self.iface.activeLayer())
+        except Exception as e:
+            dialogBox(e)
+
 
     def coordinate_transform(self):
         if self.coordinate_transform_dialog is None:
@@ -1109,6 +1132,7 @@ class GeoKKP:
         pass
 
     def show_workpanel(self):
+        print("Show Workpanel")
         login_state = app_state.get('logged_in')
         if not login_state.value:
             return
