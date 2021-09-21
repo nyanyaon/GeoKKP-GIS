@@ -353,7 +353,7 @@ class GeoKKP:
         self.actionAddData = self.add_action(
             icon("getparcel.png"),
             text=self.tr(u"Tambah Data"),
-            callback=self.gotoxy,
+            callback=self.addlayersmenu,
             add_to_toolbar=False,
             parent=self.popupAddData,
             add_to_menu=False
@@ -1079,6 +1079,12 @@ class GeoKKP:
     #     if self.adjustaction is None:
     #         self.adjustaction = AdjustDialog()
     #     self.adjustaction.show()
+
+    def addlayersmenu(self):
+        for action in self.iface.mainWindow().findChildren(QAction):
+            # print(action.text())
+            if action.text() == "Add Vector Layer…":
+                action.trigger()
 
     def georeferencer(self):
         for action in self.iface.mainWindow().findChildren(QAction):
