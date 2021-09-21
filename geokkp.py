@@ -353,7 +353,7 @@ class GeoKKP:
         self.actionAddData = self.add_action(
             icon("getparcel.png"),
             text=self.tr(u"Tambah Data"),
-            callback=self.gotoxy,
+            callback=self.addlayersmenu,
             add_to_toolbar=False,
             parent=self.popupAddData,
             add_to_menu=False
@@ -514,7 +514,7 @@ class GeoKKP:
         self.actionCekTopologi = self.add_action(
             icon("validasi.png"),
             text=self.tr(u"Validasi"),
-            callback=self.gotoxy,
+            callback=self.geomchecker,
             add_to_toolbar=False,
             add_to_menu=False,
             parent=self.popupValidasi
@@ -1080,6 +1080,12 @@ class GeoKKP:
     #         self.adjustaction = AdjustDialog()
     #     self.adjustaction.show()
 
+    def addlayersmenu(self):
+        for action in self.iface.mainWindow().findChildren(QAction):
+            # print(action.text())
+            if action.text() == "Add Vector Layer…":
+                action.trigger()
+
     def georeferencer(self):
         for action in self.iface.mainWindow().findChildren(QAction):
             # print(action.text())
@@ -1090,6 +1096,12 @@ class GeoKKP:
         for action in self.iface.mainWindow().findChildren(QAction):
             # print(action.text())
             if action.text() == "&GeoCoding":
+                action.trigger()
+
+    def geomchecker(self):
+        for action in self.iface.mainWindow().findChildren(QAction):
+            # print(action.text())
+            if action.text() == "Check Geometries…":
                 action.trigger()
 
     def openhelp(self):
