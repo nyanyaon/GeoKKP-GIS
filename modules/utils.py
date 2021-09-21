@@ -208,7 +208,7 @@ def storeSetting(key, value):
     settings.sync()
 
 
-def readSetting(key):
+def readSetting(key, default=None):
     """
     Read value from QGIS Settings
     """
