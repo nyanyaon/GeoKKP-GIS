@@ -10,6 +10,7 @@ from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
 from qgis.core import (
+    QgsPointXY,
     QgsCoordinateTransform,
     QgsProject,
     QgsCoordinateReferenceSystem)
@@ -56,6 +57,11 @@ class CoordinateTransformDialog(QDialog, FORM_CLASS):
             self.tm3_convert_button
         ]
 
+        # sementara tidak dipakai, transformasi hanya satu arah
+        self.latlong_copy_button.hide()
+        self.utm_convert_button.hide()
+        self.tm3_convert_button.hide()
+
         # CRS
         self.names = [
             "Lat long",  # lat long
@@ -64,7 +70,6 @@ class CoordinateTransformDialog(QDialog, FORM_CLASS):
         ]
 
         # CRS
-        # TODO: cek CRSnya sudah benar atau tidak
         self.coordinate_systems = [
             QgsCoordinateReferenceSystem("EPSG:4326"),  # lat long
             QgsCoordinateReferenceSystem("EPSG:32749"),  # UTM ?
@@ -103,16 +108,29 @@ class CoordinateTransformDialog(QDialog, FORM_CLASS):
     def transform_clicked(self, button_index):
         point = self.parse_coordinate(button_index)
 
-        for i in range(len(self.coordinate_systems)):
+        for i in range(len(self.names)):
             if i != button_index:
-                if i == 1:  # UTM:
-                    utm_epsg = self.get_epsg_code_utm(point.x(), point.y())
-                    logMessage("UTM code " + utm_epsg)
+                if i == 0:  # lon lat
+                    crs = QgsCoordinateReferenceSystem("EPSG:4326")
                     new_point = self.transform_coordinate(
-                                self.coordinate_systems[button_index], QgsCoordinateReferenceSystem(utm_epsg), point)
-                else:
+                        self.coordinate_systems[button_index], crs, point)
+                elif i == 1:  # UTM:
+                    utm_crs = self.get_crs_utm(point.x(), point.y())
+                    if not utm_crs:
+                        self.lineedits[i].setText("N/A")
+                        continue
                     new_point = self.transform_coordinate(
-                                self.coordinate_systems[button_index], self.coordinate_systems[i], point)
+                                self.coordinate_systems[button_index], utm_crs, point)
+                    self.utm_label.setText("UTM " + utm_crs.description().split(" zone ")[1])
+                elif i == 2:  # TM3
+                    tm3_crs = self.get_crs_tm3(point.x(), point.y())
+                    if not tm3_crs:
+                        self.lineedits[i].setText("N/A")
+                        continue
+                    new_point = self.transform_coordinate(
+                                self.coordinate_systems[button_index], tm3_crs, point)
+                    self.tm3_label.setText("TM3 " + tm3_crs.description().split(" zone ")[1])
+
                 self.lineedits[i].setText("%f, %f" % (new_point.x(), new_point.y()))
 
     def copy_clicked(self, button_index):
@@ -125,10 +143,18 @@ class CoordinateTransformDialog(QDialog, FORM_CLASS):
         self.closingPlugin.emit()
         event.accept()
 
-    def get_epsg_code_utm(self, lon, lat):
+    def get_crs_utm(self, lon, lat):
         zone = (math.floor((lon + 180) / 6) ) + 1
         epsg_code = 32600
         epsg_code += int(zone)
         if (lat < 0): # South
             epsg_code += 100
-        return "EPSG:%d" % epsg_code
+        return QgsCoordinateReferenceSystem("EPSG:%d" % epsg_code)
+
+    def get_crs_tm3(self, lon, lat):
+        # find the CRS
+        point = QgsPointXY(lon, lat)
+        for epsg_code in range(23830, 23846):  # TM3
+            crs = QgsCoordinateReferenceSystem("EPSG:%d" % epsg_code)
+            if (crs.bounds().contains(point)):
+                return crs
