@@ -690,6 +690,7 @@ class GeoKKP:
 
         # ======== Dropdown Menu: Workspace GeoKKP ========
         # Deklarasi menu Workspace
+        """        
         self.popupWorkspace = QMenu("&Workspace", self.iface.mainWindow())
 
         #  --- Sub-menu Workspace Rutin ---
@@ -725,6 +726,7 @@ class GeoKKP:
         self.toolbar.addWidget(self.WorkspaceButton)
         self.menu.addMenu(self.popupWorkspace)
         # -------------------------------------------
+        """
 
         # ========== Menu: CADMode ==========
         self.add_action(
