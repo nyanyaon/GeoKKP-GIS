@@ -23,6 +23,19 @@ Fungsi-fungsi GeoKKP-GIS saat ini antara lain:
 Untuk berkontribusi pada plugin ini, silahkan melakukan komunikasi dengan Pusdatin ATRBPN di support.pusdatin@atrbpn.go.id
 
 
+## Prosedur untuk Release
+Berikut adalah tahapan untuk melakukan release versi baru.
+1. _Merge branch_ develop ke _master_
+2. Pastikan versi di metadata.txt sudah diperbaharusi, misalnya `version=1.0.1`
+3. _Checkout master branch_. Contoh: `git checkout origin/master`
+4. Buat _tag_ pada _master branch_ tersebut dengan versi sebagai tag-nya. Misal untuk versi 1.0.1 menggunakan tag `version-1_0_1`. Contoh: `git tag version-1_0_1`
+5. Push _tag_ tersebut ke Github. Contoh: `git push version-1_0_1`
+6. Buat release baru di Github: [Release Baru](https://github.com/danylaksono/GeoKKP-GIS/releases/new), dengan menggunakan tag tersebut.
+7. Berikan keterangan pada release versi tersebut (Changelog)
+8. Tekan tombol _Publish release_
+9. Github akan membuat berkas terkompresi dari plugin ini
+10. Upload berkas terkompresi tersebut ke [Plugin QGIS](https://plugins.qgis.org/) agar pengguna bisa mengunduhnya.
+
 ## Lisensi
 Lisensi aplikasi GeoKKP-GIS berada di bawah naungan **GNU-AGPLv3** sebagai berikut:
 
@@ -31,8 +44,3 @@ GNU AGPLv3
 
 Permissions of this strongest copyleft license are conditioned on making available complete source code of licensed works and modifications, which include larger works using a licensed work, under the same license. Copyright and license notices must be preserved. Contributors provide an express grant of patent rights. When a modified version is used to provide a service over a network, the complete source code of the modified version must be made available.
 ```
-
-
-
-
-
