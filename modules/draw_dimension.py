@@ -19,11 +19,56 @@ from qgis.gui import (
 from .maptools import MapTool
 
 # ----------------------------------------------------------- #
+#                      Point Dimension                        #
+# ----------------------------------------------------------- #
+class DimensionPointTool(QgsMapTool):
+
+    completed = pyqtSignal()
+
+    def __init__(self, canvas, dimension_layer):
+        QgsMapTool.__init__(self, canvas)
+        self.canvas = canvas
+
+        enable_snapping()
+
+        self.dimension_layer = dimension_layer
+
+        self.vm = create_vertex_marker(self.canvas, 'BOX')
+
+    def canvasMoveEvent(self, event):
+        point_snap, status = snapping_point(self.canvas, event.pos())
+        self.vm.setCenter(point_snap)
+
+    def canvasReleaseEvent(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
+            pt, _ = snapping_point(self.canvas, event.pos())
+            
+            geom_line_zero_length = QgsGeometry().fromPolylineXY([pt, pt])
+            
+            feat = QgsFeature()
+            feat.setGeometry(geom_line_zero_length)
+            titik_nilai = str(round(pt.x(),3))+','+str(round(pt.y(),3))
+            feat.setAttributes(['Titik', titik_nilai])
+
+            self.dimension_layer_prov = self.dimension_layer.dataProvider()
+            self.dimension_layer.startEditing()
+            self.dimension_layer_prov.addFeatures([feat])
+            self.dimension_layer.commitChanges()
+        elif event.button() == QtCore.Qt.RightButton:
+            try:
+                self.canvas.scene().removeItem(self.vm)
+            except NameError:
+                pass
+
+            self.completed.emit()
+
+
+# ----------------------------------------------------------- #
 #                      Angle Dimension                        #
 # ----------------------------------------------------------- #
 class DimensionAngleTool(QgsMapTool):
 
-    completed = pyqtSignal(QgsFeature)
+    completed = pyqtSignal()
 
     def __init__(self, canvas, dimension_layer):
         QgsMapTool.__init__(self, canvas)
@@ -35,23 +80,28 @@ class DimensionAngleTool(QgsMapTool):
 
         self.vm_center = create_vertex_marker(self.canvas, 'CIRCLE')
         self.vm_1 = create_vertex_marker(self.canvas, 'CROSS')
-        self.vm_1.hide()
+        # self.vm_1.hide()
         self.vm_2 = create_vertex_marker(self.canvas, 'CROSS')
-        self.vm_2.hide()
+        # self.vm_2.hide()
 
         self.rb_buffer = create_rubberband(self.canvas, 'SOLID')
         self.geomrb_buffer = create_geom_rubberband(self.canvas, 'SOLID')
+        # self.geomrb_buffer.hide()
         self.geomrb_short_arc = create_geom_rubberband(self.canvas, 'DOT_LINE')
+        # self.geomrb_short_arc.hide()
         self.geomrb_long_arc = create_geom_rubberband(self.canvas, 'DOT_LINE')
+        # self.geomrb_long_arc.hide()
 
         self.click_counter = 0
 
     def canvasMoveEvent(self, event):
         point_snap, status = snapping_point(self.canvas, event.pos())
         if self.click_counter == 0: # add center point
+            # self.vm_center.show()
             self.vm_center.setCenter(point_snap)
         
         elif self.click_counter == 1: # create estimate buffer
+            # self.geomrb_buffer.show()
             cur_pt = QgsPoint(point_snap)
             circle = QgsCircle.fromCenterPoint(self.center_pt, cur_pt)
             self.circular_string = circle.toCircularString()
@@ -60,13 +110,13 @@ class DimensionAngleTool(QgsMapTool):
         elif self.click_counter == 2: # get first arc point
             cur_pt = QgsPoint(point_snap)
             _, start_arc, _, _ = self.circular_string.closestSegment(cur_pt)
-            self.vm_1.show()
+            # self.vm_1.show()
             self.vm_1.setCenter(QgsPointXY(start_arc))
             
         elif self.click_counter == 3: # get second arc point
             cur_pt = QgsPoint(point_snap)
             _, end_arc, _, _ = self.circular_string.closestSegment(cur_pt)
-            self.vm_2.show()
+            # self.vm_2.show()
             self.vm_2.setCenter(QgsPointXY(end_arc))
 
         elif self.click_counter == 4: # choose segment
@@ -76,6 +126,92 @@ class DimensionAngleTool(QgsMapTool):
             self.canvas.refresh()
             self.final_arc = arc
 
+    def canvasReleaseEvent(self, event):
+        if event.button() == QtCore.Qt.LeftButton:
+            self.click_counter += 1
+            point_snap, _ = snapping_point(self.canvas, event.pos())
+            cur_pt = QgsPoint(point_snap)
+            
+            if self.click_counter == 1: # center point stored
+                self.center_pt = QgsPoint(point_snap)
+                self.vm_center.setCenter(point_snap)
+            
+            elif self.click_counter == 2: # radius point stored
+                self.radius_pt = QgsPointXY(point_snap)
+            
+            elif self.click_counter == 3: # start arc stored
+                _, start_arc, _, _ = self.circular_string.closestSegment(cur_pt)
+                self.start_arc_pt = start_arc
+
+            elif self.click_counter == 4: # end arc stored
+                _, end_arc, _, _ = self.circular_string.closestSegment(cur_pt)
+                self.end_arc_pt = end_arc
+
+                self.shortest_arc = QgsCircularString().fromTwoPointsAndCenter(
+                    self.start_arc_pt, self.end_arc_pt, self.center_pt, True
+                )
+                self.longest_arc = QgsCircularString().fromTwoPointsAndCenter(
+                    self.start_arc_pt, self.end_arc_pt, self.center_pt, False
+                )
+                # self.geomrb_buffer.hide()
+                self.geomrb_short_arc.setGeometry(self.shortest_arc)
+                # self.geomrb_short_arc.show()
+                self.geomrb_long_arc.setGeometry(self.longest_arc)
+                # self.geomrb_long_arc.show()
+            
+            elif self.click_counter == 5: # arc finalised
+                print('counter :',self.click_counter)
+                start_az = self.center_pt.azimuth(self.start_arc_pt)
+                end_az = self.center_pt.azimuth(self.end_arc_pt)
+
+                delta_az = abs(start_az - end_az)
+                print(start_az, end_az, delta_az)
+                
+                small_angle = delta_az
+                large_angle = 360 - delta_az
+
+                if self.arc_chosen == 'short':
+                    angle = small_angle
+                elif self.arc_chosen == 'long':
+                    angle = large_angle
+                
+                angle_feat = QgsFeature()
+                angle_feat.setGeometry(self.final_arc.segmentize(0.1))
+                
+                angle_value = angle
+                angle_feat.setAttributes(['Sudut', str(angle_value)])
+
+                self.dimension_layer_prov = self.dimension_layer.dataProvider()
+                self.dimension_layer.startEditing()
+                self.dimension_layer_prov.addFeatures([angle_feat])
+                self.dimension_layer.commitChanges()
+                
+                
+                # try:
+                #     self.vm_center.hide()
+                #     self.vm_1.hide()
+                #     self.vm_2.hide()
+                #     self.geomrb_short_arc.hide()
+                #     self.geomrb_long_arc.hide()
+                # except:
+                #     pass
+
+                self.click_counter = 0
+
+        elif event.button() == QtCore.Qt.RightButton:
+            try:
+                self.canvas.scene().removeItem(self.vm_center)
+                self.canvas.scene().removeItem(self.vm_1)
+                self.canvas.scene().removeItem(self.vm_2)
+                self.canvas.scene().removeItem(self.rb_buffer)
+                self.canvas.scene().removeItem(self.geomrb_buffer)
+                self.canvas.scene().removeItem(self.geomrb_short_arc)
+                self.canvas.scene().removeItem(self.geomrb_long_arc)
+            except NameError:
+                pass
+
+            self.completed.emit()
+    
     def check_arc(self, point_check, short_arc, long_arc):
         a1, b1, c1, d1 = short_arc.closestSegment(point_check)
         a2, b2, c2, d2 = long_arc.closestSegment(point_check)
@@ -91,82 +227,13 @@ class DimensionAngleTool(QgsMapTool):
             self.arc_chosen = 'long' 
             return long_arc
 
-    def canvasReleaseEvent(self, event):
-        self.click_counter += 1
-        point_snap, _ = snapping_point(self.canvas, event.pos())
-        cur_pt = QgsPoint(point_snap)
-        if self.click_counter == 1: # center point stored
-            self.center_pt = QgsPoint(point_snap)
-            # self.center_geom = QgsGeometry().fromPoint(self.center_pt)
-            self.vm_center.setCenter(point_snap)
-        
-        elif self.click_counter == 2: # radius point stored
-            self.radius_pt = QgsPointXY(point_snap)
-        
-        elif self.click_counter == 3: # start arc stored
-            _, start_arc, _, _ = self.circular_string.closestSegment(cur_pt)
-            self.start_arc_pt = start_arc
-
-        elif self.click_counter == 4: # end arc stored
-            _, end_arc, _, _ = self.circular_string.closestSegment(cur_pt)
-            self.end_arc_pt = end_arc
-
-            self.shortest_arc = QgsCircularString().fromTwoPointsAndCenter(
-                self.start_arc_pt, self.end_arc_pt, self.center_pt, True
-            )
-            self.longest_arc = QgsCircularString().fromTwoPointsAndCenter(
-                self.start_arc_pt, self.end_arc_pt, self.center_pt, False
-            )
-            self.geomrb_buffer.hide()
-            self.geomrb_short_arc.setGeometry(self.shortest_arc)
-            self.geomrb_long_arc.setGeometry(self.longest_arc)
-        elif self.click_counter == 5: # arc finalised
-            start_az = self.center_pt.azimuth(self.start_arc_pt)
-            end_az = self.center_pt.azimuth(self.end_arc_pt)
-
-            delta_az = abs(start_az - end_az)
-            print(start_az, end_az, delta_az)
-            
-            small_angle = delta_az
-            large_angle = 360 - delta_az
-            
-            if self.arc_chosen == 'short':
-                angle = small_angle
-            elif self.arc_chosen == 'long':
-                angle = large_angle
-
-            angle_feat = QgsFeature()
-            angle_feat.setGeometry(self.final_arc)
-            angle_value = angle
-            angle_feat.setAttributes(['Sudut', str(angle_value)])
-
-            # self.completed.emit(angle_feat)
-            
-            try:
-                self.canvas.scene().removeItem(self.vm_center)
-                self.canvas.scene().removeItem(self.vm_1)
-                self.canvas.scene().removeItem(self.vm_2)
-                self.canvas.scene().removeItem(self.rb_buffer)
-                self.canvas.scene().removeItem(self.geomrb_buffer)
-                self.canvas.scene().removeItem(self.geomrb_short_arc)
-                self.canvas.scene().removeItem(self.geomrb_long_arc)
-            except:
-                pass
-
-            self.canvas.unsetMapTool(self)
-
-            self.dimension_layer_prov = self.dimension_layer.dataProvider()
-            self.dimension_layer.startEditing()
-            self.dimension_layer_prov.addFeatures([angle_feat])
-            self.dimension_layer.commitChanges()
-
         
 # ----------------------------------------------------------- #
 #                     Distance Dimension                      #
 # ----------------------------------------------------------- #
 class DimensionDistanceTool(QgsMapTool):
 
-    completed = pyqtSignal(QgsFeature)
+    completed = pyqtSignal()
 
     def __init__(self, canvas, dimension_layer):
         QgsMapTool.__init__(self, canvas)
@@ -216,23 +283,45 @@ class DimensionDistanceTool(QgsMapTool):
             self.rb_main.setToGeometry(self.offset_geom)
 
     def canvasReleaseEvent(self, event):
-        self.click_counter += 1
-        self.point_snap, _ = snapping_point(self.canvas, event.pos())
-        
-        if self.click_counter == 1: # indicates finished adding first point
-            # print("Canvas clicked for the first time")
-            self.vm_1.setCenter(self.point_snap)
-            self.start_point = self.point_snap
+        if event.button() == QtCore.Qt.LeftButton:
+            self.click_counter += 1
+            self.point_snap, _ = snapping_point(self.canvas, event.pos())
+            
+            if self.click_counter == 1: # indicates finished adding first point
+                self.vm_1.setCenter(self.point_snap)
+                self.start_point = self.point_snap
 
-        elif self.click_counter == 2: # indicates finished adding second point
-            self.vm_2.setCenter(self.point_snap)
-            self.end_point = self.point_snap
-            # print("Canvas clicked for the second time")
-            list_point_main = [self.start_point, self.end_point]
-            self.main_geom = QgsGeometry().fromPolylineXY(list_point_main)
-            self.rb_main.setToGeometry(self.main_geom)
-        
-        elif self.click_counter == 3: #indicates finished offsetting line           
+            elif self.click_counter == 2: # indicates finished adding second point
+                self.vm_2.setCenter(self.point_snap)
+                self.end_point = self.point_snap
+                list_point_main = [self.start_point, self.end_point]
+                self.main_geom = QgsGeometry().fromPolylineXY(list_point_main)
+                self.rb_main.setToGeometry(self.main_geom)
+            
+            elif self.click_counter == 3: #indicates finished offsetting line           
+                start_feat = QgsFeature()
+                start_feat.setGeometry(self.start_geom)
+                start_feat.setAttributes(['-', '-'])
+
+                end_feat = QgsFeature()
+                end_feat.setGeometry(self.end_geom)
+                end_feat.setAttributes(['-', '-'])
+
+                offset_feat = QgsFeature()
+                offset_feat.setGeometry(self.offset_geom)
+                distance_value = round(self.offset_geom.length(),3)
+                offset_feat.setAttributes(['Jarak', str(distance_value)])
+              
+                result_feat = [start_feat, end_feat, offset_feat]
+
+                self.dimension_layer_prov = self.dimension_layer.dataProvider()
+                self.dimension_layer.startEditing()
+                self.dimension_layer_prov.addFeatures(result_feat)
+                self.dimension_layer.commitChanges()
+
+                self.click_counter = 0
+
+        elif event.button() == QtCore.Qt.RightButton:
             try:
                 self.canvas.scene().removeItem(self.vm_1)
                 self.canvas.scene().removeItem(self.vm_2)
@@ -242,28 +331,7 @@ class DimensionDistanceTool(QgsMapTool):
                 self.canvas.scene().removeItem(self.rb_end)
             except:
                 pass
-
-            start_feat = QgsFeature()
-            start_feat.setGeometry(self.start_geom)
-            start_feat.setAttributes(['-', '-'])
-
-            end_feat = QgsFeature()
-            end_feat.setGeometry(self.end_geom)
-            end_feat.setAttributes(['-', '-'])
-
-            offset_feat = QgsFeature()
-            offset_feat.setGeometry(self.offset_geom)
-            distance_value = round(self.offset_geom.length(),3)
-            offset_feat.setAttributes(['Jarak', str(distance_value)])
-
-            self.canvas.unsetMapTool(self)
-            
-            result_feat = [start_feat, end_feat, offset_feat]
-
-            self.dimension_layer_prov = self.dimension_layer.dataProvider()
-            self.dimension_layer.startEditing()
-            self.dimension_layer_prov.addFeatures(result_feat)
-            self.dimension_layer.commitChanges()
+            self.completed.emit()
 
 
 def snapping_point(canvas, point):
