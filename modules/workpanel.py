@@ -3,8 +3,9 @@ import json
 
 from qgis.PyQt import QtWidgets, uic
 from qgis.core import QgsProject
+from qgis.PyQt.QtGui import QDesktopServices
 
-from qgis.PyQt.QtCore import pyqtSignal
+from qgis.PyQt.QtCore import pyqtSignal, QUrl
 from qgis.utils import iface
 
 from .login import LoginDialog
@@ -49,6 +50,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         self.current_kelurahan_id = None
 
         self.mulaiGeokkp.clicked.connect(self.login_geokkp)
+        self.bantuanGeokkp.clicked.connect(self.openhelp)
         self.btn_simpan_area_kerja.clicked.connect(self.simpan_area_kerja)
         self.stackedWidget.currentChanged.connect(self.setup_workpanel)
 
@@ -75,6 +77,10 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
 
     def switch_panel(self, page):
         self.stackedWidget.setCurrentIndex(page)
+    
+    def openhelp(self):
+        QDesktopServices.openUrl(QUrl('https://geokkp-gis.github.io/docs/'))
+        pass
 
     def setup_workpanel(self, index):
         if index == STACKWIDGET_RUTIN:

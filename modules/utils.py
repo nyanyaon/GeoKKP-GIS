@@ -214,7 +214,7 @@ def readSetting(key, default=None):
     """
     logMessage('Mengambil data '+str(key)+' dari memory proyek QGIS')
     try:
-        return settings.value("geokkp/"+str(key))
+        return settings.value("geokkp/"+str(key), default)
     except Exception:
         logMessage("gagal memuat data")
     settings.sync()
