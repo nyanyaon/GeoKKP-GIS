@@ -528,11 +528,13 @@ def snap_geometries_to_layer(
         layer,
         ref_layer,
         tolerance=1,
-        behavior=SNAP_MOVE_END_POINT_ALIGN_NODE,
-        output='memory:snap'):
+        behavior=SNAP_ALIGNING_NODE_NOT_INSERT,
+        output='memory:snap',
+        only_selected=False
+    ):
     if isinstance(layer, str):
         layer = get_layer_by_id(layer)
-    is_selected = bool(layer.selectedFeatureCount())
+    is_selected = only_selected or bool(layer.selectedFeatureCount())
 
     parameters = {
         'INPUT': QgsProcessingFeatureSourceDefinition(layer.id(), is_selected),
@@ -541,7 +543,7 @@ def snap_geometries_to_layer(
         'BEHAVIOR': behavior,
         'OUTPUT': output
     }
-    # print(parameters)
+
     result = processing.run('qgis:snapgeometries', parameters)
 
     return result['OUTPUT']

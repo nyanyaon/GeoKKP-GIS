@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 
-from see import see
+# from see import see
 
 import os
 import json
@@ -906,31 +906,6 @@ class GeoKKP:
     # ==============================================================
     # Definisi Fungsi GeoKKP-GIS
     # ==============================================================
-
-    def auto_adjust(self):
-        canvas = self.iface.mapCanvas()
-        layer = canvas.currentLayer()
-
-        if not isinstance(layer, QgsVectorLayer):
-            return
-
-        if layer.geometryType() != 1:  # need polyline
-            return
-
-        exploded = explode_polyline(layer)
-        QgsProject.instance().addMapLayer(exploded)
-
-        snapped = snap_geometries_to_layer(exploded, exploded)
-        QgsProject.instance().removeMapLayer(exploded)
-        QgsProject.instance().addMapLayer(snapped)
-
-        polygonized = polygonize(snapped)
-        QgsProject.instance().removeMapLayer(snapped)
-        QgsProject.instance().addMapLayer(polygonized)
-
-        dissolved = dissolve(polygonized)
-        QgsProject.instance().removeMapLayer(polygonized)
-        QgsProject.instance().addMapLayer(dissolved)
             
     def dimension_distance(self):
         # get dimension layer by name 
@@ -1189,10 +1164,10 @@ class GeoKKP:
                 x.trigger()
                 # print(x)
 
-    # def auto_adjust(self):
-    #     if self.adjustaction is None:
-    #         self.adjustaction = AdjustDialog()
-    #     self.adjustaction.show()
+    def auto_adjust(self):
+        if self.adjustaction is None:
+            self.adjustaction = AdjustDialog()
+        self.adjustaction.show()
 
     def addlayersmenu(self):
         for action in self.iface.mainWindow().findChildren(QAction):

@@ -2,19 +2,22 @@ import os
 
 from qgis.PyQt.QtCore import Qt
 
-from qgis.core import QgsProject
+from qgis.core import QgsProject, QgsVectorLayer
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtGui import QCursor
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
-from qgis.gui import QgsMapToolIdentifyFeature
 
 # using utils
-from .utils import icon
+from .utils import (
+    icon,
+    snap_geometries_to_layer
+)
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/adjust.ui'))
 
+TARGET_LAYER = '(20100) Batas Persil'
 
 class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
     """ Dialog for Parcel Adjust"""
@@ -28,74 +31,65 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface = iface
         self.canvas = iface.mapCanvas()
         self.project = QgsProject
+        self._active = False
+        self._orig_cursor = None
 
         self.setWindowIcon(icon("icon.png"))
-
         self._layer = None
-        self.set_identify_layer()
-
-        # self.layerAcuan.layerChanged.connect(self.set_reference_layer)
-        # self.clickTool = QgsMapToolEmitPoint(self.iface.mapCanvas())
-        self.identifyFeature = QgsMapToolIdentifyFeature(self.canvas, self._layer)
-        # self.clickTool.canvasClicked.connect(self.test)
+        self._selected_features = None
         self.adjustButton.clicked.connect(self.adjust_parcel)
 
+    def showEvent(self, events):
+        self._orig_cursor = self.canvas.cursor()
+        self.set_identify_layer()
         self.activate_selection()
+        self.canvas.selectionChanged.connect(self.selection_changed)
+
+    def closeEvent(self, events):
+        self.canvas.selectionChanged.disconnect(self.selection_changed)
+        self.canvas.setCursor(self._orig_cursor)
+
+    def layer_target_not_found(self):
+        QtWidgets.QMessageBox.warning(None, 'Layer Batas Persil Tidak ditemukan', f'Buat persil di layer {TARGET_LAYER} terlebih dahulu')
+
+    def layer_acuan_not_found(self):
+        QtWidgets.QMessageBox.warning(None, 'Layer Acuan Tidak ditemukan', f'Import Layer Acuan terlebih dahulu')
+
+    def selection_changed(self, layer):
+        if layer.name() != TARGET_LAYER:
+            return
+
+        self._selected_features = layer.selectedFeatures()
+        if self._selected_features:
+            self.bidang_terpilih.setText(f'{len(self._selected_features)} bidang terpilih')
+        else:
+            self.bidang_terpilih.setText(f'0 bidang terpilih')
 
     def set_identify_layer(self):
-        layername = 'Persil'
         for layer in self.project.instance().mapLayers().values():
-            # print(layer.name(), " - ", layername)
-            if (layer.name() == layername):
-                # print("persilada")
+            if (layer.name() == TARGET_LAYER):
                 self._layer = layer
-        print(self._layer)
-
-    def set_reference_layer(self):
-
-        # if is_layer_exist(self.project, 'Persil'):
-        #    print("layer exist")
-        #    self._layer = self.project.instance().mapLayersByName('Persil')[0]
-        # else:
-        #    print("persil layer not exist")
-        self._refLayer = self.layerAcuan.currentLayer()
-        print(self._refLayer.name())
-
+                return
+        self.layer_target_not_found()
+        self.adjustButton.setEnabled(False)
+        return
+    
     def activate_selection(self):
-        # print("activate selection")
-        # self.iface.actionSelect().trigger()
-        # features = self._layer.selectedFeatures()[0]
-        # print(features)
-
-        self.identifyFeature.setCursor(QCursor(Qt.PointingHandCursor))
-        self.identifyFeature.featureIdentified.connect(self.on_feature_identified)
-        self.canvas.setMapTool(self.identifyFeature)
-
-    def on_feature_identified(self, feature):
-        print("onfeatureidentified")
-        print("feature identified")
-        self._layer.selectByIds([feature.id()])
-        print(feature[0])
-        self.fiturTerpilih.setText("NIB = " + feature[0])
-        # self._layer.deselect(feature.id())
-        # self.clickTool.canvasClicked.disconnect(self.activate_selection)
-        # self.iface.actionPan().trigger()
-
-        # self.iface.openFeatureForm(self._layer, feature)
+        if not self._layer:
+            self.layer_target_not_found()
+        self.canvas.setCursor(QCursor(Qt.PointingHandCursor))
+        self.iface.actionSelect().trigger()
 
     def adjust_parcel(self):
-        print("adjust")
-        # autoadjusttool = QgsApplication.processingRegistry().createAlgorithmById('native:snapgeometries')
-        # autoadjust2 = autoadjusttool.create({'IN_PLACE': True})
-        # parameters = {
-        #         'INPUT': self._layer.id(),
-        #         'REFERENCE_LAYER': self._refLayer.id(),
-        #         'TOLERANCE': 10,
-        #         'BEHAVIOR': 2,
-        #         'OUTPUT': 'memory:'
-        #     }
+        selected_layer_index = self.layer_acuan.currentIndex()
+        ref_layer = self.layer_acuan.layer(selected_layer_index)
+        if not ref_layer and not isinstance(self._layer, QgsVectorLayer):
+            self.layer_acuan_not_found()
 
-        # AlgorithmExecutor.execute_in_place_run(autoadjust2, parameters)
+        out = snap_geometries_to_layer(self._layer, ref_layer, only_selected=True)
+        adjusted_features = out.getFeatures()
 
-        # result = processing.runAndLoadResults(autoadjust2, parameters)
-        # print(result['OUTPUT'])
+        selected_feature_ids = [feature.id() for feature in self._selected_features]
+        self._layer.dataProvider().deleteFeatures(selected_feature_ids)
+        self._layer.dataProvider().addFeatures(adjusted_features)
+        self._layer.triggerRepaint()
