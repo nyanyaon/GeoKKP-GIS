@@ -59,6 +59,26 @@ grid_1000 = 500
 grid_500 = 250
 grid_250 = 125
 
+# constants for TM-3 Zone
+zona_TM3 = {
+    "46.2": "EPSG:23830",
+    "47.1": "EPSG:23831",
+    "47.2": "EPSG:23832",
+    "48.1": "EPSG:23833",
+    "48.2": "EPSG:23834",
+    "49.1": "EPSG:23835",
+    "49.2": "EPSG:23836",
+    "50.1": "EPSG:23837",
+    "50.2": "EPSG:23838",
+    "51.1": "EPSG:23839",
+    "51.2": "EPSG:23840",
+    "52.1": "EPSG:23841",
+    "52.2": "EPSG:23842",
+    "53.1": "EPSG:23843",
+    "53.2": "EPSG:23844",
+    "54.1": "EPSG:23845"
+}
+
 # constants for SDO Geometries
 GPOINT = 'Point'
 GLINESTRING = 'LineString'
@@ -575,9 +595,10 @@ def get_layer_by_id(layer_id):
     return QgsProject.instance().mapLayer(layer_id)
 
 
-def draw_rect_bound(xMin, yMin, xMax, yMax, epsg, nama="Polygon Batas"):
+def draw_rect_bound(xMin, yMin, xMax, yMax, epsg, nama="Blok NLP"):
     epsg = str(epsg)
-    layer = QgsVectorLayer(f"Polygon?crs=EPSG:{epsg}", nama, "memory")
+    is_layer_exist
+    layer = QgsVectorLayer(f"Polygon?crs={epsg}", nama, "memory")
     QgsProject.instance().addMapLayer(layer)
 
     rect = QgsRectangle(xMin, yMin, xMax, yMax)
