@@ -1158,6 +1158,7 @@ class GeoKKP:
         #    print("unchecked")
         #    self.layer.selectionChanged.disconnect(self.show_atribute)
         self.iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger()
+        self.iface.cadDockWidget().show()
         for x in self.iface.advancedDigitizeToolBar().actions():
             if x.text() == 'Enable advanced digitizing tools':
                 x.trigger()
