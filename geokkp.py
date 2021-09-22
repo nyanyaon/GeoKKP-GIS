@@ -663,7 +663,7 @@ class GeoKKP:
 
         #  --- Sub-menu Pencarian Fitur ---
         self.actionFeatureSearch = self.add_action(
-            icon("nailer.png"),
+            icon("findatribute.png"),
             text=self.tr(u"Pencarian Atribut"),
             callback=self.search_for_feature,
             add_to_toolbar=False,
@@ -1069,6 +1069,9 @@ class GeoKKP:
         #    print("unchecked")
         #    self.layer.selectionChanged.disconnect(self.show_atribute)
         self.iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger()
+        for x in self.iface.advancedDigitizeToolBar().actions():
+            if x.text() == 'Enable advanced digitizing tools':
+                x.trigger()
         #   print("stop editing")
 
         # self.layer.startEditing()
