@@ -530,8 +530,7 @@ def snap_geometries_to_layer(
         tolerance=1,
         behavior=SNAP_ALIGNING_NODE_NOT_INSERT,
         output='memory:snap',
-        only_selected=False
-    ):
+        only_selected=False):
     if isinstance(layer, str):
         layer = get_layer_by_id(layer)
     is_selected = only_selected or bool(layer.selectedFeatureCount())

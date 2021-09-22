@@ -65,11 +65,7 @@ from .modules.utils import (
     logMessage,
     activate_editing,
     iconPath,
-    icon,
-    explode_polyline,
-    snap_geometries_to_layer,
-    polygonize,
-    dissolve
+    icon
 )
 
 # Import the code for the DockWidget

@@ -19,6 +19,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 
 TARGET_LAYER = '(20100) Batas Persil'
 
+
 class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
     """ Dialog for Parcel Adjust"""
 
@@ -50,10 +51,13 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         self.canvas.setCursor(self._orig_cursor)
 
     def layer_target_not_found(self):
-        QtWidgets.QMessageBox.warning(None, 'Layer Batas Persil Tidak ditemukan', f'Buat persil di layer {TARGET_LAYER} terlebih dahulu')
+        QtWidgets.QMessageBox.warning(
+            None,
+            'Layer Batas Persil Tidak ditemukan',
+            f'Buat persil di layer {TARGET_LAYER} terlebih dahulu')
 
     def layer_acuan_not_found(self):
-        QtWidgets.QMessageBox.warning(None, 'Layer Acuan Tidak ditemukan', f'Import Layer Acuan terlebih dahulu')
+        QtWidgets.QMessageBox.warning(None, 'Layer Acuan Tidak ditemukan', 'Import Layer Acuan terlebih dahulu')
 
     def selection_changed(self, layer):
         if layer.name() != TARGET_LAYER:
@@ -63,7 +67,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         if self._selected_features:
             self.bidang_terpilih.setText(f'{len(self._selected_features)} bidang terpilih')
         else:
-            self.bidang_terpilih.setText(f'0 bidang terpilih')
+            self.bidang_terpilih.setText('0 bidang terpilih')
 
     def set_identify_layer(self):
         for layer in self.project.instance().mapLayers().values():
@@ -73,7 +77,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         self.layer_target_not_found()
         self.adjustButton.setEnabled(False)
         return
-    
+
     def activate_selection(self):
         if not self._layer:
             self.layer_target_not_found()
