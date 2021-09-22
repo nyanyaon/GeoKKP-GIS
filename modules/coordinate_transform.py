@@ -1,4 +1,5 @@
 import os
+import math
 from functools import partial
 
 from qgis.PyQt.QtGui import QIcon
@@ -14,7 +15,7 @@ from qgis.core import (
     QgsCoordinateReferenceSystem)
 
 # using utils
-from .utils import icon, parse_raw_coordinate
+from .utils import icon, parse_raw_coordinate, logMessage
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/coordtrans.ui'))
@@ -104,8 +105,14 @@ class CoordinateTransformDialog(QDialog, FORM_CLASS):
 
         for i in range(len(self.coordinate_systems)):
             if i != button_index:
-                new_point = self.transform_coordinate(
-                            self.coordinate_systems[button_index], self.coordinate_systems[i], point)
+                if i == 1:  # UTM:
+                    utm_epsg = self.get_epsg_code_utm(point.x(), point.y())
+                    logMessage("UTM code " + utm_epsg)
+                    new_point = self.transform_coordinate(
+                                self.coordinate_systems[button_index], QgsCoordinateReferenceSystem(utm_epsg), point)
+                else:
+                    new_point = self.transform_coordinate(
+                                self.coordinate_systems[button_index], self.coordinate_systems[i], point)
                 self.lineedits[i].setText("%f, %f" % (new_point.x(), new_point.y()))
 
     def copy_clicked(self, button_index):
@@ -117,3 +124,11 @@ class CoordinateTransformDialog(QDialog, FORM_CLASS):
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
+
+    def get_epsg_code_utm(self, lon, lat):
+        zone = (math.floor((lon + 180) / 6) ) + 1
+        epsg_code = 32600
+        epsg_code += int(zone)
+        if (lat < 0): # South
+            epsg_code += 100
+        return "EPSG:%d" % epsg_code
