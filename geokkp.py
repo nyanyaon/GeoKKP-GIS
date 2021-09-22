@@ -687,6 +687,19 @@ class GeoKKP:
         )
         self.popupPeralatan.addAction(self.actionFeatureSearch)
 
+        #  --- Sub-menu Toggle Titik Batas Persil ---
+        self.actionTitikPersil = self.add_action(
+            icon("titik_persil.png"),
+            text=self.tr(u"Titik Batas Persil"),
+            callback=self.toggle_titik_persil,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            checkable=True,
+            need_auth=False,
+            parent=self.popupPeralatan
+        )
+        self.popupPeralatan.addAction(self.actionTitikPersil)
+
         # Pengaturan Dropdown menu Peralatan
         self.PeralatanButton = QToolButton()
         self.PeralatanButton.setMenu(self.popupPeralatan)
@@ -1029,7 +1042,29 @@ class GeoKKP:
             self.iface.showAttributeTable(self.iface.activeLayer())
         except Exception as e:
             dialogBox(e)
-
+    
+    def toggle_titik_persil(self):
+        # check whether batas persil layer (20100) is loaded
+        persil_layer = None
+        all_layers = QgsProject.instance().mapLayers().values()
+        for layer in all_layers:
+            if layer.name() == '(20100) Batas Persil':
+                persil_layer = layer
+                break
+        if not persil_layer:
+            self.iface.messageBar().pushMessage(
+                "Peringatan", 
+                "Tambahkan layer Batas Persil (20100) sebelum menggunakan Tool ini.", 
+                level=Qgis.Warning)
+            return
+        if self.actionTitikPersil.isChecked() == False:
+            self.set_symbology(persil_layer, 'bataspersil-no-xy.qml')
+            # QgsProject.instance().reloadAllLayers()
+            persil_layer.reload()
+        elif self.actionTitikPersil.isChecked() == True:
+            self.set_symbology(persil_layer, 'bataspersil-xy.qml')
+            # QgsProject.instance().reloadAllLayers()
+            persil_layer.reload()
 
     def coordinate_transform(self):
         if self.coordinate_transform_dialog is None:
@@ -1244,6 +1279,7 @@ class GeoKKP:
 
     def set_symbology(self, layer, qml):
         uri = os.path.join(os.path.dirname(__file__), 'styles/'+qml)
+        print(uri)
         layer.loadNamedStyle(uri)
 
     def set_dimension_style(self):
