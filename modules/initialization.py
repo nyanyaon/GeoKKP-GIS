@@ -15,6 +15,8 @@ basemap_json_file = os.path.join(
     os.path.dirname(__file__), '../config/basemap.json')
 boundary_idn = os.path.join(
     os.path.dirname(__file__), '../config/daftar_kantor.json')
+default_layout_json = os.path.join(
+    os.path.dirname(__file__), '../config/default_qpt_layout.json')
 
 
 class Initialize:
@@ -32,6 +34,7 @@ class Initialize:
         self.simpan_layer_settings()
         self.simpan_basemap_settings()
         self.simpan_boundary_settings()
+        self.simpan_default_layout_settings()
 
     def simpan_layer_settings(self):
         """
@@ -62,3 +65,12 @@ class Initialize:
             dialogBox("Gagal membaca data dari berkas: ", e)
         storeSetting("list_kantor_id", data)
         f.close()
+    
+    def simpan_default_layout_settings(self):
+        """
+        Panggil daftar layout default dari default_qpt_layout.json
+        """
+        f = open(default_layout_json)
+        data = json.load(f)
+        f.close()
+        storeSetting("layout", data['default_layout'])
