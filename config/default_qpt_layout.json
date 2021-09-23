@@ -4,10 +4,6 @@
       {
          "Ukuran": "A3",
          "Lokasi": "pbt-a3.qpt"
-      },
-      {
-         "Ukuran": "A4",
-         "Lokasi": "pbt-a4.qpt"
       }   
    ],
    "Gambar Ukur": [
@@ -24,20 +20,12 @@
       {
          "Ukuran": "A3",
          "Lokasi": "su-a3.qpt"
-      },
-      {
-         "Ukuran": "A4",
-         "Lokasi": "su-a4.qpt"
       } 
    ],
    "Peta Pendaftaran": [
       {
          "Ukuran": "A3",
          "Lokasi": "pdt-a3.qpt"
-      },
-      {
-         "Ukuran": "A4",
-         "Lokasi": "pdt-a4.qpt"
       } 
    ]
 }
