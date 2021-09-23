@@ -7,6 +7,10 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtGui import QCursor
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
+try:
+    from qgis.gui import QgsMapLayerProxyModel
+except ImportError:
+    from qgis.core import QgsMapLayerProxyModel
 
 # using utils
 from .utils import (
@@ -29,6 +33,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
 
         super(AdjustDialog, self).__init__(parent)
         self.setupUi(self)
+        self.layer_acuan.setFilters(QgsMapLayerProxyModel.VectorLayer)
         self.iface = iface
         self.canvas = iface.mapCanvas()
         self.project = QgsProject
