@@ -20,9 +20,6 @@
  *                                                                         *
  ***************************************************************************/
 """
-
-from see import see
-
 import os
 import json
 
@@ -65,11 +62,7 @@ from .modules.utils import (
     logMessage,
     activate_editing,
     iconPath,
-    icon,
-    explode_polyline,
-    snap_geometries_to_layer,
-    polygonize,
-    dissolve
+    icon
 )
 
 # Import the code for the DockWidget
@@ -96,6 +89,7 @@ from .modules.layout_gu import LayoutGUDialog
 from .modules.trilateration import TrilaterationDialog
 from .modules.triangulation import TriangulationDialog
 from .modules.pengaturan_lokasi import PengaturanLokasiDialog
+from .modules.draw_nlp import DrawNLPDialog
 from .modules.draw_dimension import (
     DimensionDistanceTool, DimensionAngleTool, DimensionPointTool)
 from .modules.utils import (
@@ -194,6 +188,7 @@ class GeoKKP:
         self.coordinate_transform_dialog = CoordinateTransformDialog()
         self.aturlokasi_action = PengaturanLokasiDialog()
         self.pencarianlokasi_action = FeatureSearchDialog()
+        self.inspeksinlp_action = DrawNLPDialog()
         # self.loginaction.loginChanged.connect()
 
     # noinspection PyMethodMayBeStatic
@@ -353,7 +348,7 @@ class GeoKKP:
         # Deklarasi menu tambah data
         self.popupAddData = QMenu("&Tambah Data", self.iface.mainWindow())
 
-        #  --- Sub-menu Unduh Data Persil ---
+        #  --- Sub-menu Tambah data palugada ---
         self.actionAddData = self.add_action(
             icon("getparcel.png"),
             text=self.tr(u"Tambah Data"),
@@ -659,6 +654,18 @@ class GeoKKP:
         )
         self.popupPeralatan.addAction(self.actionAturLokasi)
 
+        #  --- Sub-menu NLP  ---
+        self.actionNLP = self.add_action(
+            icon("pickuppoint.png"),
+            text=self.tr(u"Inspeksi NLP"),
+            callback=self.inspeksinlp,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            need_auth=False,
+            parent=self.popupPeralatan
+        )
+        self.popupPeralatan.addAction(self.actionNLP)
+
         #  --- Sub-menu Geocoding ---
         self.actionGeocoding = self.add_action(
             icon("carialamat.png"),
@@ -685,7 +692,7 @@ class GeoKKP:
 
         #  --- Sub-menu Pencarian Fitur ---
         self.actionFeatureSearch = self.add_action(
-            icon("nailer.png"),
+            icon("findatribute.png"),
             text=self.tr(u"Pencarian Atribut"),
             callback=self.search_for_feature,
             add_to_toolbar=False,
@@ -914,31 +921,6 @@ class GeoKKP:
     # ==============================================================
     # Definisi Fungsi GeoKKP-GIS
     # ==============================================================
-
-    def auto_adjust(self):
-        canvas = self.iface.mapCanvas()
-        layer = canvas.currentLayer()
-
-        if not isinstance(layer, QgsVectorLayer):
-            return
-
-        if layer.geometryType() != 1:  # need polyline
-            return
-
-        exploded = explode_polyline(layer)
-        QgsProject.instance().addMapLayer(exploded)
-
-        snapped = snap_geometries_to_layer(exploded, exploded)
-        QgsProject.instance().removeMapLayer(exploded)
-        QgsProject.instance().addMapLayer(snapped)
-
-        polygonized = polygonize(snapped)
-        QgsProject.instance().removeMapLayer(snapped)
-        QgsProject.instance().addMapLayer(polygonized)
-
-        dissolved = dissolve(polygonized)
-        QgsProject.instance().removeMapLayer(polygonized)
-        QgsProject.instance().addMapLayer(dissolved)
             
     def dimension_distance(self):
         # get dimension layer by name 
@@ -1025,11 +1007,15 @@ class GeoKKP:
         self.actionPointDimension.setChecked(False)
         self.iface.mapCanvas().unsetMapTool(self.pointTool)
 
-
     def aturlokasi(self):
         if self.aturlokasi_action is None:
             self.aturlokasi_action = PengaturanLokasiDialog()
         self.aturlokasi_action.show()
+    
+    def inspeksinlp(self):
+        if self.inspeksinlp_action is None:
+            self.inspeksinlp_action = DrawNLPDialog()
+        self.inspeksinlp_action.show()
 
     def gotoxy(self):
         if self.gotoxyaction is None:
@@ -1166,6 +1152,10 @@ class GeoKKP:
         #    print("unchecked")
         #    self.layer.selectionChanged.disconnect(self.show_atribute)
         self.iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger()
+        self.iface.cadDockWidget().show()
+        for x in self.iface.advancedDigitizeToolBar().actions():
+            if x.text() == 'Enable advanced digitizing tools':
+                x.trigger()
         #   print("stop editing")
 
         # self.layer.startEditing()
@@ -1197,10 +1187,10 @@ class GeoKKP:
                 x.trigger()
                 # print(x)
 
-    # def auto_adjust(self):
-    #     if self.adjustaction is None:
-    #         self.adjustaction = AdjustDialog()
-    #     self.adjustaction.show()
+    def auto_adjust(self):
+        if self.adjustaction is None:
+            self.adjustaction = AdjustDialog()
+        self.adjustaction.show()
 
     def addlayersmenu(self):
         for action in self.iface.mainWindow().findChildren(QAction):

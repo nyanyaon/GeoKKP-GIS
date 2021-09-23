@@ -20,6 +20,7 @@ from qgis.core import (
                     QgsVectorLayer,
                     QgsField,
                     QgsPointXY,
+                    QgsRectangle,
                     QgsGeometry,
                     QgsFeature,
                     QgsApplication,
@@ -58,24 +59,24 @@ grid_1000 = 500
 grid_500 = 250
 grid_250 = 125
 
-# constants for Zone
+# constants for TM-3 Zone
 zona_TM3 = {
-    "46.2": "epsg:23830",
-    "47.1": "epsg:23831",
-    "47.2": "epsg:23832",
-    "48.1": "epsg:23833",
-    "48.2": "epsg:23834",
-    "49.1": "epsg:23835",
-    "49.2": "epsg:23836",
-    "50.1": "epsg:23837",
-    "50.2": "epsg:23838",
-    "51.1": "epsg:23839",
-    "51.2": "epsg:23840",
-    "52.1": "epsg:23841",
-    "52.2": "epsg:23842",
-    "53.1": "epsg:23843",
-    "53.2": "epsg:23844",
-    "54.1": "epsg:23845"
+    "46.2": "EPSG:23830",
+    "47.1": "EPSG:23831",
+    "47.2": "EPSG:23832",
+    "48.1": "EPSG:23833",
+    "48.2": "EPSG:23834",
+    "49.1": "EPSG:23835",
+    "49.2": "EPSG:23836",
+    "50.1": "EPSG:23837",
+    "50.2": "EPSG:23838",
+    "51.1": "EPSG:23839",
+    "51.2": "EPSG:23840",
+    "52.1": "EPSG:23841",
+    "52.2": "EPSG:23842",
+    "53.1": "EPSG:23843",
+    "53.2": "EPSG:23844",
+    "54.1": "EPSG:23845"
 }
 
 # constants for SDO Geometries
@@ -94,6 +95,7 @@ SDO_GTYPE_MAP = {
     '08': 'Solid',
     '09': 'MultiSolid',
 }
+
 SDO_FIELD_EXCLUDE = ['text', 'boundary', 'rotation', 'height']
 
 
@@ -491,7 +493,7 @@ def add_layer(layername, type, symbol=None, fields=None, crs=None, parent=None):
         ]
     else:
         field_list = []
-        for key,value in fields.items():
+        for key, value in fields.items():
             if value == 'String':
                 field_type = QVariant.String
             elif value == 'Int':
@@ -528,11 +530,12 @@ def snap_geometries_to_layer(
         layer,
         ref_layer,
         tolerance=1,
-        behavior=SNAP_MOVE_END_POINT_ALIGN_NODE,
-        output='memory:snap'):
+        behavior=SNAP_ALIGNING_NODE_NOT_INSERT,
+        output='memory:snap',
+        only_selected=False):
     if isinstance(layer, str):
         layer = get_layer_by_id(layer)
-    is_selected = bool(layer.selectedFeatureCount())
+    is_selected = only_selected or bool(layer.selectedFeatureCount())
 
     parameters = {
         'INPUT': QgsProcessingFeatureSourceDefinition(layer.id(), is_selected),
@@ -541,7 +544,7 @@ def snap_geometries_to_layer(
         'BEHAVIOR': behavior,
         'OUTPUT': output
     }
-    # print(parameters)
+
     result = processing.run('qgis:snapgeometries', parameters)
 
     return result['OUTPUT']
@@ -593,36 +596,59 @@ def get_layer_by_id(layer_id):
     return QgsProject.instance().mapLayer(layer_id)
 
 
-def get_nlp(skala, x, y):
-    """
-    Cetak Nomor Lembar Peta berdasarkan skala
+def draw_rect_bound(xMin, yMin, xMax, yMax, epsg, nama="Blok NLP"):
+    epsg = str(epsg)
+    is_layer_exist
+    layer = QgsVectorLayer(f"Polygon?crs={epsg}", nama, "memory")
+    QgsProject.instance().addMapLayer(layer)
 
-    argumen:
-        skala   : skala peta dalam string
-        x       : koordinat x dalam CRS TM3
-        y       : koordinat y dalam CRS TM3
-    """
+    rect = QgsRectangle(xMin, yMin, xMax, yMax)
+    print(rect)
+    polygon = QgsGeometry.fromRect(rect)
+    print(polygon)
 
-    # Skala 10 ribu
+    feature = QgsFeature()
+    feature.setGeometry(polygon)
+
+    layer.dataProvider().addFeatures([feature])
+    layer.updateExtents()
+
+
+def bk_10000(x, y):
     k_10rb = int((x - x_origin)/grid_10rb)+1
     b_10rb = int((y - y_origin)/grid_10rb)+1
+    return [k_10rb, b_10rb]
 
-    # Skala 2500
+
+def bk_2500(x, y):
+    k_10rb, b_10rb = bk_10000(x, y)
     k_2500 = int((x-(x_origin+(k_10rb - 1)*grid_10rb))/grid_2500)+1
     b_2500 = int((y-(y_origin+(b_10rb - 1)*grid_10rb))/grid_2500)+1
-    nlp_2500 = 4*(b_2500-1)+k_2500
+    return [k_2500, b_2500]
 
-    # Skala 1000
+
+def bk_1000(x, y):
+    k_10rb, b_10rb = bk_10000(x, y)
+    k_2500, b_2500 = bk_2500(x, y)
     k_1000 = int((x-(x_origin+(k_10rb - 1)*grid_10rb + (k_2500-1)*grid_2500))/grid_1000)+1
     b_1000 = int((y-(y_origin+(b_10rb - 1)*grid_10rb + (b_2500-1)*grid_2500))/grid_1000)+1
-    nlp_1000 = 3*(b_1000-1)+k_1000
+    return [k_1000, b_1000]
 
-    # Skala 500
+
+def bk_500(x, y):
+    k_10rb, b_10rb = bk_10000(x, y)
+    k_2500, b_2500 = bk_2500(x, y)
+    k_1000, b_1000 = bk_1000(x, y)
     k_500 = int((x-(x_origin+(k_10rb - 1)*grid_10rb + ((k_2500-1)*grid_2500) + (k_1000-1)*grid_1000))/grid_500)+1
     b_500 = int((y-(y_origin+(b_10rb - 1)*grid_10rb + ((b_2500-1)*grid_2500) + (b_1000-1)*grid_1000))/grid_500)+1
-    nlp_500 = 2*(b_500-1)+k_500
+    return [k_500, b_500]
 
-    # Skala 250
+
+def bk_250(x, y):
+    k_10rb, b_10rb = bk_10000(x, y)
+    k_2500, b_2500 = bk_2500(x, y)
+    k_1000, b_1000 = bk_1000(x, y)
+    k_500, b_500 = bk_500(x, y)
     k_250 = int((x-(x_origin+(k_10rb - 1)*grid_10rb
             + ((k_2500-1)*grid_2500) # noqa
             + ((k_1000-1)*grid_1000)
@@ -631,6 +657,36 @@ def get_nlp(skala, x, y):
             + ((b_2500-1)*grid_2500) # noqa
             + ((b_1000-1)*grid_1000)
             + (b_500-1)*grid_500))/grid_250)+1
+    return [k_250, b_250]
+
+
+def get_nlp(skala, x, y):
+    """
+    Cetak Nomor Lembar Peta berdasarkan skala
+
+    argumen:
+        skala   : skala peta dalam string
+        x       : koordinat x dalam CRS TM-3
+        y       : koordinat y dalam CRS TM-3
+    output: string NLP
+    """
+    # hitungan baris dan kolom
+    k_10rb, b_10rb = bk_10000(x, y)
+    k_2500, b_2500 = bk_2500(x, y)
+    k_1000, b_1000 = bk_1000(x, y)
+    k_500, b_500 = bk_500(x, y)
+    k_250, b_250 = bk_250(x, y)    
+
+    # Skala 2500
+    nlp_2500 = 4*(b_2500-1)+k_2500
+
+    # Skala 1000
+    nlp_1000 = 3*(b_1000-1)+k_1000
+
+    # Skala 500
+    nlp_500 = 2*(b_500-1)+k_500
+
+    # Skala 250
     nlp_250 = 2*(b_250-1)+k_250
 
     if (skala == "10000"):
