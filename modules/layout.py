@@ -16,8 +16,6 @@ from .utils import icon, readSetting
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/layout_all.ui'))
 
-# qpt_path = os.path.join(os.path.dirname(__file__), '../template/pbt.qpt')
-
 class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
     """ Dialog for Layouting """
 
@@ -148,32 +146,3 @@ class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def on_btn_cancel_pressed(self):
         self.close()
-
-
-# if os.path.exists(layout_path):
-#     layout, layout_exist = self.read_layout(layout_path)
-
-#     # layout = QgsPrintLayout(self.project)
-#     with open(layout_path) as qpt_file:
-#         qpt_content = qpt_file.read()
-#     doc = QtXml.QDomDocument()
-#     doc.setContent(qpt_content)
-
-#     layout_items, _ = layout.loadFromTemplate(doc, QgsReadWriteContext())
-
-#     # check if there is any layout with the same name
-#     for existing_layout in self.project.layoutManager().printLayouts():
-#         if existing_layout.name() == layout.name():
-#             layout_exist = True
-#             layout = existing_layout
-#             self.iface.openLayoutDesigner(layout)
-    
-#     if  not layout_exist:
-#         self.project.layoutManager().addLayout(layout)
-#         self.iface.openLayoutDesigner(layout)
-#         self.close()   
-# else:
-#     self.dialog_bar.pushMessage(
-#         "Warning", 
-#         "Unable to locate default template.", 
-#         level=Qgis.Warning)

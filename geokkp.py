@@ -578,55 +578,6 @@ class GeoKKP:
             parent=self.iface.mainWindow().menuBar())
         # -------------------------------------------
 
-        # # ======== Dropdown Menu: Pencetakan ========
-        # # Deklarasi menu Pencetakan
-        # self.popupPencetakan = QMenu("&Pencetakan", self.iface.mainWindow())
-
-        # #  --- Sub-menu Cetak Peta ---
-        # self.actionCetakPeta = self.add_action(
-        #     icon("layout.png"),
-        #     text=self.tr(u"Cetak Gambar Ukur"),
-        #     callback=self.layout_gu,
-        #     add_to_toolbar=False,
-        #     add_to_menu=False,
-        #     parent=self.popupPencetakan
-        # )
-        # self.popupPencetakan.addAction(self.actionCetakPeta)
-
-        # #  --- Sub-menu Cetak SU ---
-        # self.actionCetakSU = self.add_action(
-        #     icon("layout.png"),
-        #     text=self.tr(u"Cetak Surat Ukur"),
-        #     callback=self.gotoxy,
-        #     add_to_toolbar=False,
-        #     add_to_menu=False,
-        #     parent=self.popupPencetakan
-        # )
-        # self.popupPencetakan.addAction(self.actionCetakSU)
-
-        # #  --- Sub-menu Cetak PBT ---
-        # self.actionCetakPBT = self.add_action(
-        #     icon("layout.png"),
-        #     text=self.tr(u"Cetak Peta Bidang Tanah"),
-        #     callback=self.layout_peta,
-        #     add_to_toolbar=False,
-        #     add_to_menu=False,
-        #     parent=self.popupPencetakan
-        # )
-        # self.popupPencetakan.addAction(self.actionCetakPBT)
-
-        # # Pengaturan Dropdown menu Pencetakan
-        # self.PencetakanButton = QToolButton()
-        # self.PencetakanButton.setMenu(self.popupPencetakan)
-        # self.PencetakanButton.setIcon(icon("layout.png"))
-        # self.PencetakanButton.setToolTip("Pencetakan")
-        # self.PencetakanButton.setDefaultAction(self.actionCetakPeta)
-        # self.PencetakanButton.setPopupMode(QToolButton.MenuButtonPopup)
-        # # Register menu to toolbar
-        # self.toolbar.addWidget(self.PencetakanButton)
-        # self.menu.addMenu(self.popupPencetakan)
-        # # -------------------------------------------
-
         # ======== Dropdown Menu: Peralatan ========
         # Deklarasi menu Pencetakan
         self.popupPeralatan = QMenu("&Peralatan", self.iface.mainWindow())
