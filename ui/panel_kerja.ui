@@ -16,8 +16,20 @@
     <height>550</height>
    </size>
   </property>
+  <property name="focusPolicy">
+   <enum>Qt::StrongFocus</enum>
+  </property>
+  <property name="contextMenuPolicy">
+   <enum>Qt::DefaultContextMenu</enum>
+  </property>
+  <property name="features">
+   <set>QDockWidget::AllDockWidgetFeatures</set>
+  </property>
+  <property name="allowedAreas">
+   <set>Qt::RightDockWidgetArea</set>
+  </property>
   <property name="windowTitle">
-   <string>Panel Kerja GeoKKP-GIS</string>
+   <string notr="true">Panel Kerja GeoKKP-GIS</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QGridLayout" name="gridLayout">
@@ -30,7 +42,7 @@
        <enum>QFrame::NoFrame</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="welcome_dock">
        <layout class="QVBoxLayout" name="verticalLayout_3">
@@ -53,12 +65,12 @@
            </spacer>
           </item>
           <item>
-           <widget class="QLabel" name="label_5">
-            <property name="minimumSize">
-             <size>
-              <width>200</width>
-              <height>200</height>
-             </size>
+           <widget class="QLabel" name="logo_atrbpn">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
             <property name="maximumSize">
              <size>
@@ -292,6 +304,9 @@ color:rgb(23, 145, 205)</string>
             </property>
             <property name="text">
              <string>Bantuan</string>
+            </property>
+            <property name="flat">
+             <bool>true</bool>
             </property>
            </widget>
           </item>

@@ -1,9 +1,13 @@
 import os
+import xml.etree.ElementTree as ET
 
 from qgis.PyQt import QtWidgets, uic
-from qgis.core import QgsProject, QgsRasterLayer
+from qgis.core import QgsProject
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
+
+from .utils import dialogBox, logMessage
+
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/openaerialmap.ui'))
@@ -21,8 +25,10 @@ class OAMDialog(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
         self.project = QgsProject
 
-        self._currentLink = None
-        self._currentName = None
+        # clear
+        self.OAMLink.clear()
+        self.OAMLayerName.clear()
+
         self.LoadOAMButton.clicked.connect(self.loadWMTS)
 
     def closeEvent(self, event):
@@ -30,13 +36,34 @@ class OAMDialog(QtWidgets.QDialog, FORM_CLASS):
         event.accept()
 
     def loadWMTS(self):
-        self._currentLink = self.OAMLink.text()
-        self._currentName = self.OAMLayerName.text()
-        print(self._currentLink)
-        self.loadXYZ(self._currentLink, self._currentName)
+        url = self.OAMLink.text()
+        name = self.OAMLayerName.text()
+        # dialogBox(self.url)
+        # self.parse_capabilities()
+        params = "crs=EPSG:3857&dpiMode=7&format=image/png&layers=None&styles=default&tileMatrixSet=GoogleMapsCompatible&url="
+        full_url = params+url
 
-    def loadXYZ(self, url, name):
-        rasterLyr = QgsRasterLayer("type=xyz&url=" + url, name, "wms")
-        self.project.instance().addMapLayer(rasterLyr)
+        oam_layer = iface.addRasterLayer(full_url, name, "wms")
+
+        if oam_layer.isValid():
+            logMessage("OAM raster is valid")
+        else:
+            dialogBox("Link OAM tidak valid. Periksa tautan WMTS yang diinputkan!", "Warning")
+
+        self.accept()
+
+    """
+    TODO: Sanitize input and read layer from capabilities
+    """
+    def parse_capabilities(self):
+        self.url = self.OAMLink.text()
+        capabilities_url = self.url+"?"
+        print("capab", capabilities_url)
+        tree = ET.parse(capabilities_url)
+        root = tree.getroot()
+        layers = root.findall("ows:Title")
+        for title in layers:
+            print(title.text)
+
 
 # uri="url=https://tiles.openaerialmap.org/5da45f5336266f000578cc3a/0/5da45f5336266f000578cc3b/{z}/{x}/{y}&zmax=19&zmin=0"  # noqa 121

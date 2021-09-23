@@ -205,7 +205,7 @@
        <item>
         <widget class="QLabel" name="lblTermsOfService">
          <property name="text">
-          <string>GeoKKP-GIS Versi &lt;a href=&quot;https://github.com/danylaksono/GeoKKP-GIS&quot; style=&quot;color: rgb(0, 157, 165);text-decoration: none;&quot;&gt;1.6.0&lt;/a&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;GeoKKP-GIS Versi &lt;a href=&quot;https://github.com/danylaksono/GeoKKP-GIS&quot;&gt;&lt;span style=&quot; color:#009da5;&quot;&gt;1.0.0&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="alignment">
           <set>Qt::AlignCenter</set>

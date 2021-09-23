@@ -94,8 +94,14 @@
          "Kode": 20400,
          "Nama Layer": "(20400) Dimensi Pengukuran",
          "Tipe Layer": "LineString",
-         "Style Path": "",
-		 "Attributes": ""
+         "Style Path": "dimension.qml",
+		 "Attributes": [
+			{
+				"Nilai"		: "String",	 
+				"Jenis"		: "String"
+			}
+		 
+		 ]
       },
       {
          "Kode": 20500,
@@ -382,8 +388,18 @@
          "Kode": 60800,
          "Nama Layer": "(60800) Titik Pengukuran",
          "Tipe Layer": "Point",
-         "Style Path": "",
-		 "Attributes": ""
+         "Style Path": "titikpengukuran.qml",
+		 "Attributes": [
+			{
+				"Adjustment"		: "String",
+				"Alat"				: "String",	 
+				"Foto"				: "String",
+				"Ketelitian"		: "String",
+				"Metode"			: "String",
+				"Status Persetujuan": "String"
+			}
+		 
+		 ]
       }
    ],
    "Layer Bangunan": [

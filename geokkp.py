@@ -20,12 +20,10 @@
  *                                                                         *
  ***************************************************************************/
 """
-
 import os
 import json
 
 from qgis.PyQt.QtCore import (
-    QSettings,
     QTranslator,
     QCoreApplication,
     Qt,
@@ -46,43 +44,64 @@ from qgis.PyQt.QtWidgets import (
     QLabel
 )
 
-from qgis.core import Qgis, QgsProject, QgsRasterLayer, QgsCoordinateReferenceSystem, QgsVectorLayer
+from qgis.core import (
+    Qgis,
+    QgsProject,
+    QgsRasterLayer,
+    QgsCoordinateReferenceSystem,
+    QgsVectorLayer,
+    QgsSettings
+)
 from qgis.gui import QgsMapToolIdentify
 from qgis import utils as qgis_utils
 
-# Import the code for the DockWidget
-from .geokkp_dockwidget import GeoKKPDockWidget
+# import utilities
+from .modules.utils import (
+    clear_all_vars,
+    dialogBox,
+    logMessage,
+    activate_editing,
+    iconPath,
+    icon
+)
 
-# Modules
+# Import the code for the DockWidget
+from .modules.workpanel import Workpanel
+
+# GeoKKP-GIS Modules
+from .modules.initialization import Initialize
+from .modules.featuresearch import FeatureSearchDialog
+
+Initialize()
+
 from .modules.add_layer import AddLayerDialog
 from .modules.add_basemap import AddBasemapDialog
 from .modules.gotoxy import GotoXYDialog
+from .modules.settings import SettingsDialog
 from .modules.plotcoord import PlotCoordinateDialog
 from .modules.login import LoginDialog
 from .modules.openaerialmap import OAMDialog
 from .modules.adjust import AdjustDialog
-from .modules.postlogin import PostLoginDock
 from .modules.import_from_file import ImportGeomFromFile
 from .modules.coordinate_transform import CoordinateTransformDialog
-from .modules.layout_peta import LayoutPetaDialog
+from .modules.layout import LayoutDialog
 from .modules.layout_gu import LayoutGUDialog
 from .modules.trilateration import TrilaterationDialog
 from .modules.triangulation import TriangulationDialog
-from .modules.workpanel import Workpanel
+from .modules.pengaturan_lokasi import PengaturanLokasiDialog
+from .modules.draw_nlp import DrawNLPDialog
+from .modules.draw_dimension import (
+    DimensionDistanceTool, DimensionAngleTool, DimensionPointTool)
 from .modules.utils import (
     activate_editing,
     iconPath,
-    icon,
-    explode_polyline,
-    snap_geometries_to_layer,
-    polygonize,
-    dissolve
+    icon
 )
 from .modules.memo import app_state
 
 
 class GeoKKP:
-    """GeoKKP QGIS Plugin Basic Implementation"""
+    """GeoKKP QGIS Plugin Main Implementation"""
 
     def __init__(self, iface):
         """Constructor.
@@ -106,8 +125,15 @@ class GeoKKP:
         login_state = app_state.set('logged_in', False)
         login_state.changed.connect(self.login_changed)
 
+        self.actionLoginUser = None
+        self.actionLogoutUser = None
+        self.userLoggedIn = None
+
+        # Declare instance attributes
+        self.actions = []
+
         # initialize locale
-        locale = QSettings().value('locale/userLocale')[0:2]
+        locale = QgsSettings().value('locale/userLocale')[0:2]
         locale_path = os.path.join(
             self.plugin_dir,
             'i18n',
@@ -116,9 +142,6 @@ class GeoKKP:
             self.translator = QTranslator()
             self.translator.load(locale_path)
             QCoreApplication.installTranslator(self.translator)
-
-        # Declare instance attributes
-        self.actions = []
 
         # Add GeoKKP Toolbar
         self.toolbar = self.iface.addToolBar(u'GeoKKP')
@@ -134,31 +157,39 @@ class GeoKKP:
             self.iface.mainWindow().menuBar().insertMenu(lastAction, self.menu)
 
         # Change QGIS Title and Default Icon to GeoKKP
-        title = self.iface.mainWindow().windowTitle()
+        title = iface.mainWindow().windowTitle()
         new_title = title.replace('QGIS', 'GeoKKP-GIS')
         self.iface.mainWindow().setWindowTitle(new_title)
         self.iface.mainWindow().setWindowIcon(icon('icon.png'))
 
         self.pluginIsActive = False
 
+        # == Initialization and Data Preparation ==
+        # self.initialize = Initialize
+        # self.initialize()
+
         # self.canvasClicked = pyqtSignal('QgsPointXY')
 
         # Set widgets
-        self.dockwidget = GeoKKPDockWidget()
+        self.workpanel = Workpanel()
         self.addlayeraction = AddLayerDialog()
         self.addbasemapaction = AddBasemapDialog()
         self.gotoxyaction = GotoXYDialog()
+        self.setting_action = SettingsDialog()
         self.plotxyaction = PlotCoordinateDialog()
         self.import_from_file_widget = ImportGeomFromFile(self)
         self.loginaction = LoginDialog()
-        self.postloginaction = PostLoginDock()
         self.oamaction = OAMDialog()
         self.adjustaction = AdjustDialog()
-        self.layoutpetaaction = LayoutPetaDialog()
+        self.layoutaction = LayoutDialog()
         self.layoutguaction = LayoutGUDialog()
         self.trilaterationaction = TrilaterationDialog()
         self.triangulationaction = TriangulationDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
+        self.aturlokasi_action = PengaturanLokasiDialog()
+        self.pencarianlokasi_action = FeatureSearchDialog()
+        self.inspeksinlp_action = DrawNLPDialog()
+        # self.loginaction.loginChanged.connect()
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -186,7 +217,8 @@ class GeoKKP:
             status_tip=None,
             whats_this=None,
             parent=None,
-            need_auth=True):
+            need_auth=True,
+            checkable=False):
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
@@ -229,7 +261,7 @@ class GeoKKP:
         enabled_flag = enabled_flag and (not need_auth or login_state.value)
 
         icon = QIcon(icon_path)
-        action = QAction(icon, text, parent)
+        action = QAction(icon, text, parent, checkable=checkable)
         action.triggered.connect(callback)
         action.setEnabled(enabled_flag)
 
@@ -263,20 +295,40 @@ class GeoKKP:
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
         # start the deck
-        self.run
+        self.run()
 
         # ========== Menu: Login Pengguna ==========
-        self.add_action(
-            iconPath("login.png"),
-            text=self.tr(u'Login Pengguna'),
+        # self.add_action(
+        #    iconPath("login.png"),
+        #    text=self.tr(u'Login Pengguna'),
+        #    callback=self.login_geokkp,
+        #    parent=self.iface.mainWindow().menuBar(),
+        #    need_auth=False)
+        self.actionLoginUser = self.add_action(
+            icon("login.png"),
+            text=self.tr(u"Login Pengguna"),
             callback=self.login_geokkp,
             parent=self.iface.mainWindow().menuBar(),
-            need_auth=False)
+            add_to_menu=True,
+            need_auth=False
+        )
+
+        self.actionLogoutUser = self.add_action(
+            icon("keluar.png"),
+            text=self.tr(u"Logout Pengguna"),
+            callback=self.logout_user,
+            parent=self.iface.mainWindow().menuBar(),
+            add_to_menu=True,
+            need_auth=False
+        )
+        self.actionLogoutUser.setEnabled(False)
+        self.actionLogoutUser.setVisible(False)
+
         widget = QWidget()
         layout = QHBoxLayout()
-        self.labelLoggedIn = QLabel()
-        self.labelLoggedIn.setText("Masuk Pengguna")
-        layout.addWidget(self.labelLoggedIn)
+        self.userLoggedIn = QLabel()
+        self.userLoggedIn.setText("Masuk Pengguna")
+        layout.addWidget(self.userLoggedIn)
         widget.setLayout(layout)
         self.toolbar.addWidget(widget)
         # -------------------------------------------
@@ -296,11 +348,11 @@ class GeoKKP:
         # Deklarasi menu tambah data
         self.popupAddData = QMenu("&Tambah Data", self.iface.mainWindow())
 
-        #  --- Sub-menu Unduh Data Persil ---
+        #  --- Sub-menu Tambah data palugada ---
         self.actionAddData = self.add_action(
             icon("getparcel.png"),
             text=self.tr(u"Tambah Data"),
-            callback=self.gotoxy,
+            callback=self.addlayersmenu,
             add_to_toolbar=False,
             parent=self.popupAddData,
             add_to_menu=False
@@ -353,6 +405,71 @@ class GeoKKP:
         # Register menu to toolbar
         self.toolbar.addWidget(self.AddDataButton)
         self.menu.addMenu(self.popupAddData)
+        # -------------------------------------------
+
+        # ======== Dropdown Menu: Dimensi ========
+        # Deklarasi menu dimensi
+        self.popupDimension = QMenu("&Dimensi", self.iface.mainWindow())
+
+        #  --- Sub-menu Dimensi Jarak ---
+        self.actionDistanceDimension = self.add_action(
+            icon("dimension_distance.png"),
+            text=self.tr(u"Dimensi Jarak"),
+            callback=self.dimension_distance, 
+            add_to_toolbar=False,
+            add_to_menu=False,
+            checkable=True,
+            parent=self.popupDimension
+        )
+        self.popupDimension.addAction(self.actionDistanceDimension)
+
+        #  --- Sub-menu Dimensi Sudut ---
+        self.actionAngleDimension = self.add_action(
+            icon("dimension_angle.png"),
+            text=self.tr(u"Dimensi Sudut"),
+            callback=self.dimension_angle, 
+            add_to_toolbar=False,
+            add_to_menu=False,
+            checkable=True,
+            parent=self.popupDimension
+        )
+        self.popupDimension.addAction(self.actionAngleDimension)
+
+        #  --- Sub-menu Dimensi Titik ---
+        self.actionPointDimension = self.add_action(
+            icon("dimension_point.png"),
+            text=self.tr(u"Dimensi Titik"),
+            callback=self.dimension_point, 
+            add_to_toolbar=False,
+            add_to_menu=False,
+            checkable=True,
+            parent=self.popupDimension
+        )
+        self.popupDimension.addAction(self.actionPointDimension)
+
+        #  --- Sub-menu Toggle Titik Batas Persil ---
+        self.actionTitikPersil = self.add_action(
+            icon("titik_persil.png"),
+            text=self.tr(u"Titik Batas Persil"),
+            callback=self.toggle_titik_persil,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            checkable=True,
+            need_auth=False,
+            parent=self.popupDimension
+        )
+        self.popupDimension.addAction(self.actionTitikPersil)
+
+        # Pengaturan Dropdown menu Dimensi
+        self.DimensionButton = QToolButton()
+        self.DimensionButton.setMenu(self.popupDimension)
+        # self.DimensionButton.setIcon(icon("dimension.png"))
+        # self.DimensionButton.setToolTip("Dimension")
+        self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
+        self.DimensionButton.setPopupMode(QToolButton.MenuButtonPopup)
+        # Register menu to toolbar
+        self.toolbar.addWidget(self.DimensionButton)
+        self.menu.addMenu(self.popupDimension)
         # -------------------------------------------
 
         # ======== Dropdown Menu: Penggambaran ========
@@ -423,7 +540,7 @@ class GeoKKP:
         self.actionCekTopologi = self.add_action(
             icon("validasi.png"),
             text=self.tr(u"Validasi"),
-            callback=self.gotoxy,
+            callback=self.geomchecker,
             add_to_toolbar=False,
             add_to_menu=False,
             parent=self.popupValidasi
@@ -453,53 +570,12 @@ class GeoKKP:
         self.menu.addMenu(self.popupValidasi)
         # -------------------------------------------
 
-        # ======== Dropdown Menu: Pencetakan ========
-        # Deklarasi menu Pencetakan
-        self.popupPencetakan = QMenu("&Pencetakan", self.iface.mainWindow())
-
-        #  --- Sub-menu Cetak Peta ---
-        self.actionCetakPeta = self.add_action(
-            icon("layout.png"),
-            text=self.tr(u"Cetak Gambar Ukur"),
-            callback=self.layout_gu,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            parent=self.popupPencetakan
-        )
-        self.popupPencetakan.addAction(self.actionCetakPeta)
-
-        #  --- Sub-menu Cetak SU ---
-        self.actionCetakSU = self.add_action(
-            icon("layout.png"),
-            text=self.tr(u"Cetak Surat Ukur"),
-            callback=self.gotoxy,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            parent=self.popupPencetakan
-        )
-        self.popupPencetakan.addAction(self.actionCetakSU)
-
-        #  --- Sub-menu Cetak PBT ---
-        self.actionCetakPBT = self.add_action(
-            icon("layout.png"),
-            text=self.tr(u"Cetak Peta Bidang Tanah"),
-            callback=self.layout_peta,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            parent=self.popupPencetakan
-        )
-        self.popupPencetakan.addAction(self.actionCetakPBT)
-
-        # Pengaturan Dropdown menu Pencetakan
-        self.PencetakanButton = QToolButton()
-        self.PencetakanButton.setMenu(self.popupPencetakan)
-        self.PencetakanButton.setIcon(icon("layout.png"))
-        self.PencetakanButton.setToolTip("Pencetakan")
-        self.PencetakanButton.setDefaultAction(self.actionCetakPeta)
-        self.PencetakanButton.setPopupMode(QToolButton.MenuButtonPopup)
-        # Register menu to toolbar
-        self.toolbar.addWidget(self.PencetakanButton)
-        self.menu.addMenu(self.popupPencetakan)
+        # ======== Menu: Layout ========
+        self.add_action(
+            iconPath("layout.png"),
+            text=self.tr(u'Buka Layout Pencetakan'),
+            callback=self.print_layout,
+            parent=self.iface.mainWindow().menuBar())
         # -------------------------------------------
 
         # ======== Dropdown Menu: Peralatan ========
@@ -530,16 +606,65 @@ class GeoKKP:
         )
         self.popupPeralatan.addAction(self.actionGotoXY)
 
-        #  --- Sub-menu Geocoding ---
-        self.actionGeocoding = self.add_action(
+        #  --- Sub-menu Pengaturan Lokasi ---
+        self.actionAturLokasi = self.add_action(
             icon("georef.png"),
-            text=self.tr(u"Geocoding"),
-            callback=self.gotoxy,
+            text=self.tr(u"Atur Lokasi Kerja"),
+            callback=self.aturlokasi,
             add_to_toolbar=False,
             add_to_menu=False,
+            need_auth=False,
+            parent=self.popupPeralatan
+        )
+        self.popupPeralatan.addAction(self.actionAturLokasi)
+
+        #  --- Sub-menu NLP  ---
+        self.actionNLP = self.add_action(
+            icon("pickuppoint.png"),
+            text=self.tr(u"Inspeksi NLP"),
+            callback=self.inspeksinlp,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            need_auth=False,
+            parent=self.popupPeralatan
+        )
+        self.popupPeralatan.addAction(self.actionNLP)
+
+        #  --- Sub-menu Geocoding ---
+        self.actionGeocoding = self.add_action(
+            icon("carialamat.png"),
+            text=self.tr(u"Pencarian Alamat"),
+            callback=self.geocoding,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            need_auth=False,
             parent=self.popupPeralatan
         )
         self.popupPeralatan.addAction(self.actionGeocoding)
+
+        #  --- Sub-menu Georeferencing/Rubbersheet ---
+        self.actionGeoreference = self.add_action(
+            icon("nailer.png"),
+            text=self.tr(u"Georeference/Rubbersheet"),
+            callback=self.georeferencer,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            need_auth=False,
+            parent=self.popupPeralatan
+        )
+        self.popupPeralatan.addAction(self.actionGeoreference)
+
+        #  --- Sub-menu Pencarian Fitur ---
+        self.actionFeatureSearch = self.add_action(
+            icon("findatribute.png"),
+            text=self.tr(u"Pencarian Atribut"),
+            callback=self.search_for_feature,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            need_auth=False,
+            parent=self.popupPeralatan
+        )
+        self.popupPeralatan.addAction(self.actionFeatureSearch)
 
         # Pengaturan Dropdown menu Peralatan
         self.PeralatanButton = QToolButton()
@@ -558,6 +683,7 @@ class GeoKKP:
 
         # ======== Dropdown Menu: Workspace GeoKKP ========
         # Deklarasi menu Workspace
+        """        
         self.popupWorkspace = QMenu("&Workspace", self.iface.mainWindow())
 
         #  --- Sub-menu Workspace Rutin ---
@@ -593,6 +719,7 @@ class GeoKKP:
         self.toolbar.addWidget(self.WorkspaceButton)
         self.menu.addMenu(self.popupWorkspace)
         # -------------------------------------------
+        """
 
         # ========== Menu: CADMode ==========
         self.add_action(
@@ -607,7 +734,7 @@ class GeoKKP:
         self.add_action(
             iconPath("settings.png"),
             text=self.tr(u'Pengaturan'),
-            callback=self.gotoxy,
+            callback=self.open_settings,
             parent=self.iface.mainWindow(),
             need_auth=False)
         # -------------------------------------------
@@ -649,11 +776,11 @@ class GeoKKP:
         Cleanup necessary items here when plugin dockwidget is closed
         """
         # disconnects
-        # self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
+        # self.workpanel.closingPlugin.disconnect(self.onClosePlugin)
 
         # remove this statement if dockwidget is to remain
         # for reuse if plugin is reopened
-        # self.dockwidget = None
+        # self.workpanel = None
         self.pluginIsActive = False
 
     def unload(self):
@@ -664,50 +791,71 @@ class GeoKKP:
                 action)
             self.iface.removeToolBarIcon(action)
 
-        # remove the toolbar
-        # del self.dockwidget
+        # remove the dockwidget
+        if self.workpanel is not None:
+            print("not none")
+            del self.workpanel
+
         # remove the toolbar
         if self.toolbar:
             del self.toolbar
-        if self.dockwidget:
-            self.dockwidget.deleteLater()
-
-        # remove panels registry
-        self.iface.mainWindow().removeDockWidget(self.dockwidget)
-        self.dockwidget.setVisible(False)
-        self.dockwidget.destroy()
 
         # remove menu
         if self.menu:
             # self.menu.clear()
             self.menu = None
 
+        # find remaining panels and clear them all
+        for panel in self.iface.mainWindow().findChildren(QDockWidget):
+            if panel.windowTitle() == 'Panel Kerja GeoKKP-GIS':
+                self.iface.mainWindow().removeDockWidget(panel)
+                logMessage("duplicate panels found: " + str(panel.windowTitle()))
+                panel.setVisible(False)
+                panel.deleteLater()
+                del panel
+
+        # clear all local variables
+        clear_all_vars()
+
     def run(self):
         """Run method that loads and starts the plugin"""
-
         if not self.pluginIsActive:
             self.pluginIsActive = True
             # dockwidget may not exist if:
             #    first run of plugin
             #    removed on close (see self.onClosePlugin method)
-            if self.dockwidget is None:
+            if self.workpanel is None:
                 # Create the dockwidget (after translation) and keep reference
-                self.dockwidget = GeoKKPDockWidget()
+                self.workpanel = Workpanel()
 
             # connect to provide cleanup on closing of dockwidget
-            self.dockwidget.closingPlugin.connect(self.onClosePlugin)
+            self.workpanel.closingPlugin.connect(self.onClosePlugin)
 
-            # show the dockwidget
-            # TODO: fix to allow choice of dock location
-            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
-            self.dockwidget.show()
+        # show the dockwidget
+        # TODO: fix to allow choice of dock location
+        try:
+            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.workpanel)
+            self.workpanel.show()
+            self.workpanel.setVisible(True)
+        except Exception as e:
+            print(e)
 
-            # print("run the plugin")
+    def logout_user(self):
+        login_state = app_state.get('logged_in')
+        if login_state.value:
+            login_state = app_state.set('logged_in', False)
+            logMessage("User keluar aplikasi")
+            login_state.changed.connect(self.login_changed)
+            self.workpanel.switch_panel(0)
 
     def login_changed(self, state):
-        # self._is_logged_in = readSetting("geokkp/isLoggedIn")
+        # self._is_logged_in = readSetting("isLoggedIn")
         # print("successfully logged in")
         # print(self._is_logged_in)
+        self.actionLoginUser.setVisible(not state)
+        self.actionLogoutUser.setVisible(state)
+        self.actionLogoutUser.setEnabled(state)
+
         for action in self.actions:
             action_data = action.data()
             if isinstance(action_data, dict) \
@@ -715,113 +863,189 @@ class GeoKKP:
                     and action_data['need_auth']:
                 action.setEnabled(state)
         if state:
+            username = app_state.get('username')
+            self.userLoggedIn.setText(str(username))
             self.show_workpanel()
-            # self.postlogin()
-
-    def enable_button(self, loggedIn):
-        # self.btnLogin.setVisible(not loggedIn)
-        labelText = ("<b>Welcome to Planet</b>" if not loggedIn else "<b>Planet</b>")
-        self.labelLoggedIn.setText(labelText)
+        else:
+            self.userLoggedIn.setText("Masuk Pengguna")
 
     # ==============================================================
     # Definisi Fungsi GeoKKP-GIS
     # ==============================================================
-
-    def auto_adjust(self):
-        canvas = self.iface.mapCanvas()
-        layer = canvas.currentLayer()
-
-        if not isinstance(layer, QgsVectorLayer):
+            
+    def dimension_distance(self):
+        # get dimension layer by name 
+        self.dimension_layer = None
+        all_layers = QgsProject.instance().mapLayers().values()
+        for layer in all_layers:
+            if layer.name() == '(20400) Dimensi Pengukuran':
+                self.dimension_layer = layer
+                break
+        if not self.dimension_layer:
+            self.iface.messageBar().pushMessage(
+                "Peringatan", 
+                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.", 
+                level=Qgis.Warning)
             return
+        # enable last chosen tools as default in toolbar
+        self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
+        self.actionDistanceDimension.setChecked(True)
+        self.distanceTool = DimensionDistanceTool(
+            self.iface.mapCanvas(), 
+            self.dimension_layer
+        )
+        self.distanceTool.completed.connect(self.dimension_distance_completed)
+        self.iface.mapCanvas().setMapTool(self.distanceTool)
 
-        if layer.geometryType() != 1:  # need polyline
+    def dimension_distance_completed(self):
+        self.actionDistanceDimension.setChecked(False)
+        self.iface.mapCanvas().unsetMapTool(self.distanceTool)
+
+    def dimension_angle(self):
+        # get dimension layer by name 
+        self.dimension_layer = None
+        all_layers = QgsProject.instance().mapLayers().values()
+        for layer in all_layers:
+            if layer.name() == '(20400) Dimensi Pengukuran':
+                self.dimension_layer = layer
+                break
+        if not self.dimension_layer:
+            self.iface.messageBar().pushMessage(
+                "Peringatan", 
+                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.", 
+                level=Qgis.Warning)
             return
+        # enable last chosen tools as default in toolbar
+        self.DimensionButton.setDefaultAction(self.actionAngleDimension)
+        self.actionAngleDimension.setChecked(True)
+        self.angleTool = DimensionAngleTool(
+            self.iface.mapCanvas(), 
+            self.dimension_layer
+        )
+        self.angleTool.completed.connect(self.dimension_angle_completed)
+        self.iface.mapCanvas().setMapTool(self.angleTool)
+    
+    def dimension_angle_completed(self):
+        self.actionAngleDimension.setChecked(False)
+        self.iface.mapCanvas().unsetMapTool(self.angleTool)
+    
+    def dimension_point(self):
+        # get dimension layer by name 
+        self.dimension_layer = None
+        all_layers = QgsProject.instance().mapLayers().values()
+        for layer in all_layers:
+            if layer.name() == '(20400) Dimensi Pengukuran':
+                self.dimension_layer = layer
+                break
+        if not self.dimension_layer:
+            self.iface.messageBar().pushMessage(
+                "Peringatan", 
+                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.", 
+                level=Qgis.Warning)
+            return
+        # # enable last chosen tools as default in toolbar
+        self.DimensionButton.setDefaultAction(self.actionPointDimension)
+        self.actionPointDimension.setChecked(True)
+        
+        self.pointTool = DimensionPointTool(
+            self.iface.mapCanvas(), 
+            self.dimension_layer
+        )
+        self.pointTool.completed.connect(self.dimension_point_completed)
+        self.iface.mapCanvas().setMapTool(self.pointTool)
+    
+    def dimension_point_completed(self):
+        self.actionPointDimension.setChecked(False)
+        self.iface.mapCanvas().unsetMapTool(self.pointTool)
 
-        exploded = explode_polyline(layer)
-        QgsProject.instance().addMapLayer(exploded)
-
-        snapped = snap_geometries_to_layer(exploded, exploded)
-        QgsProject.instance().removeMapLayer(exploded)
-        QgsProject.instance().addMapLayer(snapped)
-
-        polygonized = polygonize(snapped)
-        QgsProject.instance().removeMapLayer(snapped)
-        QgsProject.instance().addMapLayer(polygonized)
-
-        dissolved = dissolve(polygonized)
-        QgsProject.instance().removeMapLayer(polygonized)
-        QgsProject.instance().addMapLayer(dissolved)
+    def aturlokasi(self):
+        if self.aturlokasi_action is None:
+            self.aturlokasi_action = PengaturanLokasiDialog()
+        self.aturlokasi_action.show()
+    
+    def inspeksinlp(self):
+        if self.inspeksinlp_action is None:
+            self.inspeksinlp_action = DrawNLPDialog()
+        self.inspeksinlp_action.show()
 
     def gotoxy(self):
         if self.gotoxyaction is None:
-            # Create the dockwidget (after translation) and keep reference
             self.gotoxyaction = GotoXYDialog()
         self.gotoxyaction.selectProj.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
 
-        # connect to provide cleanup on closing of dockwidget
         # self.gotoxyaction.closingPlugin.connect(self.onClosePlugin)
 
         # show the dialog
-        # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.gotoxyaction.show()
+
+    def open_settings(self):
+        if self.setting_action is None:
+            self.setting_action = SettingsDialog()
+
+        self.setting_action.show()
+
+    def search_for_feature(self):
+        try:
+            self.iface.showAttributeTable(self.iface.activeLayer())
+        except Exception as e:
+            dialogBox(e)
+    
+    def toggle_titik_persil(self):
+        # check whether batas persil layer (20100) is loaded
+        persil_layer = None
+        all_layers = QgsProject.instance().mapLayers().values()
+        for layer in all_layers:
+            if layer.name() == '(20100) Batas Persil':
+                persil_layer = layer
+                break
+        if not persil_layer:
+            self.iface.messageBar().pushMessage(
+                "Peringatan", 
+                "Tambahkan layer Batas Persil (20100) sebelum menggunakan Tool ini.", 
+                level=Qgis.Warning)
+            return
+        if self.actionTitikPersil.isChecked() == False:
+            self.set_symbology(persil_layer, 'bataspersil-no-xy.qml')
+            # QgsProject.instance().reloadAllLayers()
+            persil_layer.reload()
+        elif self.actionTitikPersil.isChecked() == True:
+            self.set_symbology(persil_layer, 'bataspersil-xy.qml')
+            # QgsProject.instance().reloadAllLayers()
+            persil_layer.reload()
 
     def coordinate_transform(self):
         if self.coordinate_transform_dialog is None:
-            # Create the dockwidget (after translation) and keep reference
             self.coordinate_transform_dialog = CoordinateTransformDialog()
-
         # show the dialog
         self.coordinate_transform_dialog.show()
 
     def plotxy(self):
         if self.plotxyaction is None:
-            # Create the dockwidget (after translation) and keep reference
             self.plotxyaction = PlotCoordinateDialog()
         self.plotxyaction.listCoordsProj.setCrs(QgsCoordinateReferenceSystem('EPSG:4326'))
 
-        # connect to provide cleanup on closing of dockwidget
         # self.gotoxyaction.closingPlugin.connect(self.onClosePlugin)
 
         # show the dialog
-        # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
         self.plotxyaction.show()
 
-    def postlogin(self):
-        """
-        what to do if user is logged in
-        """
-        if self.postloginaction is None:
-            # Create the dockwidget (after translation) and keep reference
-            self.postloginaction = PostLoginDock()
+    def print_layout(self):
+        if self.layoutaction is None:
+            self.layoutaction = LayoutDialog()
+        self.layoutaction.show()
 
-        # connect to provide cleanup on closing of dockwidget
-        self.postloginaction.closingPlugin.connect(self.onClosePlugin)
-
-        # show the dialog
-        # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.postloginaction)
-        self.postloginaction.show()
-
-    def layout_peta(self):
-        if self.layoutpetaaction is None:
-            # Create the dockwidget (after translation) and keep reference
-            self.layoutpetaaction = LayoutPetaDialog()
-        self.layoutpetaaction.show()
-
-    def layout_gu(self):
-        if self.layoutguaction is None:
-            # Create the dockwidget (after translation) and keep reference
-            self.layoutguaction = LayoutGUDialog()
-        self.layoutguaction.show()
+    # def layout_gu(self):
+    #     if self.layoutguaction is None:
+    #         self.layoutguaction = LayoutGUDialog()
+    #     self.layoutguaction.show()
 
     def trilateration(self):
         if self.trilaterationaction is None:
-            # Create the dockwidget (after translation) and keep reference
             self.trilaterationaction = TrilaterationDialog()
         self.trilaterationaction.show()
 
     def triangulation(self):
         if self.triangulationaction is None:
-            # Create the dockwidget (after translation) and keep reference
             self.triangulationaction = TriangulationDialog()
         self.triangulationaction.show()
 
@@ -852,7 +1076,6 @@ class GeoKKP:
         if self.loginaction is None:
             self.loginaction = LoginDialog()
         self.loginaction.show()
-        self.loginaction
 
     def loadoam(self):
         if self.oamaction is None:
@@ -880,6 +1103,10 @@ class GeoKKP:
         #    print("unchecked")
         #    self.layer.selectionChanged.disconnect(self.show_atribute)
         self.iface.mainWindow().findChild(QAction, 'mActionToggleEditing').trigger()
+        self.iface.cadDockWidget().show()
+        for x in self.iface.advancedDigitizeToolBar().actions():
+            if x.text() == 'Enable advanced digitizing tools':
+                x.trigger()
         #   print("stop editing")
 
         # self.layer.startEditing()
@@ -911,23 +1138,49 @@ class GeoKKP:
                 x.trigger()
                 # print(x)
 
-    # def auto_adjust(self):
-    #     if self.adjustaction is None:
-    #         self.adjustaction = AdjustDialog()
-    #     self.adjustaction.show()
+    def auto_adjust(self):
+        if self.adjustaction is None:
+            self.adjustaction = AdjustDialog()
+        self.adjustaction.show()
+
+    def addlayersmenu(self):
+        for action in self.iface.mainWindow().findChildren(QAction):
+            # print(action.text())
+            if action.text() == "Add Vector Layer…":
+                action.trigger()
+
+    def georeferencer(self):
+        for action in self.iface.mainWindow().findChildren(QAction):
+            # print(action.text())
+            if action.text() == "Georeferencer…":
+                action.trigger()
+
+    def geocoding(self):
+        for action in self.iface.mainWindow().findChildren(QAction):
+            # print(action.text())
+            if action.text() == "&GeoCoding":
+                action.trigger()
+
+    def geomchecker(self):
+        for action in self.iface.mainWindow().findChildren(QAction):
+            # print(action.text())
+            if action.text() == "Check Geometries…":
+                action.trigger()
 
     def openhelp(self):
-        QDesktopServices.openUrl(QUrl('https://github.com/danylaksono/GeoKKP-GIS/blob/main/README.md'))
+        QDesktopServices.openUrl(QUrl('https://geokkp-gis.github.io/docs/'))
         pass
 
     def show_workpanel(self):
+        print("Show Workpanel")
         login_state = app_state.get('logged_in')
         if not login_state.value:
             return
+        self.workpanel.switch_panel(1)
 
-        if getattr(self, 'workpanel', None) is None:
-            self.workpanel = Workpanel()
-        self.iface.addDockWidget(Qt.RightDockWidgetArea, self.workpanel)
+        # if getattr(self, 'workpanel', None) is None:
+        #     self.workpanel = Workpanel()
+        # self.iface.addDockWidget(Qt.RightDockWidgetArea, self.workpanel)
 
 # TODO: Move to dockwidget
 # Methods for GeoKKP Dock Widget
@@ -977,6 +1230,7 @@ class GeoKKP:
 
     def set_symbology(self, layer, qml):
         uri = os.path.join(os.path.dirname(__file__), 'styles/'+qml)
+        print(uri)
         layer.loadNamedStyle(uri)
 
     def set_dimension_style(self):

@@ -1,11 +1,14 @@
 import re
 import os
+import math
+import urllib.parse
+
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
 
-from qgis.PyQt.QtCore import QVariant
+from qgis.PyQt.QtCore import QVariant, QUrl # noqa
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QPushButton
+from qgis.PyQt.QtWidgets import QPushButton, QMessageBox
 from qgis.core import (
                     QgsMessageLog,
                     QgsSettings,
@@ -17,6 +20,7 @@ from qgis.core import (
                     QgsVectorLayer,
                     QgsField,
                     QgsPointXY,
+                    QgsRectangle,
                     QgsGeometry,
                     QgsFeature,
                     QgsApplication,
@@ -46,12 +50,99 @@ DefaultMessageBarButton = QPushButton()
 DefaultMessageBarButton.setText("Show Me")
 DefaultMessageBarButton.pressed.connect(iface.openMessageLog)
 
+# constants for NLP
+x_origin = 32000
+y_origin = 282000
+grid_10rb = 6000
+grid_2500 = 1500
+grid_1000 = 500
+grid_500 = 250
+grid_250 = 125
+
+# constants for TM-3 Zone
+zona_TM3 = {
+    "46.2": "EPSG:23830",
+    "47.1": "EPSG:23831",
+    "47.2": "EPSG:23832",
+    "48.1": "EPSG:23833",
+    "48.2": "EPSG:23834",
+    "49.1": "EPSG:23835",
+    "49.2": "EPSG:23836",
+    "50.1": "EPSG:23837",
+    "50.2": "EPSG:23838",
+    "51.1": "EPSG:23839",
+    "51.2": "EPSG:23840",
+    "52.1": "EPSG:23841",
+    "52.2": "EPSG:23842",
+    "53.1": "EPSG:23843",
+    "53.2": "EPSG:23844",
+    "54.1": "EPSG:23845"
+}
+
+# constants for SDO Geometries
+GPOINT = 'Point'
+GLINESTRING = 'LineString'
+GPOLYGON = 'Polygon'
+SDO_GTYPE_MAP = {
+    '00': 'Unknown',
+    '01': GPOINT,
+    '02': GLINESTRING,
+    '03': GPOLYGON,
+    '04': 'Collection',
+    '05': 'MultiPoint',
+    '06': 'MultiLine',
+    '07': 'MultiPolygon',
+    '08': 'Solid',
+    '09': 'MultiSolid',
+}
+
+SDO_FIELD_EXCLUDE = ['text', 'boundary', 'rotation', 'height']
+
+
+# constants for processing snap parameter (auto-adjust)
+SNAP_ALIGNING_NODE_INSERT_WHEN_REQUIRED = 0
+SNAP_CLOSEST_NODE_INSERT_WHEN_REQUIRED = 1
+SNAP_ALIGNING_NODE_NOT_INSERT = 2
+SNAP_CLOSEST_NODE_NOT_INSERT = 3
+SNAP_MOVE_END_POINT_ALIGN_NODE = 4
+SNAP_MOVE_END_CLOSEST_NODE = 5
+SNAP_ENDPOINT_TO_ENDPOINT = 6
+SNAP_ANCHOR_NODES = 7
+
+
+# global settings variable
+settings = QgsSettings()
+
+
+"""
+Definisi Fungsi
+TODO: buat kelas untuk tiap kategori
+"""
+
 
 def logMessage(message, level=Qgis.Info):
     """
     Logger untuk debugging
     """
-    QgsMessageLog.logMessage(message, 'GeoKKP', level=level)
+    QgsMessageLog.logMessage(message, 'GeoKKP-GIS', level=level)
+
+
+def dialogBox(text, title="Peringatan GeoKKP", type="Information"):
+    """
+    Kotak peringatan
+    """
+    message = QMessageBox(parent=iface.mainWindow())
+
+    if type == "Information":
+        icon = QMessageBox.Information
+    elif type == "Warning":
+        icon = QMessageBox.Critical
+
+    message.setIcon(icon)
+    message.setText(text)
+    message.setWindowTitle(title)
+    message.setStandardButtons(QMessageBox.Ok)
+    message.exec()
 
 
 def display_message_bar(tag, message, parent=None, level=Qgis.Info, action=DefaultMessageBarButton, duration=5):
@@ -66,12 +157,35 @@ def display_message_bar(tag, message, parent=None, level=Qgis.Info, action=Defau
     parent.pushWidget(widget, level, duration=duration)
 
 
+def get_tm3_zone(long):
+    """
+    Get TM-3 Zone from long
+    """
+    nom = math.floor((long - 90)/6) + 46
+    if math.floor((long - 93)/3) % 2 == 0:
+        denom = 2
+    else:
+        denom = 1
+    return (f'{nom}.{denom}')
+
+
 def loadXYZ(url, name):
     """
     Memuat layer dalam bentuk XYZ Tile
     """
-    rasterLyr = QgsRasterLayer("type=xyz&zmin=0&zmax=21&url=" + url, name, "wms")
+    encodedUrl = urllib.parse.quote(url)
+    urlString = "type=xyz&zmin=0&zmax=21&url=" + encodedUrl
+    logMessage("Loaded url: " + urlString)
+    rasterLyr = QgsRasterLayer(urlString, name, "wms")
     QgsProject.instance().addMapLayer(rasterLyr)
+
+
+def add_google_basemap():
+    """
+    Tambahkan layer basemap default: Google Basemap
+    """
+    url = "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
+    loadXYZ(url, "Google Satellite")
 
 
 def activate_editing(layer):
@@ -91,16 +205,32 @@ def storeSetting(key, value):
     """
     Store value to QGIS Settings
     """
-    settings = QgsSettings()
-    settings.setValue(key, value)
+    settings.setValue("geokkp/"+str(key), value)
+    logMessage('Menyimpan data '+str(key)+' pada memory proyek QGIS')
+    settings.sync()
 
 
-def readSetting(key, default_value=None):
+def readSetting(key, default=None):
     """
     Read value from QGIS Settings
     """
-    settings = QgsSettings()
-    return settings.value(key, default_value)
+    logMessage('Mengambil data '+str(key)+' dari memory proyek QGIS')
+    try:
+        return settings.value("geokkp/"+str(key), default)
+    except Exception:
+        logMessage("gagal memuat data")
+    settings.sync()
+
+
+def clear_all_vars():
+    """ Hapus semua value dari QgsSettings yang digunakan oleh GeoKKP"""
+    for key in sorted(settings.allKeys()):
+        if key.startswith("geokkp"):
+            settings.remove(key)
+            # s.setValue(x, "")
+    if not settings.contains("geokkp"):
+        logMessage("Flushed all GeoKKP vars")
+    settings.sync()
 
 
 def is_layer_exist(project, layername):
@@ -114,11 +244,11 @@ def is_layer_exist(project, layername):
             return False
 
 
-def set_symbology(self, layer, qml):
+def set_symbology(layer, qml):
     """
     Set layer symbology based on QML files in ./styles folder
     """
-    uri = os.path.join(os.path.dirname(__file__), 'styles/'+qml)
+    uri = os.path.join(os.path.dirname(__file__), '../styles/'+qml)
     layer.loadNamedStyle(uri)
 
 
@@ -165,7 +295,7 @@ def save_with_description(layer, outputfile):
 
 
 def iconPath(name):
-    logMessage(os.path.join(os.path.dirname(__file__), "images", name))
+    # logMessage(os.path.join(os.path.dirname(__file__), "images", name))
     return os.path.join(os.path.dirname(__file__), "..", "images", name)
 
 
@@ -233,6 +363,7 @@ def validate_raw_coordinates(raw_coords):
 
 
 def parse_raw_coordinate(coordList):
+    """ sanitasi input koordinat """
     stripped_coords = coordList.strip()
     splitted_coords = stripped_coords.split(';')
     for coords in splitted_coords:
@@ -241,24 +372,6 @@ def parse_raw_coordinate(coordList):
             raise ValueError("Coordinate pair must be consist of two number separated by comma")
         point = QgsPointXY(float(coord_components[0]), float(coord_components[1]))
         yield point
-
-
-GPOINT = 'Point'
-GLINESTRING = 'LineString'
-GPOLYGON = 'Polygon'
-SDO_GTYPE_MAP = {
-    '00': 'Unknown',
-    '01': GPOINT,
-    '02': GLINESTRING,
-    '03': GPOLYGON,
-    '04': 'Collection',
-    '05': 'MultiPoint',
-    '06': 'MultiLine',
-    '07': 'MultiPolygon',
-    '08': 'Solid',
-    '09': 'MultiSolid',
-}
-SDO_FIELD_EXCLUDE = ['text', 'boundary', 'rotation', 'height']
 
 
 def parse_sdo_geometry_type(sdo_gtype):
@@ -341,7 +454,7 @@ def get_epsg_from_tm3_zone(zone, include_epsg_key=True):
 
 def get_saved_credentials():
     auth_mgr = QgsApplication.authManager()
-    auth_id = readSetting('geokkp/authId')
+    auth_id = readSetting('authId')
     auth_cfg = QgsAuthMethodConfig()
     if auth_id:
         auth_mgr.loadAuthenticationConfig(auth_id, auth_cfg, True)
@@ -350,7 +463,7 @@ def get_saved_credentials():
 
 def save_credentials(username, password):
     auth_mgr = QgsApplication.authManager()
-    auth_id = readSetting('geokkp/authId')
+    auth_id = readSetting('authId')
     auth_cfg = QgsAuthMethodConfig()
     if not auth_id:
         auth_id = auth_cfg.id()
@@ -364,27 +477,36 @@ def save_credentials(username, password):
     assert auth_cfg.isValid()
     auth_mgr.storeAuthenticationConfig(auth_cfg)
     assert auth_cfg.id()
-    storeSetting('geokkp/authId', auth_cfg.id())
+    storeSetting('authId', auth_cfg.id())
     return auth_cfg.id()
 
 
 def add_layer(layername, type, symbol=None, fields=None, crs=None, parent=None):
     crs = iface.mapCanvas().mapSettings().destinationCrs()
-    print("CRSCRSCRSCRSCRSC", crs)
 
     layer = QgsVectorLayer(f"{type}?crs=epsg:" + str(crs.postgisSrid()), layername, "memory")
     layer_dataprovider = layer.dataProvider()
     if not fields:
-        fields = [
+        field_list = [
             QgsField("ID", QVariant.String),
             QgsField("Keterangan", QVariant.String),
         ]
-
+    else:
+        field_list = []
+        for key, value in fields.items():
+            if value == 'String':
+                field_type = QVariant.String
+            elif value == 'Int':
+                field_type = QVariant.Int
+            elif value == 'Double':
+                field_type = QVariant.Double
+            field = QgsField(key, field_type)
+            field_list.append(field)
     if symbol:
         symbolurl = os.path.join(os.path.dirname(__file__), '../styles/'+symbol)
         layer.loadNamedStyle(symbolurl)
 
-    layer_dataprovider.addAttributes(fields)
+    layer_dataprovider.addAttributes(field_list)
     layer.updateFields()
     QgsProject.instance().addMapLayer(layer)
 
@@ -396,29 +518,24 @@ def resolve_path(name, basepath=None):
 
 
 def set_project_crs_by_epsg(epsg):
-    crs = QgsCoordinateReferenceSystem(epsg)
-    QgsProject.instance().setCrs(crs)
-
-
-SNAP_ALIGNING_NODE_INSERT_WHEN_REQUIRED = 0
-SNAP_CLOSEST_NODE_INSERT_WHEN_REQUIRED = 1
-SNAP_ALIGNING_NODE_NOT_INSERT = 2
-SNAP_CLOSEST_NODE_NOT_INSERT = 3
-SNAP_MOVE_END_POINT_ALIGN_NODE = 4
-SNAP_MOVE_END_CLOSEST_NODE = 5
-SNAP_ENDPOINT_TO_ENDPOINT = 6
-SNAP_ANCHOR_NODES = 7
+    print(epsg)
+    try:
+        crs = QgsCoordinateReferenceSystem(epsg)
+        QgsProject.instance().setCrs(crs)
+    except Exception as e:
+        print(e)
 
 
 def snap_geometries_to_layer(
         layer,
         ref_layer,
         tolerance=1,
-        behavior=SNAP_MOVE_END_POINT_ALIGN_NODE,
-        output='memory:snap'):
+        behavior=SNAP_ALIGNING_NODE_NOT_INSERT,
+        output='memory:snap',
+        only_selected=False):
     if isinstance(layer, str):
         layer = get_layer_by_id(layer)
-    is_selected = bool(layer.selectedFeatureCount())
+    is_selected = only_selected or bool(layer.selectedFeatureCount())
 
     parameters = {
         'INPUT': QgsProcessingFeatureSourceDefinition(layer.id(), is_selected),
@@ -427,7 +544,7 @@ def snap_geometries_to_layer(
         'BEHAVIOR': behavior,
         'OUTPUT': output
     }
-    print(parameters)
+
     result = processing.run('qgis:snapgeometries', parameters)
 
     return result['OUTPUT']
@@ -477,3 +594,110 @@ def dissolve(layer, output='memory:dissolve'):
 
 def get_layer_by_id(layer_id):
     return QgsProject.instance().mapLayer(layer_id)
+
+
+def draw_rect_bound(xMin, yMin, xMax, yMax, epsg, nama="Blok NLP"):
+    epsg = str(epsg)
+    is_layer_exist
+    layer = QgsVectorLayer(f"Polygon?crs={epsg}", nama, "memory")
+    QgsProject.instance().addMapLayer(layer)
+
+    rect = QgsRectangle(xMin, yMin, xMax, yMax)
+    print(rect)
+    polygon = QgsGeometry.fromRect(rect)
+    print(polygon)
+
+    feature = QgsFeature()
+    feature.setGeometry(polygon)
+
+    layer.dataProvider().addFeatures([feature])
+    layer.updateExtents()
+
+
+def bk_10000(x, y):
+    k_10rb = int((x - x_origin)/grid_10rb)+1
+    b_10rb = int((y - y_origin)/grid_10rb)+1
+    return [k_10rb, b_10rb]
+
+
+def bk_2500(x, y):
+    k_10rb, b_10rb = bk_10000(x, y)
+    k_2500 = int((x-(x_origin+(k_10rb - 1)*grid_10rb))/grid_2500)+1
+    b_2500 = int((y-(y_origin+(b_10rb - 1)*grid_10rb))/grid_2500)+1
+    return [k_2500, b_2500]
+
+
+def bk_1000(x, y):
+    k_10rb, b_10rb = bk_10000(x, y)
+    k_2500, b_2500 = bk_2500(x, y)
+    k_1000 = int((x-(x_origin+(k_10rb - 1)*grid_10rb + (k_2500-1)*grid_2500))/grid_1000)+1
+    b_1000 = int((y-(y_origin+(b_10rb - 1)*grid_10rb + (b_2500-1)*grid_2500))/grid_1000)+1
+    return [k_1000, b_1000]
+
+
+def bk_500(x, y):
+    k_10rb, b_10rb = bk_10000(x, y)
+    k_2500, b_2500 = bk_2500(x, y)
+    k_1000, b_1000 = bk_1000(x, y)
+    k_500 = int((x-(x_origin+(k_10rb - 1)*grid_10rb + ((k_2500-1)*grid_2500) + (k_1000-1)*grid_1000))/grid_500)+1
+    b_500 = int((y-(y_origin+(b_10rb - 1)*grid_10rb + ((b_2500-1)*grid_2500) + (b_1000-1)*grid_1000))/grid_500)+1
+    return [k_500, b_500]
+
+
+def bk_250(x, y):
+    k_10rb, b_10rb = bk_10000(x, y)
+    k_2500, b_2500 = bk_2500(x, y)
+    k_1000, b_1000 = bk_1000(x, y)
+    k_500, b_500 = bk_500(x, y)
+    k_250 = int((x-(x_origin+(k_10rb - 1)*grid_10rb
+            + ((k_2500-1)*grid_2500) # noqa
+            + ((k_1000-1)*grid_1000)
+            + (k_500-1)*grid_500))/grid_250)+1
+    b_250 = int((y-(y_origin+(b_10rb - 1)*grid_10rb
+            + ((b_2500-1)*grid_2500) # noqa
+            + ((b_1000-1)*grid_1000)
+            + (b_500-1)*grid_500))/grid_250)+1
+    return [k_250, b_250]
+
+
+def get_nlp(skala, x, y):
+    """
+    Cetak Nomor Lembar Peta berdasarkan skala
+
+    argumen:
+        skala   : skala peta dalam string
+        x       : koordinat x dalam CRS TM-3
+        y       : koordinat y dalam CRS TM-3
+    output: string NLP
+    """
+    # hitungan baris dan kolom
+    k_10rb, b_10rb = bk_10000(x, y)
+    k_2500, b_2500 = bk_2500(x, y)
+    k_1000, b_1000 = bk_1000(x, y)
+    k_500, b_500 = bk_500(x, y)
+    k_250, b_250 = bk_250(x, y)    
+
+    # Skala 2500
+    nlp_2500 = 4*(b_2500-1)+k_2500
+
+    # Skala 1000
+    nlp_1000 = 3*(b_1000-1)+k_1000
+
+    # Skala 500
+    nlp_500 = 2*(b_500-1)+k_500
+
+    # Skala 250
+    nlp_250 = 2*(b_250-1)+k_250
+
+    if (skala == "10000"):
+        return f'{k_10rb:02d}.{b_10rb:03d}'
+    elif (skala == "2500"):
+        return f'{k_10rb:02d}.{b_10rb:03d}-{nlp_2500:02d}'
+    elif (skala == "1000"):
+        return f'{k_10rb:02d}.{b_10rb:03d}-{nlp_2500:02d}-{nlp_1000}'
+    elif (skala == "500"):
+        return f'{k_10rb:02d}.{b_10rb:03d}-{nlp_2500:02d}-{nlp_1000}-{nlp_500}'
+    elif (skala == "250"):
+        return f'{k_10rb:02d}.{b_10rb:03d}-{nlp_2500:02d}-{nlp_1000}-{nlp_500}-{nlp_250}'
+    else:
+        return "Kesalahan Penentuan skala"

@@ -1,14 +1,14 @@
 import os
-
+import json
 from qgis.PyQt.QtCore import Qt
 from qgis.PyQt.QtWidgets import QTreeWidgetItem
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-from .utils import readSetting, add_layer, icon
+from .utils import logMessage, readSetting, add_layer, icon
 
-data_layer = readSetting("geokkp/layers", default_value={})
+data_layer = readSetting("layers")
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/addlayerv2.ui'))
@@ -28,7 +28,10 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
         self._currentcrs = None
         self.setupUi(self)
 
-        self.populateDaftarLayer(data_layer)
+        try:
+            self.populateDaftarLayer(data_layer)
+        except Exception:
+            logMessage("daftar layer gagal dimuat")
 
         self.cariDaftarLayer.valueChanged.connect(self.findLayer)
         self.pushButtonAddtoQGIS.clicked.connect(self.addToQGIS)
@@ -49,7 +52,11 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
                 nama_layer = value["Nama Layer"]
                 tipe_layer = value["Tipe Layer"]
                 style_path = value["Style Path"]
-                child = QTreeWidgetItem([nama_layer, tipe_layer, style_path])
+                try:
+                    attr_theme = str(value["Attributes"][0])
+                except IndexError:
+                    attr_theme = None
+                child = QTreeWidgetItem([nama_layer, tipe_layer, style_path, attr_theme])
                 child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
                 child.setCheckState(0, Qt.Unchecked)
                 item.addChild(child)
@@ -99,5 +106,9 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
                     layername = item.text(0)
                     layertype = item.text(1)
                     layersymbology = item.text(2)
-                    print(item.text(0), item.text(1), item.text(2), item.text(3))
-                    add_layer(layername, layertype, layersymbology)
+                    if item.text(3):
+                        fields = json.loads(item.text(3).replace("'",'"'))
+                    else:
+                        fields = None
+                    print(item.text(0), item.text(1), item.text(2), fields)
+                    add_layer(layername, layertype, layersymbology, fields)
