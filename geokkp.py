@@ -447,6 +447,19 @@ class GeoKKP:
         )
         self.popupDimension.addAction(self.actionPointDimension)
 
+        #  --- Sub-menu Toggle Titik Batas Persil ---
+        self.actionTitikPersil = self.add_action(
+            icon("titik_persil.png"),
+            text=self.tr(u"Titik Batas Persil"),
+            callback=self.toggle_titik_persil,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            checkable=True,
+            need_auth=False,
+            parent=self.popupDimension
+        )
+        self.popupDimension.addAction(self.actionTitikPersil)
+
         # Pengaturan Dropdown menu Dimensi
         self.DimensionButton = QToolButton()
         self.DimensionButton.setMenu(self.popupDimension)
@@ -701,19 +714,6 @@ class GeoKKP:
             parent=self.popupPeralatan
         )
         self.popupPeralatan.addAction(self.actionFeatureSearch)
-
-        #  --- Sub-menu Toggle Titik Batas Persil ---
-        self.actionTitikPersil = self.add_action(
-            icon("titik_persil.png"),
-            text=self.tr(u"Titik Batas Persil"),
-            callback=self.toggle_titik_persil,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            checkable=True,
-            need_auth=False,
-            parent=self.popupPeralatan
-        )
-        self.popupPeralatan.addAction(self.actionTitikPersil)
 
         # Pengaturan Dropdown menu Peralatan
         self.PeralatanButton = QToolButton()
