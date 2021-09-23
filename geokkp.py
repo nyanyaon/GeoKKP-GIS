@@ -91,7 +91,7 @@ from .modules.openaerialmap import OAMDialog
 from .modules.adjust import AdjustDialog
 from .modules.import_from_file import ImportGeomFromFile
 from .modules.coordinate_transform import CoordinateTransformDialog
-from .modules.layout_peta import LayoutPetaDialog
+from .modules.layout import LayoutDialog
 from .modules.layout_gu import LayoutGUDialog
 from .modules.trilateration import TrilaterationDialog
 from .modules.triangulation import TriangulationDialog
@@ -187,7 +187,7 @@ class GeoKKP:
         self.loginaction = LoginDialog()
         self.oamaction = OAMDialog()
         self.adjustaction = AdjustDialog()
-        self.layoutpetaaction = LayoutPetaDialog()
+        self.layoutaction = LayoutDialog()
         self.layoutguaction = LayoutGUDialog()
         self.trilaterationaction = TrilaterationDialog()
         self.triangulationaction = TriangulationDialog()
@@ -562,54 +562,62 @@ class GeoKKP:
         self.menu.addMenu(self.popupValidasi)
         # -------------------------------------------
 
-        # ======== Dropdown Menu: Pencetakan ========
-        # Deklarasi menu Pencetakan
-        self.popupPencetakan = QMenu("&Pencetakan", self.iface.mainWindow())
-
-        #  --- Sub-menu Cetak Peta ---
-        self.actionCetakPeta = self.add_action(
-            icon("layout.png"),
-            text=self.tr(u"Cetak Gambar Ukur"),
-            callback=self.layout_gu,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            parent=self.popupPencetakan
-        )
-        self.popupPencetakan.addAction(self.actionCetakPeta)
-
-        #  --- Sub-menu Cetak SU ---
-        self.actionCetakSU = self.add_action(
-            icon("layout.png"),
-            text=self.tr(u"Cetak Surat Ukur"),
-            callback=self.gotoxy,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            parent=self.popupPencetakan
-        )
-        self.popupPencetakan.addAction(self.actionCetakSU)
-
-        #  --- Sub-menu Cetak PBT ---
-        self.actionCetakPBT = self.add_action(
-            icon("layout.png"),
-            text=self.tr(u"Cetak Peta Bidang Tanah"),
-            callback=self.layout_peta,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            parent=self.popupPencetakan
-        )
-        self.popupPencetakan.addAction(self.actionCetakPBT)
-
-        # Pengaturan Dropdown menu Pencetakan
-        self.PencetakanButton = QToolButton()
-        self.PencetakanButton.setMenu(self.popupPencetakan)
-        self.PencetakanButton.setIcon(icon("layout.png"))
-        self.PencetakanButton.setToolTip("Pencetakan")
-        self.PencetakanButton.setDefaultAction(self.actionCetakPeta)
-        self.PencetakanButton.setPopupMode(QToolButton.MenuButtonPopup)
-        # Register menu to toolbar
-        self.toolbar.addWidget(self.PencetakanButton)
-        self.menu.addMenu(self.popupPencetakan)
+        # ======== Menu: Layout ========
+        self.add_action(
+            iconPath("layout.png"),
+            text=self.tr(u'Buka Layout Pencetakan'),
+            callback=self.print_layout,
+            parent=self.iface.mainWindow().menuBar())
         # -------------------------------------------
+
+        # # ======== Dropdown Menu: Pencetakan ========
+        # # Deklarasi menu Pencetakan
+        # self.popupPencetakan = QMenu("&Pencetakan", self.iface.mainWindow())
+
+        # #  --- Sub-menu Cetak Peta ---
+        # self.actionCetakPeta = self.add_action(
+        #     icon("layout.png"),
+        #     text=self.tr(u"Cetak Gambar Ukur"),
+        #     callback=self.layout_gu,
+        #     add_to_toolbar=False,
+        #     add_to_menu=False,
+        #     parent=self.popupPencetakan
+        # )
+        # self.popupPencetakan.addAction(self.actionCetakPeta)
+
+        # #  --- Sub-menu Cetak SU ---
+        # self.actionCetakSU = self.add_action(
+        #     icon("layout.png"),
+        #     text=self.tr(u"Cetak Surat Ukur"),
+        #     callback=self.gotoxy,
+        #     add_to_toolbar=False,
+        #     add_to_menu=False,
+        #     parent=self.popupPencetakan
+        # )
+        # self.popupPencetakan.addAction(self.actionCetakSU)
+
+        # #  --- Sub-menu Cetak PBT ---
+        # self.actionCetakPBT = self.add_action(
+        #     icon("layout.png"),
+        #     text=self.tr(u"Cetak Peta Bidang Tanah"),
+        #     callback=self.layout_peta,
+        #     add_to_toolbar=False,
+        #     add_to_menu=False,
+        #     parent=self.popupPencetakan
+        # )
+        # self.popupPencetakan.addAction(self.actionCetakPBT)
+
+        # # Pengaturan Dropdown menu Pencetakan
+        # self.PencetakanButton = QToolButton()
+        # self.PencetakanButton.setMenu(self.popupPencetakan)
+        # self.PencetakanButton.setIcon(icon("layout.png"))
+        # self.PencetakanButton.setToolTip("Pencetakan")
+        # self.PencetakanButton.setDefaultAction(self.actionCetakPeta)
+        # self.PencetakanButton.setPopupMode(QToolButton.MenuButtonPopup)
+        # # Register menu to toolbar
+        # self.toolbar.addWidget(self.PencetakanButton)
+        # self.menu.addMenu(self.popupPencetakan)
+        # # -------------------------------------------
 
         # ======== Dropdown Menu: Peralatan ========
         # Deklarasi menu Pencetakan
@@ -1084,15 +1092,15 @@ class GeoKKP:
         # show the dialog
         self.plotxyaction.show()
 
-    def layout_peta(self):
-        if self.layoutpetaaction is None:
-            self.layoutpetaaction = LayoutPetaDialog()
-        self.layoutpetaaction.show()
+    def print_layout(self):
+        if self.layoutaction is None:
+            self.layoutaction = LayoutDialog()
+        self.layoutaction.show()
 
-    def layout_gu(self):
-        if self.layoutguaction is None:
-            self.layoutguaction = LayoutGUDialog()
-        self.layoutguaction.show()
+    # def layout_gu(self):
+    #     if self.layoutguaction is None:
+    #         self.layoutguaction = LayoutGUDialog()
+    #     self.layoutguaction.show()
 
     def trilateration(self):
         if self.trilaterationaction is None:
