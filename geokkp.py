@@ -738,14 +738,15 @@ class GeoKKP:
         )
         # -------------------------------------------
 
+        # Disembunyikan, sampai ada kejelasan tentang apa saja yang diatur / diminta
         # ========== Menu: Pengaturan ==========
-        self.add_action(
-            iconPath("settings.png"),
-            text=self.tr(u"Pengaturan"),
-            callback=self.open_settings,
-            parent=self.iface.mainWindow(),
-            need_auth=False,
-        )
+        # self.add_action(
+        #     iconPath("settings.png"),
+        #     text=self.tr(u"Pengaturan"),
+        #     callback=self.open_settings,
+        #     parent=self.iface.mainWindow(),
+        #     need_auth=False,
+        # )
         # -------------------------------------------
 
         # ========== Menu: Bantuan ==========
