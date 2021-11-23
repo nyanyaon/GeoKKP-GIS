@@ -87,7 +87,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
 
     def switch_panel(self, page):
         self.stackedWidget.setCurrentIndex(page)
-    
+
     def openhelp(self):
         QDesktopServices.openUrl(QUrl('https://geokkp-gis.github.io/docs/'))
         pass
@@ -96,7 +96,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         print(index)
         if index == STACKWIDGET_LOKASI:
             self.setup_workspace_lokasi()
-        
+
     def setup_workspace_lokasi(self):
         self.populate_kantor()
 
@@ -206,7 +206,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
             QtWidgets.QMessageBox.critical(None, 'Error', 'Desa tidak ditemukan')
 
     def cari_berkas_rutin(self):
-        ## TODO implement pagiation
+        # TODO implement pagiation
         no_berkas = self.input_rutin_no_berkas.text()
         th_berkas = self.input_rutin_th_berkas.text()
         response = endpoints.get_berkas(
@@ -223,9 +223,9 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
             pos = self.table_rutin.rowCount()
             self.table_rutin.insertRow(pos)
 
-            self.table_rutin.setItem(pos , 0, QtWidgets.QTableWidgetItem(str(item["NOMOR"])))
-            self.table_rutin.setItem(pos , 1, QtWidgets.QTableWidgetItem(str(item["TAHUN"])))
-            self.table_rutin.setItem(pos , 2, QtWidgets.QTableWidgetItem(item["OPERASISPASIAL"]))
+            self.table_rutin.setItem(pos, 0, QtWidgets.QTableWidgetItem(str(item["NOMOR"])))
+            self.table_rutin.setItem(pos, 1, QtWidgets.QTableWidgetItem(str(item["TAHUN"])))
+            self.table_rutin.setItem(pos, 2, QtWidgets.QTableWidgetItem(item["OPERASISPASIAL"]))
 
     def mulai_berkas_rutin(self):
         if self.current_berkas is not None:
@@ -234,7 +234,6 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         selected_row = self.table_rutin.selectedItems()
         no_berkas = selected_row[0].text()
         th_berkas = selected_row[1].text()
-        operasi = selected_row[2].text()
         username = app_state.get("username").value
 
         response_start_berkas = endpoints.start_berkas_spasial(
@@ -247,7 +246,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         response_start_berkas_json = json.loads(response_start_berkas.content)
         print(response_start_berkas_json)
         if response_start_berkas_json["tipeBerkas"] == "DIV":
-            ## TODO add additional steps for div
+            # TODO add additional steps for div
             pass
 
         response_blanko = endpoints.get_blanko_by_berkas_id(response_start_berkas_json["berkasId"])
@@ -260,7 +259,12 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         print(response_spatial_sdo_json)
 
         epsg = get_project_crs()
-        layer = sdo_to_layer(response_spatial_sdo_json["geoKkpPolygons"], name="Batas Persil", symbol='simplepersil.qml', crs=epsg)
+        layer = sdo_to_layer(
+            response_spatial_sdo_json["geoKkpPolygons"],
+            name="Batas Persil",
+            symbol='simplepersil.qml',
+            crs=epsg
+        )
         self.current_layers.append(layer)
         self.current_berkas = response_start_berkas_json
 

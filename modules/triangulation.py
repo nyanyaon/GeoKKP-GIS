@@ -1,7 +1,7 @@
 import os
 import math
 
-from qgis.PyQt import QtWidgets, uic, QtXml, QtGui, QtCore
+from qgis.PyQt import QtWidgets, uic, QtGui, QtCore
 from qgis.core import (
     QgsProject, QgsPointXY, QgsFeature, QgsGeometry, QgsVectorLayer, Qgis
 )
@@ -36,7 +36,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
 
         self.dialog_bar = QgsMessageBar()
         self.dialog_bar.setSizePolicy(
-            QtWidgets.QSizePolicy.MinimumExpanding, 
+            QtWidgets.QSizePolicy.MinimumExpanding,
             QtWidgets.QSizePolicy.Fixed
             )
         self.layout().insertWidget(0, self.dialog_bar)
@@ -59,12 +59,12 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(self.point_tool_1)
 
     def update_titik_1(self, x, y):
-        self.point_1 = QgsPointXY(x,y)
+        self.point_1 = QgsPointXY(x, y)
         self.triangulasi_koord_1.setText(
-            str(round(x,3)) + ',' + str(round(y,3))
+            str(round(x, 3)) + ',' + str(round(y, 3))
             )
         self.iface.mapCanvas().unsetMapTool(self.point_tool_1)
-        
+
         self.set_enabled([self.triangulasi_koord_1, self.input_azimuth_1])
 
     def update_azimuth_1(self):
@@ -73,7 +73,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         except:
             pass
         self.azimuth_1 = self.validate_az(self.input_azimuth_1.text())
-        
+
         if self.azimuth_1 is not False:
             self.set_enabled([self.triangulasi_titik_2])
             self.rb_line_1 = self.create_rubberband_line()
@@ -85,7 +85,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.rb_line_1.setToGeometry(line_geom, None)
         else:
             self.set_disabled([self.triangulasi_titik_2])
-            
+
     def on_triangulasi_titik_2_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_2)
@@ -100,12 +100,12 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(self.point_tool_2)
 
     def update_titik_2(self, x, y):
-        self.point_2 = QgsPointXY(x,y)
+        self.point_2 = QgsPointXY(x, y)
         self.triangulasi_koord_2.setText(
-            str(round(x,3)) + ',' + str(round(y,3))
+            str(round(x, 3)) + ',' + str(round(y, 3))
             )
         self.iface.mapCanvas().unsetMapTool(self.point_tool_2)
-                
+
         self.set_enabled([self.triangulasi_koord_2, self.input_azimuth_2])
 
     def update_azimuth_2(self):
@@ -114,7 +114,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         except:
             pass
         self.azimuth_2 = self.validate_az(self.input_azimuth_2.text())
-        
+
         if self.azimuth_2 is not False:
             self.rb_line_2 = self.create_rubberband_line()
             self.list_rb_line.append(self.rb_line_2)
@@ -123,11 +123,11 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
             if pmin and pmax:
                 line_geom = QgsGeometry().fromPolylineXY([pmin, pmax])
                 self.rb_line_2.setToGeometry(line_geom, None)
-            
+
             self.set_enabled([self.triangulasi_ok])
         else:
             self.set_disabled([self.triangulasi_ok])
-            
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         event.accept()
@@ -135,7 +135,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
     def on_triangulasi_cancel_pressed(self):
         self.clear()
         self.close()
-            
+
     def on_triangulasi_ok_pressed(self):
         # create a memory vector
         project_crs = self.iface.mapCanvas().mapSettings().destinationCrs()
@@ -147,7 +147,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
 
         az1 = self.azimuth_1
         az2 = self.azimuth_2
-        
+
         if az1 and az2:
             pt = self.triangulate(p1, p2, az1, az2)
 
@@ -215,10 +215,10 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
             pymax_x = -(b*ymax + c)/a
 
             point_list = []
-            
+
             if pxmin_y >= ymin and pxmin_y <= ymax:
                 point_list.append(QgsPointXY(xmin, pxmin_y))
-                
+
             if pxmax_y >= ymin and pxmax_y <= ymax:
                 point_list.append(QgsPointXY(xmax, pxmax_y))
 
@@ -227,7 +227,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
 
             if pymax_x >= xmin and pymax_x <= xmax:
                 point_list.append(QgsPointXY(pymax_x, ymax))
-            
+
             if len(point_list) == 2:
                 return point_list
             else:
@@ -252,16 +252,16 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def create_rubberband_line(self):
         rb = QgsRubberBand(self.canvas, False)
-        rb.setStrokeColor(QtGui.QColor(128, 128, 128, 180)) # grey
+        rb.setStrokeColor(QtGui.QColor(128, 128, 128, 180))  # grey
         rb.setFillColor(QtGui.QColor(0, 0, 0, 0))
         rb.setWidth(1)
         rb.setLineStyle(QtCore.Qt.DashLine)
         return rb
-    
-    def clear(self):    
+
+    def clear(self):
         self.triangulasi_koord_1.clear()
         self.triangulasi_koord_2.clear()
-        
+
         self.input_azimuth_1.clear()
         self.input_azimuth_2.clear()
 
@@ -275,7 +275,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.iface.mapCanvas().scene().removeItem(rb)
             except:
                 pass
-    
+
     def canvas_changed(self):
         if self.input_azimuth_1.text():
             self.update_azimuth_1()
@@ -296,17 +296,17 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
             except ValueError:
                 return False
             return d + (m/60) + (s/3600)
-        
+
         elif len(az_split) == 1:
             self.dialog_bar.clearWidgets()
             try:
                 return float(az_str)
             except ValueError:
                 return False
-        
+
         else:
             message = """
-                        Format tidak dikenali. Gunakan spasi sebagai pemisah. 
+                        Format tidak dikenali. Gunakan spasi sebagai pemisah.
                         ('DD' atau 'D M S')
                         """
             self.dialog_bar.pushMessage("Warning", message, level=Qgis.Warning)

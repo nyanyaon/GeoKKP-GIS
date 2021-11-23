@@ -65,7 +65,7 @@ class Initialize:
             dialogBox("Gagal membaca data dari berkas: ", e)
         storeSetting("list_kantor_id", data)
         f.close()
-    
+
     def simpan_default_layout_settings(self):
         """
         Panggil daftar layout default dari default_qpt_layout.json
