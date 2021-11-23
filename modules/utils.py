@@ -382,8 +382,11 @@ def parse_sdo_geometry_type(sdo_gtype):
 
 
 def parse_sdo_fields(sdo):
-    fields = [field for field in sdo.keys() if field not in SDO_FIELD_EXCLUDE]
-    return [QgsField(field, QVariant.String) for field in fields], fields
+    fields = {}
+    for field in sdo.keys():
+        if field not in SDO_FIELD_EXCLUDE:
+            fields[field] = "String"
+    return fields
 
 
 def parse_sdo_geometry(elem_info, ordinates):
@@ -418,21 +421,17 @@ def sdo_to_feature(sdo, fields):
     return feature
 
 
-def sdo_to_layer(sdo, name, crs=None):
+def sdo_to_layer(sdo, name, crs=None, symbol=None):
     if not isinstance(sdo, list):
         sdo = [sdo]
 
     gtype, dim = parse_sdo_geometry_type(sdo[0]['boundary']['sdoGtype'])
-    uri = gtype if not crs else f'{gtype}?crs={crs}'
-    layer = QgsVectorLayer(uri, name, 'memory')
-    fields, raw_fields = parse_sdo_fields(sdo[0])
-
+    fields = parse_sdo_fields(sdo[0])
+    layer = add_layer(name, gtype, symbol=symbol, fields=fields, crs=crs)
     provider = layer.dataProvider()
-    provider.addAttributes(fields)
-    layer.updateFields()
-
+    
     pool = ThreadPool()
-    func = partial(sdo_to_feature, fields=raw_fields)
+    func = partial(sdo_to_feature, fields=fields.keys())
     features = pool.map(func, sdo)
     pool.close()
     pool.join()
@@ -509,7 +508,7 @@ def add_layer(layername, type, symbol=None, fields=None, crs=None, parent=None):
     layer_dataprovider.addAttributes(field_list)
     layer.updateFields()
     QgsProject.instance().addMapLayer(layer)
-
+    return layer
 
 def resolve_path(name, basepath=None):
     if not basepath:
@@ -525,6 +524,9 @@ def set_project_crs_by_epsg(epsg):
     except Exception as e:
         print(e)
 
+def get_project_crs(epsg=True):
+    crs = QgsProject.instance().crs()
+    return crs if not epsg else crs.authid()
 
 def snap_geometries_to_layer(
         layer,
