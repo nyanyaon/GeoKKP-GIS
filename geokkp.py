@@ -92,6 +92,7 @@ from .modules.pengaturan_lokasi import PengaturanLokasiDialog
 from .modules.draw_nlp import DrawNLPDialog
 from .modules.draw_dimension import (
     DimensionDistanceTool, DimensionAngleTool, DimensionPointTool)
+from .modules.azimuthdistance_plot import AzDistanceDialog
 from .modules.utils import (
     activate_editing,
     iconPath,
@@ -185,6 +186,7 @@ class GeoKKP:
         self.layoutguaction = LayoutGUDialog()
         self.trilaterationaction = TrilaterationDialog()
         self.triangulationaction = TriangulationDialog()
+        self.azdistanceaction = AzDistanceDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
         self.aturlokasi_action = PengaturanLokasiDialog()
         self.pencarianlokasi_action = FeatureSearchDialog()
@@ -519,6 +521,17 @@ class GeoKKP:
             parent=self.popupDraw
         )
         self.popupDraw.addAction(self.actionTriangulation)
+
+        #  --- Sub-menu Plot Azimuth Distance ---
+        self.actionPlotCoordinate = self.add_action(
+            icon("survey.png"),
+            text=self.tr(u"Gambar dengan Azimuth-Jarak"),
+            callback=self.azdistance,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            parent=self.popupDraw
+        )
+        self.popupDraw.addAction(self.actionPlotCoordinate)
 
         # Pengaturan Dropdown menu Penggambaran
         self.DrawButton = QToolButton()
@@ -1048,6 +1061,11 @@ class GeoKKP:
         if self.triangulationaction is None:
             self.triangulationaction = TriangulationDialog()
         self.triangulationaction.show()
+
+    def azdistance(self):
+        if self.azdistanceaction is None:
+            self.azdistanceaction = AzDistanceDialog()
+        self.azdistanceaction.show()
 
     def add_layers(self):
         if self.addlayeraction is None:
