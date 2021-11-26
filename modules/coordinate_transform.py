@@ -16,7 +16,7 @@ from qgis.core import (
     QgsCoordinateReferenceSystem)
 
 # using utils
-from .utils import icon, parse_raw_coordinate, logMessage
+from .utils import icon, parse_raw_coordinate
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/coordtrans.ui'))
@@ -144,10 +144,10 @@ class CoordinateTransformDialog(QDialog, FORM_CLASS):
         event.accept()
 
     def get_crs_utm(self, lon, lat):
-        zone = (math.floor((lon + 180) / 6) ) + 1
+        zone = (math.floor((lon + 180) / 6)) + 1
         epsg_code = 32600
         epsg_code += int(zone)
-        if (lat < 0): # South
+        if (lat < 0):  # South
             epsg_code += 100
         return QgsCoordinateReferenceSystem("EPSG:%d" % epsg_code)
 

@@ -40,7 +40,8 @@ class OAMDialog(QtWidgets.QDialog, FORM_CLASS):
         name = self.OAMLayerName.text()
         # dialogBox(self.url)
         # self.parse_capabilities()
-        params = "crs=EPSG:3857&dpiMode=7&format=image/png&layers=None&styles=default&tileMatrixSet=GoogleMapsCompatible&url="
+        params = "crs=EPSG:3857&dpiMode=7&format=image/png" \
+            + "&layers=None&styles=default&tileMatrixSet=GoogleMapsCompatible&url="
         full_url = params+url
 
         oam_layer = iface.addRasterLayer(full_url, name, "wms")

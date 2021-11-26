@@ -49,7 +49,6 @@ from qgis.core import (
     QgsProject,
     QgsRasterLayer,
     QgsCoordinateReferenceSystem,
-    QgsVectorLayer,
     QgsSettings
 )
 from qgis.gui import QgsMapToolIdentify
@@ -71,9 +70,6 @@ from .modules.workpanel import Workpanel
 # GeoKKP-GIS Modules
 from .modules.initialization import Initialize
 from .modules.featuresearch import FeatureSearchDialog
-
-Initialize()
-
 from .modules.add_layer import AddLayerDialog
 from .modules.add_basemap import AddBasemapDialog
 from .modules.gotoxy import GotoXYDialog
@@ -92,12 +88,9 @@ from .modules.pengaturan_lokasi import PengaturanLokasiDialog
 from .modules.draw_nlp import DrawNLPDialog
 from .modules.draw_dimension import (
     DimensionDistanceTool, DimensionAngleTool, DimensionPointTool)
-from .modules.utils import (
-    activate_editing,
-    iconPath,
-    icon
-)
 from .modules.memo import app_state
+
+Initialize()
 
 
 class GeoKKP:
@@ -415,7 +408,7 @@ class GeoKKP:
         self.actionDistanceDimension = self.add_action(
             icon("dimension_distance.png"),
             text=self.tr(u"Dimensi Jarak"),
-            callback=self.dimension_distance, 
+            callback=self.dimension_distance,
             add_to_toolbar=False,
             add_to_menu=False,
             checkable=True,
@@ -427,7 +420,7 @@ class GeoKKP:
         self.actionAngleDimension = self.add_action(
             icon("dimension_angle.png"),
             text=self.tr(u"Dimensi Sudut"),
-            callback=self.dimension_angle, 
+            callback=self.dimension_angle,
             add_to_toolbar=False,
             add_to_menu=False,
             checkable=True,
@@ -439,7 +432,7 @@ class GeoKKP:
         self.actionPointDimension = self.add_action(
             icon("dimension_point.png"),
             text=self.tr(u"Dimensi Titik"),
-            callback=self.dimension_point, 
+            callback=self.dimension_point,
             add_to_toolbar=False,
             add_to_menu=False,
             checkable=True,
@@ -683,7 +676,7 @@ class GeoKKP:
 
         # ======== Dropdown Menu: Workspace GeoKKP ========
         # Deklarasi menu Workspace
-        """        
+        """
         self.popupWorkspace = QMenu("&Workspace", self.iface.mainWindow())
 
         #  --- Sub-menu Workspace Rutin ---
@@ -872,9 +865,9 @@ class GeoKKP:
     # ==============================================================
     # Definisi Fungsi GeoKKP-GIS
     # ==============================================================
-            
+
     def dimension_distance(self):
-        # get dimension layer by name 
+        # get dimension layer by name
         self.dimension_layer = None
         all_layers = QgsProject.instance().mapLayers().values()
         for layer in all_layers:
@@ -883,15 +876,15 @@ class GeoKKP:
                 break
         if not self.dimension_layer:
             self.iface.messageBar().pushMessage(
-                "Peringatan", 
-                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.", 
+                "Peringatan",
+                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.",
                 level=Qgis.Warning)
             return
         # enable last chosen tools as default in toolbar
         self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
         self.actionDistanceDimension.setChecked(True)
         self.distanceTool = DimensionDistanceTool(
-            self.iface.mapCanvas(), 
+            self.iface.mapCanvas(),
             self.dimension_layer
         )
         self.distanceTool.completed.connect(self.dimension_distance_completed)
@@ -902,7 +895,7 @@ class GeoKKP:
         self.iface.mapCanvas().unsetMapTool(self.distanceTool)
 
     def dimension_angle(self):
-        # get dimension layer by name 
+        # get dimension layer by name
         self.dimension_layer = None
         all_layers = QgsProject.instance().mapLayers().values()
         for layer in all_layers:
@@ -911,26 +904,26 @@ class GeoKKP:
                 break
         if not self.dimension_layer:
             self.iface.messageBar().pushMessage(
-                "Peringatan", 
-                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.", 
+                "Peringatan",
+                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.",
                 level=Qgis.Warning)
             return
         # enable last chosen tools as default in toolbar
         self.DimensionButton.setDefaultAction(self.actionAngleDimension)
         self.actionAngleDimension.setChecked(True)
         self.angleTool = DimensionAngleTool(
-            self.iface.mapCanvas(), 
+            self.iface.mapCanvas(),
             self.dimension_layer
         )
         self.angleTool.completed.connect(self.dimension_angle_completed)
         self.iface.mapCanvas().setMapTool(self.angleTool)
-    
+
     def dimension_angle_completed(self):
         self.actionAngleDimension.setChecked(False)
         self.iface.mapCanvas().unsetMapTool(self.angleTool)
-    
+
     def dimension_point(self):
-        # get dimension layer by name 
+        # get dimension layer by name
         self.dimension_layer = None
         all_layers = QgsProject.instance().mapLayers().values()
         for layer in all_layers:
@@ -939,21 +932,21 @@ class GeoKKP:
                 break
         if not self.dimension_layer:
             self.iface.messageBar().pushMessage(
-                "Peringatan", 
-                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.", 
+                "Peringatan",
+                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.",
                 level=Qgis.Warning)
             return
         # # enable last chosen tools as default in toolbar
         self.DimensionButton.setDefaultAction(self.actionPointDimension)
         self.actionPointDimension.setChecked(True)
-        
+
         self.pointTool = DimensionPointTool(
-            self.iface.mapCanvas(), 
+            self.iface.mapCanvas(),
             self.dimension_layer
         )
         self.pointTool.completed.connect(self.dimension_point_completed)
         self.iface.mapCanvas().setMapTool(self.pointTool)
-    
+
     def dimension_point_completed(self):
         self.actionPointDimension.setChecked(False)
         self.iface.mapCanvas().unsetMapTool(self.pointTool)
@@ -962,7 +955,7 @@ class GeoKKP:
         if self.aturlokasi_action is None:
             self.aturlokasi_action = PengaturanLokasiDialog()
         self.aturlokasi_action.show()
-    
+
     def inspeksinlp(self):
         if self.inspeksinlp_action is None:
             self.inspeksinlp_action = DrawNLPDialog()
@@ -989,7 +982,7 @@ class GeoKKP:
             self.iface.showAttributeTable(self.iface.activeLayer())
         except Exception as e:
             dialogBox(e)
-    
+
     def toggle_titik_persil(self):
         # check whether batas persil layer (20100) is loaded
         persil_layer = None
@@ -1000,15 +993,15 @@ class GeoKKP:
                 break
         if not persil_layer:
             self.iface.messageBar().pushMessage(
-                "Peringatan", 
-                "Tambahkan layer Batas Persil (20100) sebelum menggunakan Tool ini.", 
+                "Peringatan",
+                "Tambahkan layer Batas Persil (20100) sebelum menggunakan Tool ini.",
                 level=Qgis.Warning)
             return
-        if self.actionTitikPersil.isChecked() == False:
+        if self.actionTitikPersil.isChecked() is False:
             self.set_symbology(persil_layer, 'bataspersil-no-xy.qml')
             # QgsProject.instance().reloadAllLayers()
             persil_layer.reload()
-        elif self.actionTitikPersil.isChecked() == True:
+        elif self.actionTitikPersil.isChecked() is True:
             self.set_symbology(persil_layer, 'bataspersil-xy.qml')
             # QgsProject.instance().reloadAllLayers()
             persil_layer.reload()

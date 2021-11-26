@@ -1,11 +1,9 @@
 import os
 import math
 
-from qgis.PyQt import QtWidgets, uic, QtXml, QtGui, QtCore
+from qgis.PyQt import QtWidgets, uic, QtGui, QtCore
 from qgis.core import (
-    QgsProject, QgsPrintLayout, QgsReadWriteContext, QgsExpressionContextUtils, 
-    QgsPointXY, QgsFeature, QgsGeometry, QgsVectorLayer, Qgis, QgsCircle, 
-    QgsPoint
+    QgsProject, QgsPointXY, QgsFeature, QgsGeometry, QgsVectorLayer, Qgis
 )
 
 from qgis.PyQt.QtCore import pyqtSignal
@@ -71,12 +69,12 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(self.point_tool_1)
 
     def update_titik_1(self, x, y):
-        self.point_1 = QgsPointXY(x,y)
+        self.point_1 = QgsPointXY(x, y)
         self.trilaterasi_koord_1.setText(
-            str(round(x,3)) + ',' + str(round(y,3))
+            str(round(x, 3)) + ',' + str(round(y, 3))
             )
         self.iface.mapCanvas().unsetMapTool(self.point_tool_1)
-    
+
     def update_jarak_1(self):
         next_widget = [
                 self.trilaterasi_koord_2,
@@ -99,7 +97,6 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
             self.set_disabled(next_widget)
             self.set_disabled([self.trilaterasi_ok])
 
-
     def on_trilaterasi_titik_2_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_2)
@@ -118,9 +115,9 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(self.point_tool_2)
 
     def update_titik_2(self, x, y):
-        self.point_2 = QgsPointXY(x,y)
+        self.point_2 = QgsPointXY(x, y)
         self.trilaterasi_koord_2.setText(
-            str(round(x,3)) + ',' + str(round(y,3))
+            str(round(x, 3)) + ',' + str(round(y, 3))
             )
         self.iface.mapCanvas().unsetMapTool(self.point_tool_2)
 
@@ -135,16 +132,16 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             self.jarak_2 = float(self.input_jarak_2.text())
             self.set_enabled(next_widget)
-            
+
             pt = QgsPointXY(self.point_2)
             buff_geom = QgsGeometry().fromPointXY(pt).buffer(self.jarak_2, 20)
             # circle_geom = QgsCircle(QgsPoint(pt), self.jarak_2, 0)
             self.rb_2.setToGeometry(buff_geom, None)
 
             self.two_point_flag = True
-            
+
             self.dialog_bar.clearWidgets()
-            message = """Klik OK untuk menggunakan mode dua titik atau tambahkan 
+            message = """Klik OK untuk menggunakan mode dua titik atau tambahkan
                         titik ketiga"""
             self.dialog_bar.pushMessage("Info", message, level=Qgis.Info)
         except ValueError:
@@ -153,7 +150,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
             self.dialog_bar.pushMessage("Warning", message, level=Qgis.Warning)
             self.set_disabled(next_widget)
             self.two_point_flag = False
-    
+
     def on_trilaterasi_titik_3_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_3)
@@ -172,9 +169,9 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(self.point_tool_3)
 
     def update_titik_3(self, x, y):
-        self.point_3 = QgsPointXY(x,y)
+        self.point_3 = QgsPointXY(x, y)
         self.trilaterasi_koord_3.setText(
-            str(round(x,3)) + ',' + str(round(y,3))
+            str(round(x, 3)) + ',' + str(round(y, 3))
             )
         self.iface.mapCanvas().unsetMapTool(self.point_tool_3)
 
@@ -197,8 +194,8 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def check_minimum_input(self):
         try:
-            j1 = float(self.input_jarak_1.text())
-            j2 = float(self.input_jarak_2.text())
+            float(self.input_jarak_1.text())
+            float(self.input_jarak_2.text())
             self.trilaterasi_ok.setEnabled(True)
         except ValueError:
             self.trilaterasi_ok.setEnabled(False)
@@ -231,8 +228,8 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         project_crs = self.iface.mapCanvas().mapSettings().destinationCrs()
         project_epsg = project_crs.authid()
         vl = QgsVectorLayer(
-            "Point?crs="+project_epsg, 
-            "trilateration point", 
+            "Point?crs="+project_epsg,
+            "trilateration point",
             "memory"
             )
 
@@ -259,8 +256,8 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
 
             d1 = self.jarak_1
             d2 = self.jarak_2
-            a,b = self.two_points(p1, p2, d1, d2)
-        
+            a, b = self.two_points(p1, p2, d1, d2)
+
             feat_a = QgsFeature()
             feat_a.setGeometry(QgsGeometry.fromPointXY(a))
             feat_b = QgsFeature()
@@ -268,13 +265,13 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
 
             vl.startEditing()
             vl.addFeatures([feat_a, feat_b])
-            vl.commitChanges()       
+            vl.commitChanges()
         else:
             print('not enough inputs')
-        
+
         QgsProject.instance().addMapLayer(vl)
         self.clear()
-        self.accept()   
+        self.accept()
 
     def two_points(self, p1, p2, d1, d2):
         '''Calculate two solutions of two points trilateration.'''
@@ -326,8 +323,8 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         y = (r*(o+p+q) - m*(t+u+v))/(2*(s*m - n*r))
         x = (2*y*n + o + p + q)/(2*m)
 
-        return QgsPointXY(x,y)
-        
+        return QgsPointXY(x, y)
+
     def check_distance(self, pt1, pt2, dist_1, dist_2):
         """Fungsi untuk mengecek jarak minimum trilaterasi.
 
@@ -363,16 +360,16 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         vm.setPenWidth(3)
         vm.setIconSize(7)
         return vm
-    
+
     def create_rubberband(self):
         rb = QgsRubberBand(self.canvas, False)
-        rb.setStrokeColor(QtGui.QColor(128, 128, 128, 180)) # grey
+        rb.setStrokeColor(QtGui.QColor(128, 128, 128, 180))  # grey
         rb.setFillColor(QtGui.QColor(0, 0, 0, 0))
         rb.setWidth(1)
         rb.setLineStyle(QtCore.Qt.DashLine)
         return rb
 
-    def clear(self):       
+    def clear(self):
         self.trilaterasi_koord_1.clear()
         self.trilaterasi_koord_2.clear()
         self.trilaterasi_koord_3.clear()

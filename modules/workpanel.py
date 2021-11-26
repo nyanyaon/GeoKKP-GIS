@@ -9,6 +9,7 @@ from qgis.PyQt.QtCore import pyqtSignal, QUrl
 from qgis.utils import iface
 
 from .login import LoginDialog
+from .memo import app_state
 
 # using utils
 from .utils import (
@@ -17,6 +18,7 @@ from .utils import (
     storeSetting,
     get_epsg_from_tm3_zone,
     set_project_crs_by_epsg,
+    get_project_crs,
     sdo_to_layer
 )
 from .api import endpoints
@@ -25,6 +27,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/panel_kerjav2.ui'))
 
 
+STACKWIDGET_LOKASI = 0
 STACKWIDGET_RUTIN = 1
 
 
@@ -49,16 +52,23 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         self.current_kecamatan_id = None
         self.current_kelurahan_id = None
 
+        self.current_berkas = None
+        self.current_layers = []
+
         self.mulaiGeokkp.clicked.connect(self.login_geokkp)
         self.bantuanGeokkp.clicked.connect(self.openhelp)
         self.btn_simpan_area_kerja.clicked.connect(self.simpan_area_kerja)
-        self.stackedWidget.currentChanged.connect(self.setup_workpanel)
+        self.main_tab.currentChanged.connect(self.setup_workpanel)
 
         self.combo_kantor.currentIndexChanged.connect(self.kantor_changed)
         self.combo_provinsi.currentIndexChanged.connect(self.provinsi_changed)
         self.combo_kabupaten.currentIndexChanged.connect(self.kabupaten_changed)
         self.combo_kecamatan.currentIndexChanged.connect(self.kecamatan_changed)
         self.combo_kelurahan.currentIndexChanged.connect(self.kelurahan_changed)
+
+        self.btn_rutin_cari.clicked.connect(self.cari_berkas_rutin)
+        self.btn_rutin_mulai.clicked.connect(self.mulai_berkas_rutin)
+        self.btn_rutin_tutup.clicked.connect(self.tutup_berkas_rutin)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -77,17 +87,17 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
 
     def switch_panel(self, page):
         self.stackedWidget.setCurrentIndex(page)
-    
+
     def openhelp(self):
         QDesktopServices.openUrl(QUrl('https://geokkp-gis.github.io/docs/'))
         pass
 
     def setup_workpanel(self, index):
-        if index == STACKWIDGET_RUTIN:
-            self.setup_workspace_rutin()
+        print(index)
+        if index == STACKWIDGET_LOKASI:
+            self.setup_workspace_lokasi()
 
-    # Workspace Rutin
-    def setup_workspace_rutin(self):
+    def setup_workspace_lokasi(self):
         self.populate_kantor()
 
     def kantor_changed(self, index):
@@ -194,3 +204,79 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
             QgsProject.instance().addMapLayer(layer)
         else:
             QtWidgets.QMessageBox.critical(None, 'Error', 'Desa tidak ditemukan')
+
+    def cari_berkas_rutin(self):
+        # TODO implement pagiation
+        no_berkas = self.input_rutin_no_berkas.text()
+        th_berkas = self.input_rutin_th_berkas.text()
+        response = endpoints.get_berkas(
+            nomor_berkas=no_berkas,
+            tahun_berkas=th_berkas,
+            kantor_id=self.current_kantor_id,
+            tipe_kantor_id=str(self.current_tipe_kantor_id))
+        response_json = json.loads(response.content)
+        self.populate_berkas_rutin(response_json["BERKASSPATIAL"])
+
+    def populate_berkas_rutin(self, data):
+        self.table_rutin.setRowCount(0)
+        for item in data:
+            pos = self.table_rutin.rowCount()
+            self.table_rutin.insertRow(pos)
+
+            self.table_rutin.setItem(pos, 0, QtWidgets.QTableWidgetItem(str(item["NOMOR"])))
+            self.table_rutin.setItem(pos, 1, QtWidgets.QTableWidgetItem(str(item["TAHUN"])))
+            self.table_rutin.setItem(pos, 2, QtWidgets.QTableWidgetItem(item["OPERASISPASIAL"]))
+
+    def mulai_berkas_rutin(self):
+        if self.current_berkas is not None:
+            QtWidgets.QMessageBox.critical(None, 'Tutup berkas', 'Tutup berkas yang sedang dikerjakan terlebih dahulu')
+            return
+        selected_row = self.table_rutin.selectedItems()
+        no_berkas = selected_row[0].text()
+        th_berkas = selected_row[1].text()
+        username = app_state.get("username").value
+
+        response_start_berkas = endpoints.start_berkas_spasial(
+            nomor_berkas=no_berkas,
+            tahun_berkas=th_berkas,
+            kantor_id=self.current_kantor_id,
+            tipe_kantor_id=str(self.current_tipe_kantor_id),
+            username=username)
+
+        response_start_berkas_json = json.loads(response_start_berkas.content)
+        print(response_start_berkas_json)
+        if response_start_berkas_json["tipeBerkas"] == "DIV":
+            # TODO add additional steps for div
+            pass
+
+        response_blanko = endpoints.get_blanko_by_berkas_id(response_start_berkas_json["berkasId"])
+        response_blanko_json = json.loads(response_blanko.content)
+        print(response_blanko_json)
+
+        gugus_ids = [response_start_berkas_json["newGugusId"]]
+        response_spatial_sdo = endpoints.get_spatial_document_sdo(gugus_ids=gugus_ids)
+        response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
+        print(response_spatial_sdo_json)
+
+        epsg = get_project_crs()
+        layer = sdo_to_layer(
+            response_spatial_sdo_json["geoKkpPolygons"],
+            name="Batas Persil",
+            symbol='simplepersil.qml',
+            crs=epsg
+        )
+        self.current_layers.append(layer)
+        self.current_berkas = response_start_berkas_json
+
+    def tutup_berkas_rutin(self):
+        response_tutup_berkas = endpoints.stop_berkas(
+            nomor_berkas=self.current_berkas["nomorBerkas"],
+            tahun_berkas=self.current_berkas["tahunBerkas"],
+            kantor_id=self.current_kantor_id
+        )
+        response_tutup_berkas_json = json.loads(response_tutup_berkas.content)
+        if response_tutup_berkas_json:
+            self.current_berkas = None
+            layer_ids = [layer.id() for layer in self.current_layers]
+            self.project.instance().removeMapLayers(layer_ids)
+            iface.mapCanvas().refresh()

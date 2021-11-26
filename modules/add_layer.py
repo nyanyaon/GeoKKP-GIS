@@ -107,7 +107,7 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
                     layertype = item.text(1)
                     layersymbology = item.text(2)
                     if item.text(3):
-                        fields = json.loads(item.text(3).replace("'",'"'))
+                        fields = json.loads(item.text(3).replace("'", '"'))
                     else:
                         fields = None
                     print(item.text(0), item.text(1), item.text(2), fields)

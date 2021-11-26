@@ -36,7 +36,4 @@ class FeatureSearchDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def populateComboBox(self):
         pass
-        
         # self.cariFitur.featureChanged(print(self.cariFitur.feature()))
-        
-
