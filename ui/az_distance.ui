@@ -253,6 +253,19 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="btn_resetHitung">
+          <property name="minimumSize">
+           <size>
+            <width>0</width>
+            <height>30</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>Reset Hitung</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QLabel" name="label_2">
           <property name="text">
            <string/>

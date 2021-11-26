@@ -32,9 +32,9 @@ dics = {
         'jarak' : 123.12,
         'sudut' : 12 34 56.789,
         'tinggi' : 12.34,
-        'x' : 000000,
-        'y' : 000000,
-        'z' : 000000,
+        'X' : 000000,
+        'Y' : 000000,
+        'Z' : 000000,
         'x_terkoreksi' : 00000,
         'y_terkoreksi' : 00000,
         'z_terkoreksi' : 00000
@@ -152,8 +152,6 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
 
     def on_btn_hitungKoord_pressed(self):
         self.tableWidget.setColumnCount(4)
-        list_titik = []
-        df_titik = {}
         num = 0
 
         # existing column
@@ -161,34 +159,16 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
         for i in range(self.tableWidget.columnCount()):
             columns.append(self.tableWidget.horizontalHeaderItem(i).text())
 
-        for row in range(self.tableWidget.rowCount()):
-            titik = {}
-            titik['no_titik'] = num
-            titik['nama_titik'] = self.tableWidget.item(row,0).text()
-            titik['jarak'] = float(self.tableWidget.item(row,1).text())
-            try:
-                az = float(self.tableWidget.item(row,2).text())
-            except ValueError:
-                az = self.validate_az(self.tableWidget.item(row,2).text())
-            titik['azimuth'] = az
-            titik['Delta Z'] = float(self.tableWidget.item(row,3).text())
+        list_titik = self.read_table()
 
-            df_titik[num] = titik       #  to be removed
-            num += 1                    #  to be removed
-
-            list_titik.append(titik)
-            
         # set utk titik awal
         x = float(self.x_titik_awal.text())
         y = float(self.y_titik_awal.text())
         z = float(self.z_titik_awal.text())
-        df_titik[0]['x'] = x #  to be removed
-        df_titik[0]['y'] = y #  to be removed
-        df_titik[0]['z'] = z #  to be removed
-        
-        list_titik[0]['x'] = x
-        list_titik[0]['x'] = y
-        list_titik[0]['x'] = z
+
+        list_titik[0]['X'] = x
+        list_titik[0]['Y'] = y
+        list_titik[0]['Z'] = z
 
         # insert column
         add_columns = ['X', 'Y', 'Z', 'Delta X', 'Delta Y']
@@ -203,36 +183,62 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
         y_idx = new_columns.index('Y')
         z_idx = new_columns.index('Z')
 
-        for key,value in df_titik.items():
-            dist = df_titik[key]['jarak']
-            az = df_titik[key]['azimuth'] 
+        for id,titik in enumerate(list_titik):
+            dist = float(titik['Jarak'])
+            az = self.validate_az(titik['Azimuth']) 
             dx = round(dist*math.sin(math.radians(az)),3)
             dy = round(dist*math.cos(math.radians(az)),3)
-            dz = round(df_titik[key]['Delta Z'],3)
+            dz = round(float(titik['Beda Tinggi']),3)
             # store in dictionary
-            df_titik[key]['Delta X'] = dx
-            df_titik[key]['Delta Y'] = dy
+            titik['Delta X'] = dx
+            titik['Delta Y'] = dy
             
-            self.tableWidget.setItem(key, dx_idx, QTableWidgetItem(str(dx)))
-            self.tableWidget.setItem(key, dy_idx, QTableWidgetItem(str(dy)))
+            self.tableWidget.setItem(id, dx_idx, QTableWidgetItem(str(dx)))
+            self.tableWidget.setItem(id, dy_idx, QTableWidgetItem(str(dy)))
 
-            if key > 0:
-                x = df_titik[key-1]['x'] + df_titik[key-1]['Delta X']
-                y = df_titik[key-1]['y'] + df_titik[key-1]['Delta Y']
-                z = df_titik[key-1]['z'] + df_titik[key-1]['Delta Z']
-                df_titik[key]['x'] = x
-                df_titik[key]['y'] = y
-                df_titik[key]['z'] = z
+            if id > 0:
+                prev_titik = list_titik[id-1]
+                x = prev_titik['X'] + prev_titik['Delta X']
+                y = prev_titik['Y'] + prev_titik['Delta Y']
+                z = prev_titik['Z'] + prev_titik['Beda Tinggi']
+                titik['X'] = x
+                titik['Y'] = y
+                titik['Z'] = z
             
-            self.tableWidget.setItem(key, x_idx, QTableWidgetItem(str(x)))
-            self.tableWidget.setItem(key, y_idx, QTableWidgetItem(str(y)))
-            self.tableWidget.setItem(key, z_idx, QTableWidgetItem(str(z)))
-        
-        self.df_titik = df_titik
+            self.tableWidget.setItem(id, x_idx, QTableWidgetItem(str(x)))
+            self.tableWidget.setItem(id, y_idx, QTableWidgetItem(str(y)))
+            self.tableWidget.setItem(id, z_idx, QTableWidgetItem(str(z)))
+
+        self.list_titik = list_titik
+
+    def read_table(self):
+        row_count = self.tableWidget.rowCount()
+        col_count = self.tableWidget.columnCount()
+        # existing column
+        col_name = []
+        for i in range(col_count):
+            col_name.append(self.tableWidget.horizontalHeaderItem(i).text())
+
+        list_titik_read = []
+        for row in range(row_count):
+            titik = {}
+            titik['no_titik'] = row
+            for col in range(col_count):
+                current_key = col_name[col]
+                current_value = self.tableWidget.item(row,col).text()
+                if col in [0, 2]:
+                    titik[current_key] = current_value
+                else:
+                    titik[current_key] = float(current_value)
+            list_titik_read.append(titik)
+        return list_titik_read
 
     def on_btn_plotTitik_pressed(self):
-        print(self.df_titik)
-        pass
+        list_titik = self.read_table()
+        print(list_titik)
+    
+    def on_btn_resetHitung_pressed(self):
+        self.tableWidget.setColumnCount(4)
 
     def on_btn_importTitik_pressed(self):
         input_csv, _ = QFileDialog.getOpenFileName(self, 'Browse CSV file', QDir.rootPath() , '*.csv')
@@ -244,36 +250,67 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             for row in reader:
                 import_list.append(row)
 
-        df_titik = {}
-        df_titik_key = import_list[0]
+        # df_titik = {} # to be removed
+        list_titik_import = []
+        titik_key = import_list[0]
 
-        for id, row in enumerate(import_list[1:]):
+        for id, row in enumerate(import_list):
             titik = {}
-            for key_id,key in enumerate(df_titik_key):
+            for key_id,key in enumerate(titik_key):
                 titik[key] = row[key_id]
-            df_titik[id] = titik
-        
+            # df_titik[id] = titik
+            list_titik_import.append(titik)
+        # print(list_titik_import)
+        self.table_from_list(list_titik_import)        
 
     def table_from_list(self, list_of_titik):
         self.initiate_first_row()
+        column = [key for key,value in list_of_titik[0].items()][1:]
+        row_count = len(list_of_titik[1:])
+        col_count = len(column)
 
-        row_count = len(list_of_titik)
-        col_count = len(list_of_titik[0])
-        
-        self.tableWidget.setItem(row, col, QTableWidgetItem(''))
+        self.tableWidget.setColumnCount(col_count)
+        self.tableWidget.setHorizontalHeaderLabels(column)
+        self.tableWidget.setRowCount(row_count)
+
+        if 'X' in column:
+            x = round(float(list_of_titik[1]['X']),3)
+            y = round(float(list_of_titik[1]['Y']),3)
+            z = round(float(list_of_titik[1]['Z']),3)
+
+            self.x_titik_awal.setText(str(x))
+            self.y_titik_awal.setText(str(y))
+            self.z_titik_awal.setText(str(z))
+        else:
+            self.x_titik_awal.setText('')
+            self.y_titik_awal.setText('')
+            self.z_titik_awal.setText('')
+
+        for row, titik in enumerate(list_of_titik[1:]):
+            for key,value in titik.items():
+                try:
+                    col = column.index(key)
+                    print(f'setting row {row} and col {col} with {value}')
+                    self.tableWidget.setItem(row, col, QTableWidgetItem(value))
+                except ValueError:
+                    print(f'{key} is not in the list of column')
 
 
 
     def on_btn_exportTitik_pressed(self):
-        csv_columns = list(self.df_titik[0].keys())
+        list_titik = self.read_table()
+
+        csv_columns = [key for key,value in list_titik[0].items()]
         csv_file, _ = QFileDialog.getSaveFileName(self, 'Save File', QDir.rootPath() , '*.csv')
 
         try:
             with open(csv_file, 'w', newline='') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=csv_columns)
                 writer.writeheader()
-                for key,value in self.df_titik.items():
-                    writer.writerow(value)
+                # for key,value in self.df_titik.items():
+                    # writer.writerow(value)
+                for titik in list_titik:
+                    writer.writerow(titik)
         except IOError:
             print("I/O Error occured")
 
