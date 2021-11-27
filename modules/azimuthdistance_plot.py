@@ -7,9 +7,9 @@ from qgis.PyQt.QtWidgets import QFileDialog, QDialog, QTableWidgetItem, QSizePol
 from PyQt5.QtCore import Qt, QDir
 from qgis.utils import iface
 
-from qgis.core import Qgis
+from qgis.core import Qgis, QgsPoint, QgsPointXY, QgsGeometry
 
-from qgis.gui import QgsVertexMarker, QgsMessageBar
+from qgis.gui import QgsVertexMarker, QgsMessageBar, QgsRubberBand
 
 from .maptools import MapTool
 
@@ -74,6 +74,9 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
         super(AzDistanceDialog, self).__init__(parent)
         self.setupUi(self)
 
+        self.label_last_point.setVisible(False)
+        self.last_point.setVisible(False)
+
         self.initiate_first_row()
 
         self.dialog_bar = QgsMessageBar()
@@ -83,6 +86,10 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             )
         self.layout().insertWidget(0, self.dialog_bar)
         self.tableWidget.cellChanged.connect(self.current_item_changed)
+
+        self.list_vm = []
+        self.vm_start = None
+        self.coord_calculated = False
         # self.tableWidget.currentCellChanged.connect(self.current_cell_changed)
 
     def current_item_changed(self):
@@ -103,7 +110,7 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
                 validated_az = self.validate_az(az_str)
     
     def on_btn_pilihKoord_pressed(self):
-        self.vm_start = self.create_vertex_marker()
+        self.vm_start = self.create_vertex_marker('CROSS')
         self.point_tool = MapTool(self.canvas, self.vm_start)
         self.iface.mapCanvas().setMapTool(self.point_tool)
         self.point_tool.map_clicked.connect(self.update_titik_awal)
@@ -114,7 +121,8 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
         # self.tableWidget.setItem(0, 4, QTableWidgetItem(str(round(x,3))))
         # self.tableWidget.setItem(0, 5, QTableWidgetItem(str(round(y,3))))
         self.iface.mapCanvas().unsetMapTool(self.point_tool)
-        self.iface.mapCanvas().scene().removeItem(self.vm_start)
+        # self.iface.mapCanvas().scene().removeItem(self.vm_start)
+        self.list_vm.append(self.vm_start)
 
     def on_btn_tambahTitik_pressed(self):
         current_row = self.tableWidget.rowCount()
@@ -151,6 +159,13 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
         pass
 
     def on_btn_hitungKoord_pressed(self):
+        self.coord_calculated = True
+
+        if self.radio_pTertutup.isChecked():
+            self.polygon_terbuka = True
+        else:
+            self.polygon_terbuka = False
+
         self.tableWidget.setColumnCount(4)
         num = 0
 
@@ -200,7 +215,7 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
                 prev_titik = list_titik[id-1]
                 x = prev_titik['X'] + prev_titik['Delta X']
                 y = prev_titik['Y'] + prev_titik['Delta Y']
-                z = prev_titik['Z'] + prev_titik['Beda Tinggi']
+                z = prev_titik['Z'] + dz
                 titik['X'] = x
                 titik['Y'] = y
                 titik['Z'] = z
@@ -209,6 +224,27 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             self.tableWidget.setItem(id, y_idx, QTableWidgetItem(str(y)))
             self.tableWidget.setItem(id, z_idx, QTableWidgetItem(str(z)))
 
+        # Last Point
+        self.tableWidget.setRowCount(self.tableWidget.rowCount() + 1)
+        titik_akhir = {}
+        if self.polygon_terbuka:
+            prev_titik = list_titik[-1]
+            dx = float(prev_titik['Delta X'])
+            dy = float(prev_titik['Delta Y'])
+            dz = float(prev_titik['Beda Tinggi'])
+            titik_akhir['no_titik'] = prev_titik['no_titik'] + 1
+            titik_akhir['Nama Titik'] = prev_titik['Nama Titik'] + "'"
+            titik_akhir['X'] = prev_titik['X'] + dx
+            titik_akhir['Y'] = prev_titik['Y'] + dy
+            titik_akhir['Z'] = prev_titik['Z'] + dz
+            list_titik.append(titik_akhir)
+        last_row = self.tableWidget.rowCount()-1
+        self.tableWidget.setItem(last_row, 0, QTableWidgetItem(titik_akhir['Nama Titik']))
+        self.tableWidget.setItem(last_row, x_idx, QTableWidgetItem(str(titik_akhir['X'])))
+        self.tableWidget.setItem(last_row, y_idx, QTableWidgetItem(str(titik_akhir['Y'])))
+        self.tableWidget.setItem(last_row, z_idx, QTableWidgetItem(str(titik_akhir['Z'])))
+        for col in [1,2,3,7,8]:
+            self.tableWidget.setItem(last_row, col, QTableWidgetItem('-'))
         self.list_titik = list_titik
 
     def read_table(self):
@@ -224,21 +260,45 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             titik = {}
             titik['no_titik'] = row
             for col in range(col_count):
+                print(f'Current row :{row} and col {col}')
                 current_key = col_name[col]
                 current_value = self.tableWidget.item(row,col).text()
-                if col in [0, 2]:
-                    titik[current_key] = current_value
-                else:
-                    titik[current_key] = float(current_value)
+                titik[current_key] = current_value
             list_titik_read.append(titik)
         return list_titik_read
 
     def on_btn_plotTitik_pressed(self):
         list_titik = self.read_table()
+        for vm_titik in self.list_vm:
+            self.iface.mapCanvas().scene().removeItem(vm_titik)
+
+        for id_titik,titik in enumerate(list_titik):
+            vm = self.create_vertex_marker('CIRCLE')
+            xtitik = float(titik['X'])
+            ytitik = float(titik['Y'])
+            titik_point = QgsPointXY(xtitik, ytitik)
+            if id_titik > 0:
+                line_rb = self.create_rubberband(self.canvas, 'SOLID_LINE')
+                prev_titik = list_titik[id_titik - 1]
+                prev_titik_x = float(prev_titik['X'])
+                prev_titik_y = float(prev_titik['Y'])
+                prev_titik_pt = QgsPointXY(prev_titik_x, prev_titik_y)
+                line_geom = QgsGeometry.fromPolylineXY([titik_point, prev_titik_pt])
+                line_rb.setToGeometry(line_geom)
+                self.list_vm.append(line_rb)
+
+            vm.setCenter(titik_point)
+            self.list_vm.append(vm)
+
         print(list_titik)
     
     def on_btn_resetHitung_pressed(self):
         self.tableWidget.setColumnCount(4)
+        for vm_titik in self.list_vm:
+            self.iface.mapCanvas().scene().removeItem(vm_titik)
+        if self.coord_calculated:
+            row_count = self.tableWidget.rowCount()
+            self.tableWidget.setRowCount(row_count - 1)
 
     def on_btn_importTitik_pressed(self):
         input_csv, _ = QFileDialog.getOpenFileName(self, 'Browse CSV file', QDir.rootPath() , '*.csv')
@@ -294,8 +354,6 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
                     self.tableWidget.setItem(row, col, QTableWidgetItem(value))
                 except ValueError:
                     print(f'{key} is not in the list of column')
-
-
 
     def on_btn_exportTitik_pressed(self):
         list_titik = self.read_table()
@@ -363,3 +421,16 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
         vm.setPenWidth(3)
         vm.setIconSize(7)
         return vm
+    
+    def create_rubberband(self, canvas, line_style = 'SOLID_LINE'):
+        rb = QgsRubberBand(canvas, False)
+        rb.setStrokeColor(QtGui.QColor(255, 0, 0, 255)) # red
+        rb.setFillColor(QtGui.QColor(0, 0, 0, 0))
+        rb.setWidth(1)
+        if line_style == 'DASH_LINE':
+            rb.setLineStyle(Qt.DashLine)
+        elif line_style == 'SOLID_LINE':
+            rb.setLineStyle(Qt.SolidLine)
+        elif line_style == 'DOT_LINE':
+            rb.setLineStyle(Qt.DotLine)
+        return rb
