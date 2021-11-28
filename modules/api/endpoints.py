@@ -163,6 +163,14 @@ def get_spatial_document_sdo(gugus_ids, include_riwayat=False, **kwargs):
     }
 
 
+@api(endpoint='getBlankoByBerkasId')
+def get_blanko_by_berkas_id(berkas_id, status_blanko="P", **kwargs):
+    return {
+        "berkasId": berkas_id,
+        "statusBlanko": status_blanko
+    }
+
+
 # Simpan Berkas Sequence
 @api(endpoint='getWilayahPrior')
 def get_wilayah_prior(wilayah_id, **kwargs):

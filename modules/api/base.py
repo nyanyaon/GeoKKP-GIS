@@ -11,6 +11,15 @@ DEFAULT_HEADER = {
     b'Content-Type': b'application/json'
 }
 
+REQUEST_KWARGS = {
+    'endpoint',
+    'method',
+    'body',
+    'headers',
+    'redirections',
+    'blocking'
+}
+
 
 class API:
     def __init__(self, base_url=BASE_URL, *args, **kwargs):
@@ -54,11 +63,15 @@ def api(endpoint, base_url=BASE_URL, method='POST', **client_config):
         def wrapper(*args, **kwargs):
             client = API(base_url=base_url, **client_config)
             payload = function(*args, **kwargs)
+            request_config = {}
+            for kwarg in kwargs:
+                if kwarg in REQUEST_KWARGS:
+                    request_config[kwarg] = kwargs[kwarg]
             response = client.request(
                 endpoint=endpoint,
                 method=method,
                 body=payload,
-                **kwargs
+                **request_config
             )
             return response
         return wrapper

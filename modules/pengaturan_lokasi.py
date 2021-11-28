@@ -150,4 +150,3 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
             logMessage("Zona TM-3 tidak ditemukan!")
 
         self.accept()
-
