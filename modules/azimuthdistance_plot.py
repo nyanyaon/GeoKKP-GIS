@@ -7,7 +7,8 @@ from qgis.PyQt.QtWidgets import QFileDialog, QDialog, QTableWidgetItem, QSizePol
 from PyQt5.QtCore import Qt, QDir
 from qgis.utils import iface
 
-from qgis.core import Qgis, QgsPoint, QgsPointXY, QgsGeometry
+from qgis.core import (Qgis, QgsPoint, QgsPointXY, QgsGeometry, QgsFeature, 
+    QgsVectorLayer,QgsProject )
 
 from qgis.gui import QgsVertexMarker, QgsMessageBar, QgsRubberBand
 
@@ -65,6 +66,7 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
 
         self.list_vm = []
         self.vm_start = None
+        self.calculation_status = None
         self.coord_calculated = False
         self.bowditch_calculated = False
         # self.tableWidget.currentCellChanged.connect(self.current_cell_changed)
@@ -87,7 +89,7 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
                 validated_az = self.validate_az(az_str)
     
     def on_btn_pilihKoord_pressed(self):
-        self.vm_start = self.create_vertex_marker('CROSS')
+        self.vm_start = self.create_vertex_marker('CROSS', 'RED')
         self.point_tool = MapTool(self.canvas, self.vm_start)
         self.iface.mapCanvas().setMapTool(self.point_tool)
         self.point_tool.map_clicked.connect(self.update_titik_awal)
@@ -133,7 +135,7 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             self.tableWidget.removeRow(item.row())
 
     def on_btn_bowditch_pressed(self):
-        self.bowditch_calculated = True
+        self.calculation_status = 'bowditch'
         list_titik_bowditch = self.read_table()
         sum_deltax = 0
         sum_deltay = 0
@@ -164,15 +166,15 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
                     prev_titik = list_titik_bowditch[id-1]
                     prev_deltax = round(prev_titik['Delta X`'],3)
                     prev_deltay = round(prev_titik['Delta Y`'],3)
-                    x_koreksi = round(float(prev_titik['X`']),3) + prev_deltax
-                    y_koreksi = round(float(prev_titik['Y`']),3) + prev_deltay
+                    x_koreksi = round(float(prev_titik['X`']) + prev_deltax,3)
+                    y_koreksi = round(float(prev_titik['Y`']) + prev_deltay,3)
                 
             else:
                 prev_titik = list_titik_bowditch[id-1]
                 prev_deltax = round(prev_titik['Delta X`'],3)
                 prev_deltay = round(prev_titik['Delta Y`'],3)
-                x_koreksi = round(float(prev_titik['X`']),3) + prev_deltax
-                y_koreksi = round(float(prev_titik['Y`']),3) + prev_deltay
+                x_koreksi = round(float(prev_titik['X`']) + prev_deltax,3)
+                y_koreksi = round(float(prev_titik['Y`']) + prev_deltay,3)
                 dx = '-'
                 dy = '-'
                 deltax_koreksi = '-'
@@ -186,9 +188,10 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             titik['Delta Y`'] = deltay_koreksi
 
         self.table_from_list(list_titik_bowditch)
+        self.draw_calculation_result()
 
     def on_btn_hitungKoord_pressed(self):
-        self.coord_calculated = True
+        self.calculation_status = 'coordinate'
 
         if self.radio_pTertutup.isChecked():
             self.polygon_tertutup = True
@@ -285,6 +288,7 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             list_titik_hitung.append(titik_hitung)                
 
         self.table_from_list(list_titik_hitung)
+        self.draw_calculation_result()
 
         # print("LIST TITIK", list_titik)
         # print("LIST TITIK HITUNG", list_titik_hitung)
@@ -302,7 +306,6 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             titik = {}
             titik['no_titik'] = row
             for col in range(col_count):
-                # print(f'Current row :{row} and col {col}')
                 current_key = col_name[col]
                 current_value = self.tableWidget.item(row,col).text()
                 titik[current_key] = current_value
@@ -310,20 +313,65 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
         return list_titik_read
 
     def on_btn_plotTitik_pressed(self):
-        list_titik = self.read_table()
-        for vm_titik in self.list_vm:
-            self.iface.mapCanvas().scene().removeItem(vm_titik)
+        # read table and set geometry from coordinate
+        if self.calculation_status == 'coordinate':
+            x_key = 'X'
+            y_key = 'Y'
+        elif self.calculation_status == 'bowditch':
+            x_key = 'X`'
+            y_key = 'Y`'
+        else:
+            return
 
+        ptxy_list = []
+        list_titik = self.read_table()
+        for titik in list_titik:
+            titik_ptxy = QgsPointXY(float(titik[x_key]), float(titik[y_key]))
+            ptxy_list.append(titik_ptxy)
+        result_geom = QgsGeometry().fromPolylineXY(ptxy_list)
+        result_feat = QgsFeature()
+        result_feat.setGeometry(result_geom)
+
+        # create a memory vector
+        project_crs = self.iface.mapCanvas().mapSettings().destinationCrs()
+        project_epsg = project_crs.authid()
+        vl = QgsVectorLayer(
+            "Linestring?crs="+project_epsg, 
+            "Garis Penggambaran", 
+            "memory"
+            )
+        vl_prov = vl.dataProvider()
+        vl.startEditing()
+        vl_prov.addFeatures([result_feat])
+        vl.commitChanges()
+        QgsProject.instance().addMapLayer(vl)
+
+    
+    def draw_calculation_result(self):
+        list_titik = self.read_table()
+
+        if self.calculation_status == 'coordinate':
+            x_key = 'X'
+            y_key = 'Y'
+            color = 'RED'
+        elif self.calculation_status == 'bowditch':
+            x_key = 'X`'
+            y_key = 'Y`'
+            color = 'ORANGE'
+        else:
+            return
+
+        # draw vertex marker
         for id_titik,titik in enumerate(list_titik):
-            vm = self.create_vertex_marker('CIRCLE')
-            xtitik = float(titik['X'])
-            ytitik = float(titik['Y'])
+            vm = self.create_vertex_marker('CIRCLE', color)
+            xtitik = float(titik[x_key])
+            ytitik = float(titik[y_key])
             titik_point = QgsPointXY(xtitik, ytitik)
             if id_titik > 0:
-                line_rb = self.create_rubberband(self.canvas, 'SOLID_LINE')
+                line_rb = self.create_rubberband(self.canvas, 'SOLID_LINE', color)
                 prev_titik = list_titik[id_titik - 1]
-                prev_titik_x = float(prev_titik['X'])
-                prev_titik_y = float(prev_titik['Y'])
+                prev_titik_x = float(prev_titik[x_key])
+                prev_titik_y = float(prev_titik[y_key])
                 prev_titik_pt = QgsPointXY(prev_titik_x, prev_titik_y)
                 line_geom = QgsGeometry.fromPolylineXY([titik_point, prev_titik_pt])
                 line_rb.setToGeometry(line_geom)
@@ -332,25 +380,27 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             vm.setCenter(titik_point)
             self.list_vm.append(vm)
 
-        print(list_titik)
     
     def on_btn_resetHitung_pressed(self):
         # self.tableWidget.setColumnCount(4)
-        if self.coord_calculated and self.bowditch_calculated:
-            col_removed = [12, 11, 10, 9, 8, 7, 3, 2, 1]
+        if self.calculation_status=='bowditch':
+            col_removed = [14, 13, 12, 11, 10, 9, 8, 7, 3, 2, 1]
             row_count = self.tableWidget.rowCount()
             self.tableWidget.setRowCount(row_count - 1)
-        elif self.coord_calculated:
+        elif self.calculation_status =='coordinate':
             col_removed = [8, 7, 3, 2, 1]
             row_count = self.tableWidget.rowCount()
             self.tableWidget.setRowCount(row_count - 1)
         else:
             col_removed = []
+        
+        self.calculation_status = None
+        
         for col in col_removed:
             self.tableWidget.removeColumn(col)
 
-        for vm_titik in self.list_vm:
-            self.iface.mapCanvas().scene().removeItem(vm_titik)
+        for item in self.list_vm:
+            self.iface.mapCanvas().scene().removeItem(item)
 
     def on_btn_importTitik_pressed(self):
         input_csv, _ = QFileDialog.getOpenFileName(self, 'Browse CSV file', QDir.rootPath() , '*.csv')
@@ -460,7 +510,7 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             self.dialog_bar.pushMessage("Warning", message, level=Qgis.Warning)
             return False
 
-    def create_vertex_marker(self, type='BOX'):
+    def create_vertex_marker(self, type='BOX', color='RED'):
         vm = QgsVertexMarker(self.canvas)
 
         if type == 'BOX':
@@ -471,21 +521,38 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             icon_type = QgsVertexMarker.ICON_CROSS
         else:
             icon_type = QgsVertexMarker.ICON_X
-
+        
+        if color == 'RED' :
+            color = QtGui.QColor(255, 0, 0, 255) # red
+        elif color == 'ORANGE':
+            color = QtGui.QColor(255, 69, 0, 255) # orange
+        else:
+            color = QtGui.QColor(0, 0, 255, 255) # blue
+        
+        vm.setColor(color)
         vm.setIconType(icon_type)
         vm.setPenWidth(3)
         vm.setIconSize(7)
         return vm
     
-    def create_rubberband(self, canvas, line_style = 'SOLID_LINE'):
+    def create_rubberband(self, canvas, line_style = 'SOLID_LINE', color='RED'):
         rb = QgsRubberBand(canvas, False)
-        rb.setStrokeColor(QtGui.QColor(255, 0, 0, 255)) # red
-        rb.setFillColor(QtGui.QColor(0, 0, 0, 0))
-        rb.setWidth(1)
+
         if line_style == 'DASH_LINE':
             rb.setLineStyle(Qt.DashLine)
         elif line_style == 'SOLID_LINE':
             rb.setLineStyle(Qt.SolidLine)
         elif line_style == 'DOT_LINE':
             rb.setLineStyle(Qt.DotLine)
+        
+        if color == 'RED' :
+            color = QtGui.QColor(255, 0, 0, 255) # red
+        elif color == 'ORANGE':
+            color = QtGui.QColor(255, 69, 0, 255) # orange
+        else:
+            color = QtGui.QColor(0, 0, 255, 255) # blue
+
+        rb.setStrokeColor(color) # red
+        rb.setFillColor(QtGui.QColor(0, 0, 0, 0))
+        rb.setWidth(1)        
         return rb
