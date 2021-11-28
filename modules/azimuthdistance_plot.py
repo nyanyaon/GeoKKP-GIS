@@ -17,30 +17,6 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../ui/az_distance.ui'))
 
 """
-dics = {
-    'titik0' : {
-        'nama' : 'P0',
-        'X' : 000000,
-        'Y' : 000000,
-        'Z' : 000000,
-        'x_terkoreksi' : 00000,
-        'y_terkoreksi' : 00000,
-        'z_terkoreksi' : 00000
-        },
-    'titik1' : {
-        'nama' : 'P1',
-        'jarak' : 123.12,
-        'sudut' : 12 34 56.789,
-        'tinggi' : 12.34,
-        'X' : 000000,
-        'Y' : 000000,
-        'Z' : 000000,
-        'x_terkoreksi' : 00000,
-        'y_terkoreksi' : 00000,
-        'z_terkoreksi' : 00000
-    }
-}
-
 list_of_dicts = [
     {
         'nama' : 'P0',
@@ -90,6 +66,7 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
         self.list_vm = []
         self.vm_start = None
         self.coord_calculated = False
+        self.bowditch_calculated = False
         # self.tableWidget.currentCellChanged.connect(self.current_cell_changed)
 
     def current_item_changed(self):
@@ -156,15 +133,67 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             self.tableWidget.removeRow(item.row())
 
     def on_btn_bowditch_pressed(self):
-        pass
+        self.bowditch_calculated = True
+        list_titik_bowditch = self.read_table()
+        sum_deltax = 0
+        sum_deltay = 0
+        sum_distance = 0
+        for titik in list_titik_bowditch[:-1]:
+            sum_deltax += round(float(titik['Delta X']),3)
+            sum_deltay += round(float(titik['Delta Y']),3)
+            sum_distance += round(float(titik['Jarak']),3)
+        
+        delta_distance = math.sqrt(sum_deltax**2 + sum_deltay**2)
+        
+
+        for id, titik in enumerate(list_titik_bowditch):
+            if id < len(list_titik_bowditch)-1:
+                jarak = round(float(titik['Jarak']),3)
+                deltax = round(float(titik['Delta X']),3)
+                deltay = round(float(titik['Delta Y']),3)
+
+                dx = round((jarak/sum_distance)*sum_deltax,3)
+                dy = round((jarak/sum_distance)*sum_deltay,3)
+                
+                deltax_koreksi = round(deltax - dx,3)
+                deltay_koreksi = round(deltay - dy,3)
+                if id == 0:
+                    x_koreksi = round(float(titik['X']),3)
+                    y_koreksi = round(float(titik['Y']),3)
+                else:
+                    prev_titik = list_titik_bowditch[id-1]
+                    prev_deltax = round(prev_titik['Delta X`'],3)
+                    prev_deltay = round(prev_titik['Delta Y`'],3)
+                    x_koreksi = round(float(prev_titik['X`']),3) + prev_deltax
+                    y_koreksi = round(float(prev_titik['Y`']),3) + prev_deltay
+                
+            else:
+                prev_titik = list_titik_bowditch[id-1]
+                prev_deltax = round(prev_titik['Delta X`'],3)
+                prev_deltay = round(prev_titik['Delta Y`'],3)
+                x_koreksi = round(float(prev_titik['X`']),3) + prev_deltax
+                y_koreksi = round(float(prev_titik['Y`']),3) + prev_deltay
+                dx = '-'
+                dy = '-'
+                deltax_koreksi = '-'
+                deltay_koreksi = '-'
+                
+            titik['dx'] = dx
+            titik['dy'] = dy
+            titik['X`'] = x_koreksi
+            titik['Y`'] = y_koreksi        
+            titik['Delta X`'] = deltax_koreksi
+            titik['Delta Y`'] = deltay_koreksi
+
+        self.table_from_list(list_titik_bowditch)
 
     def on_btn_hitungKoord_pressed(self):
         self.coord_calculated = True
 
         if self.radio_pTertutup.isChecked():
-            self.polygon_terbuka = True
+            self.polygon_tertutup = True
         else:
-            self.polygon_terbuka = False
+            self.polygon_tertutup = False
 
         self.tableWidget.setColumnCount(4)
         num = 0
@@ -186,13 +215,23 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
         list_titik[0]['Z'] = z
 
         # insert column
-        add_columns = ['X', 'Y', 'Z', 'Delta X', 'Delta Y']
-        new_columns = columns + add_columns
-        self.tableWidget.setColumnCount(self.tableWidget.columnCount() + 5)
+        new_columns = [
+            'Nama Titik', 
+            'X', 
+            'Y', 
+            'Z', 
+            'Jarak', 
+            'Azimuth', 
+            'Beda Tinggi', 
+            'Delta X', 
+            'Delta Y'
+            ]
+        # self.tableWidget.setColumnCount(self.tableWidget.columnCount() + 5)
+        self.tableWidget.setColumnCount(len(new_columns))
         self.tableWidget.setHorizontalHeaderLabels(new_columns)
 
-        dx_idx = new_columns.index('Delta X')
-        dy_idx = new_columns.index('Delta Y')
+        deltax_idx = new_columns.index('Delta X')
+        deltay_idx = new_columns.index('Delta Y')
         # dz_idx = new_columns.index('Dz')
         x_idx = new_columns.index('X')
         y_idx = new_columns.index('Y')
@@ -201,51 +240,54 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
         for id,titik in enumerate(list_titik):
             dist = float(titik['Jarak'])
             az = self.validate_az(titik['Azimuth']) 
-            dx = round(dist*math.sin(math.radians(az)),3)
-            dy = round(dist*math.cos(math.radians(az)),3)
-            dz = round(float(titik['Beda Tinggi']),3)
+            deltax = round(dist*math.sin(math.radians(az)),3)
+            deltay = round(dist*math.cos(math.radians(az)),3)
+            deltaz = round(float(titik['Beda Tinggi']),3)
             # store in dictionary
-            titik['Delta X'] = dx
-            titik['Delta Y'] = dy
-            
-            self.tableWidget.setItem(id, dx_idx, QTableWidgetItem(str(dx)))
-            self.tableWidget.setItem(id, dy_idx, QTableWidgetItem(str(dy)))
+            titik['Delta X'] = deltax
+            titik['Delta Y'] = deltay
 
             if id > 0:
                 prev_titik = list_titik[id-1]
                 x = prev_titik['X'] + prev_titik['Delta X']
                 y = prev_titik['Y'] + prev_titik['Delta Y']
-                z = prev_titik['Z'] + dz
-                titik['X'] = x
-                titik['Y'] = y
-                titik['Z'] = z
-            
-            self.tableWidget.setItem(id, x_idx, QTableWidgetItem(str(x)))
-            self.tableWidget.setItem(id, y_idx, QTableWidgetItem(str(y)))
-            self.tableWidget.setItem(id, z_idx, QTableWidgetItem(str(z)))
+                z = prev_titik['Z'] + deltaz
+                titik['X'] = round(x,3)
+                titik['Y'] = round(y,3)
+                titik['Z'] = round(z,3)
 
         # Last Point
         self.tableWidget.setRowCount(self.tableWidget.rowCount() + 1)
         titik_akhir = {}
-        if self.polygon_terbuka:
-            prev_titik = list_titik[-1]
-            dx = float(prev_titik['Delta X'])
-            dy = float(prev_titik['Delta Y'])
-            dz = float(prev_titik['Beda Tinggi'])
-            titik_akhir['no_titik'] = prev_titik['no_titik'] + 1
-            titik_akhir['Nama Titik'] = prev_titik['Nama Titik'] + "'"
-            titik_akhir['X'] = prev_titik['X'] + dx
-            titik_akhir['Y'] = prev_titik['Y'] + dy
-            titik_akhir['Z'] = prev_titik['Z'] + dz
-            list_titik.append(titik_akhir)
-        last_row = self.tableWidget.rowCount()-1
-        self.tableWidget.setItem(last_row, 0, QTableWidgetItem(titik_akhir['Nama Titik']))
-        self.tableWidget.setItem(last_row, x_idx, QTableWidgetItem(str(titik_akhir['X'])))
-        self.tableWidget.setItem(last_row, y_idx, QTableWidgetItem(str(titik_akhir['Y'])))
-        self.tableWidget.setItem(last_row, z_idx, QTableWidgetItem(str(titik_akhir['Z'])))
-        for col in [1,2,3,7,8]:
-            self.tableWidget.setItem(last_row, col, QTableWidgetItem('-'))
-        self.list_titik = list_titik
+        prev_titik = list_titik[-1]
+        if self.polygon_tertutup:
+            nama_titik_akhir = list_titik[0]['Nama Titik'] + "`"
+        else:
+            nama_titik_akhir = self.last_point.text()
+        deltax = float(prev_titik['Delta X'])
+        deltay = float(prev_titik['Delta Y'])
+        deltaz = float(prev_titik['Beda Tinggi'])
+        titik_akhir['no_titik'] = prev_titik['no_titik'] + 1
+        titik_akhir['Nama Titik'] = nama_titik_akhir
+        titik_akhir['X'] = round(prev_titik['X'] + deltax,3)
+        titik_akhir['Y'] = round(prev_titik['Y'] + deltay,3)
+        titik_akhir['Z'] = round(prev_titik['Z'] + deltaz,3)
+        list_titik.append(titik_akhir)
+        
+        list_titik_hitung = []
+        for titik in list_titik:
+            titik_hitung = {}
+            for col in ['no_titik'] + new_columns:
+                try:
+                    titik_hitung[col] = titik[col]
+                except KeyError:
+                    titik_hitung[col] = '-'
+            list_titik_hitung.append(titik_hitung)                
+
+        self.table_from_list(list_titik_hitung)
+
+        # print("LIST TITIK", list_titik)
+        # print("LIST TITIK HITUNG", list_titik_hitung)
 
     def read_table(self):
         row_count = self.tableWidget.rowCount()
@@ -260,7 +302,7 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             titik = {}
             titik['no_titik'] = row
             for col in range(col_count):
-                print(f'Current row :{row} and col {col}')
+                # print(f'Current row :{row} and col {col}')
                 current_key = col_name[col]
                 current_value = self.tableWidget.item(row,col).text()
                 titik[current_key] = current_value
@@ -293,12 +335,22 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
         print(list_titik)
     
     def on_btn_resetHitung_pressed(self):
-        self.tableWidget.setColumnCount(4)
-        for vm_titik in self.list_vm:
-            self.iface.mapCanvas().scene().removeItem(vm_titik)
-        if self.coord_calculated:
+        # self.tableWidget.setColumnCount(4)
+        if self.coord_calculated and self.bowditch_calculated:
+            col_removed = [12, 11, 10, 9, 8, 7, 3, 2, 1]
             row_count = self.tableWidget.rowCount()
             self.tableWidget.setRowCount(row_count - 1)
+        elif self.coord_calculated:
+            col_removed = [8, 7, 3, 2, 1]
+            row_count = self.tableWidget.rowCount()
+            self.tableWidget.setRowCount(row_count - 1)
+        else:
+            col_removed = []
+        for col in col_removed:
+            self.tableWidget.removeColumn(col)
+
+        for vm_titik in self.list_vm:
+            self.iface.mapCanvas().scene().removeItem(vm_titik)
 
     def on_btn_importTitik_pressed(self):
         input_csv, _ = QFileDialog.getOpenFileName(self, 'Browse CSV file', QDir.rootPath() , '*.csv')
@@ -321,12 +373,13 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             # df_titik[id] = titik
             list_titik_import.append(titik)
         # print(list_titik_import)
-        self.table_from_list(list_titik_import)        
+        # print(f'list titik import: {list_titik_import}')
+        self.table_from_list(list_titik_import[1:])        
 
     def table_from_list(self, list_of_titik):
         self.initiate_first_row()
         column = [key for key,value in list_of_titik[0].items()][1:]
-        row_count = len(list_of_titik[1:])
+        row_count = len(list_of_titik)
         col_count = len(column)
 
         self.tableWidget.setColumnCount(col_count)
@@ -334,9 +387,9 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
         self.tableWidget.setRowCount(row_count)
 
         if 'X' in column:
-            x = round(float(list_of_titik[1]['X']),3)
-            y = round(float(list_of_titik[1]['Y']),3)
-            z = round(float(list_of_titik[1]['Z']),3)
+            x = round(float(list_of_titik[0]['X']),3)
+            y = round(float(list_of_titik[0]['Y']),3)
+            z = round(float(list_of_titik[0]['Z']),3)
 
             self.x_titik_awal.setText(str(x))
             self.y_titik_awal.setText(str(y))
@@ -346,14 +399,16 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             self.y_titik_awal.setText('')
             self.z_titik_awal.setText('')
 
-        for row, titik in enumerate(list_of_titik[1:]):
+        for row, titik in enumerate(list_of_titik):
             for key,value in titik.items():
                 try:
                     col = column.index(key)
-                    print(f'setting row {row} and col {col} with {value}')
-                    self.tableWidget.setItem(row, col, QTableWidgetItem(value))
+                    cell_val = str(value)
+                    # print(f'setting row {row} and col {key} with {value}')
+                    self.tableWidget.setItem(row, col, QTableWidgetItem(cell_val))
                 except ValueError:
-                    print(f'{key} is not in the list of column')
+                    pass
+                    # print(f'{key} is not in the list of column')
 
     def on_btn_exportTitik_pressed(self):
         list_titik = self.read_table()
