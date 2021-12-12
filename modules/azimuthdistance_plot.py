@@ -9,7 +9,6 @@ from qgis.utils import iface
 
 from qgis.core import (
     Qgis,
-    QgsPoint,
     QgsPointXY,
     QgsGeometry,
     QgsFeature,
@@ -90,7 +89,7 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
         elif current_column == 2:
             if self.tableWidget.currentItem().text() != "":
                 az_str = str(self.tableWidget.currentItem().text())
-                validated_az = self.validate_az(az_str)
+                validated_az = self.validate_az(az_str)  # noqa
 
     def on_btn_pilihKoord_pressed(self):
         self.vm_start = self.create_vertex_marker("CROSS", "RED")
@@ -149,7 +148,7 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             sum_deltay += round(float(titik["Delta Y"]), 3)
             sum_distance += round(float(titik["Jarak"]), 3)
 
-        delta_distance = math.sqrt(sum_deltax ** 2 + sum_deltay ** 2)
+        delta_distance = math.sqrt(sum_deltax ** 2 + sum_deltay ** 2)  # noqa
 
         for id, titik in enumerate(list_titik_bowditch):
             if id < len(list_titik_bowditch) - 1:
@@ -202,7 +201,7 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
             self.polygon_tertutup = False
 
         self.tableWidget.setColumnCount(4)
-        num = 0
+        # num = 0
 
         # existing column
         columns = []
@@ -236,12 +235,12 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
         self.tableWidget.setColumnCount(len(new_columns))
         self.tableWidget.setHorizontalHeaderLabels(new_columns)
 
-        deltax_idx = new_columns.index("Delta X")
-        deltay_idx = new_columns.index("Delta Y")
+        # deltax_idx = new_columns.index("Delta X")
+        # deltay_idx = new_columns.index("Delta Y")
         # dz_idx = new_columns.index('Dz')
-        x_idx = new_columns.index("X")
-        y_idx = new_columns.index("Y")
-        z_idx = new_columns.index("Z")
+        # x_idx = new_columns.index("X")
+        # y_idx = new_columns.index("Y")
+        # z_idx = new_columns.index("Z")
 
         for id, titik in enumerate(list_titik):
             dist = float(titik["Jarak"])
@@ -482,7 +481,7 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
 
     def validate_az(self, az_str):
         message = """
-                        Format tidak dikenali. Gunakan spasi sebagai pemisah. 
+                        Format tidak dikenali. Gunakan spasi sebagai pemisah.
                         ('DD.dd' atau 'D M S.ss')
                         """
         if not az_str:

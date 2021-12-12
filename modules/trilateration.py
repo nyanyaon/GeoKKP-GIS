@@ -157,7 +157,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_3)
             self.iface.mapCanvas().scene().removeItem(self.rb_3)
-        except:
+        except Exception:
             pass
         self.vm_3 = self.create_vertex_marker()
         self.list_vm.append(self.vm_3)
@@ -397,5 +397,5 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         for rb in self.list_rb:
             try:
                 self.iface.mapCanvas().scene().removeItem(rb)
-            except:
+            except Exception:
                 pass

@@ -86,7 +86,6 @@ from .modules.draw_dimension import (
     DimensionPointTool,
 )
 from .modules.azimuthdistance_plot import AzDistanceDialog
-from .modules.utils import activate_editing, iconPath, icon
 from .modules.memo import app_state
 
 Initialize()

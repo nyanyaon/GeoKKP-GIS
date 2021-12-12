@@ -332,7 +332,7 @@ class DimensionDistanceTool(QgsMapTool):
                 self.canvas.scene().removeItem(self.rb_main)
                 self.canvas.scene().removeItem(self.rb_start)
                 self.canvas.scene().removeItem(self.rb_end)
-            except:
+            except Exception:
                 pass
             self.completed.emit()
 

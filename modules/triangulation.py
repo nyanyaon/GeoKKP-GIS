@@ -74,7 +74,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
     def update_azimuth_1(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.rb_line_1)
-        except:
+        except Exception:
             pass
         self.azimuth_1 = self.validate_az(self.input_azimuth_1.text())
 
@@ -113,7 +113,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
     def update_azimuth_2(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.rb_line_2)
-        except:
+        except Exception:
             pass
         self.azimuth_2 = self.validate_az(self.input_azimuth_2.text())
 
@@ -277,7 +277,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         for rb in self.list_rb_line:
             try:
                 self.iface.mapCanvas().scene().removeItem(rb)
-            except:
+            except:  # noqa
                 pass
 
     def canvas_changed(self):
