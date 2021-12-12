@@ -12,7 +12,7 @@ from .utils import (
     logMessage,
     dialogBox,
     get_saved_credentials,
-    save_credentials
+    save_credentials,
 )
 
 from .api import endpoints
@@ -20,12 +20,13 @@ from .memo import app_state
 from .postlogin import PostLoginDock
 
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/login.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/login.ui")
+)
 
 
 class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for Login """
+    """Dialog for Login"""
 
     closingPlugin = pyqtSignal()
     loginChanged = pyqtSignal()
@@ -45,9 +46,9 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def _autofill_credentials(self):
         credentials = get_saved_credentials()
-        if set(['username', 'password']).issubset(credentials.keys()):
-            self.inputUsername.setText(credentials['username'])
-            self.inputPassword.setText(credentials['password'])
+        if set(["username", "password"]).issubset(credentials.keys()):
+            self.inputUsername.setText(credentials["username"])
+            self.inputPassword.setText(credentials["password"])
 
     def showEvent(self, event):
         self._autofill_credentials()
@@ -67,25 +68,33 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
 
         username = self.inputUsername.text()
         password = self.inputPassword.text()
-        logMessage(f'{username}, {password}')
+        logMessage(f"{username}, {password}")
         try:
             response = endpoints.login(username, password)
             content = json.loads(response.content)
-            if not content['status']:
-                dialogBox(content['information'],)
+            if not content["status"]:
+                dialogBox(
+                    content["information"],
+                )
             else:
                 if self.checkboxSaveLogin.isChecked():
                     save_credentials(username, password)
-                    storeSetting("isLoggedIn", content['status'])
+                    storeSetting("isLoggedIn", content["status"])
                 logMessage(str(content))
-                self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
+                self.iface.messageBar().pushMessage(
+                    "Login Pengguna Berhasil:", username, level=Qgis.Success
+                )
                 self.loginChanged.emit()
-                app_state.set('username', username)
-                app_state.set('logged_in', True)
+                app_state.set("username", username)
+                app_state.set("logged_in", True)
                 self.getKantorProfile(username)
         except Exception as e:
             print(e)
-            dialogBox("Kesalahan koneksi. Periksa sambungan Anda ke server GeoKKP", "Koneksi Bermasalah", "Warning")
+            dialogBox(
+                "Kesalahan koneksi. Periksa sambungan Anda ke server GeoKKP",
+                "Koneksi Bermasalah",
+                "Warning",
+            )
 
     def getKantorProfile(self, username):
         """
@@ -96,9 +105,11 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             response = endpoints.get_entity_by_username(username)
         except Exception as e:
             print(e)
-            dialogBox("Data Pengguna gagal dimuat dari server",
-                      "Koneksi Bermasalah",
-                      "Warning")
+            dialogBox(
+                "Data Pengguna gagal dimuat dari server",
+                "Koneksi Bermasalah",
+                "Warning",
+            )
 
         if response is not None:
             response_json = json.loads(response.content)
@@ -107,9 +118,11 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             if self.postlogin.populateKantah(response_json):
                 self.postuserlogin()
         else:
-            dialogBox("Data Pengguna gagal disimpan ke dalam QGIS",
-                      "Koneksi Bermasalah",
-                      "Warning")
+            dialogBox(
+                "Data Pengguna gagal disimpan ke dalam QGIS",
+                "Koneksi Bermasalah",
+                "Warning",
+            )
 
     def postuserlogin(self):
         """

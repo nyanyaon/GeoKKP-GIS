@@ -1,7 +1,4 @@
-from PyQt5.QtCore import (
-  pyqtSignal,
-  QObject
-)
+from PyQt5.QtCore import pyqtSignal, QObject
 
 
 class Item(QObject):
@@ -27,7 +24,7 @@ class Item(QObject):
         return str(self.__value__)
 
 
-class Memo():
+class Memo:
     __store__ = {}
 
     def _create_item(self, value):
@@ -42,7 +39,11 @@ class Memo():
         return self.__store__[key]
 
     def get(self, key, default=None):
-        item = self.__store__[key] if key in self.__store__.keys() else self.set(key, default)
+        item = (
+            self.__store__[key]
+            if key in self.__store__.keys()
+            else self.set(key, default)
+        )
         return item
 
     def keys(self):

@@ -33,4 +33,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     """
     #
     from .geokkp import GeoKKP
+
     return GeoKKP(iface)

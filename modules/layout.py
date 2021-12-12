@@ -1,10 +1,7 @@
 import os
 
 from qgis.PyQt import QtWidgets, uic, QtXml
-from qgis.core import (
-    QgsProject, QgsPrintLayout, QgsReadWriteContext,
-    Qgis
-)
+from qgis.core import QgsProject, QgsPrintLayout, QgsReadWriteContext, Qgis
 
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
@@ -13,12 +10,13 @@ from qgis.gui import QgsMessageBar
 # using utils
 from .utils import icon, readSetting
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/layout_all.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/layout_all.ui")
+)
 
 
 class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for Layouting """
+    """Dialog for Layouting"""
 
     closingPlugin = pyqtSignal()
 
@@ -31,9 +29,8 @@ class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
 
         self.dialog_bar = QgsMessageBar()
         self.dialog_bar.setSizePolicy(
-            QtWidgets.QSizePolicy.MinimumExpanding,
-            QtWidgets.QSizePolicy.Fixed
-            )
+            QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed
+        )
         self.layout().insertWidget(0, self.dialog_bar)
 
         self.project = QgsProject.instance()
@@ -66,7 +63,7 @@ class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
         for key, value in self.layout_data.items():
             if key == choosen_layout:
                 for layout_size in value:
-                    ukuran_layout.append(layout_size['Ukuran'])
+                    ukuran_layout.append(layout_size["Ukuran"])
         self.cb_layout_size.addItems(ukuran_layout)
 
     def pick_layout(self):
@@ -75,11 +72,11 @@ class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
         for key, value in self.layout_data.items():
             if key == choosen_layout:
                 for item in value:
-                    if item['Ukuran'] == choosen_size:
-                        self.layout_name = item['Lokasi']
+                    if item["Ukuran"] == choosen_size:
+                        self.layout_name = item["Lokasi"]
         self.layout_path_default = os.path.join(
-            os.path.dirname(__file__),
-            '../template/', self.layout_name)
+            os.path.dirname(__file__), "../template/", self.layout_name
+        )
         layout, layout_exist = self.read_layout(self.layout_path_default)
 
     def read_layout(self, layout_path):
@@ -103,18 +100,20 @@ class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
                         "Info",
                         "Opening existing layout in Layout Manager.",
                         duration=0,
-                        level=Qgis.Info)
+                        level=Qgis.Info,
+                    )
                     layout = existing_layout
         else:
             self.dialog_bar.pushMessage(
-                "Warning",
-                "Unable to locate default template.",
-                level=Qgis.Warning)
+                "Warning", "Unable to locate default template.", level=Qgis.Warning
+            )
 
         return layout, layout_exist
 
     def on_btn_load_qpt_pressed(self):
-        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', 'C:\'', '*.qpt')
+        fileName, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Single File", "C:'", "*.qpt"
+        )
         self.lineEdit_qpt_path.setText(fileName)
         if os.path.exists(fileName):
             self.custom_qpt_template = fileName
