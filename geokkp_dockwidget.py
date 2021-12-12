@@ -29,8 +29,9 @@ from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 from qgis.core import QgsProject
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'ui/panel_kerja.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "ui/panel_kerja.ui")
+)
 
 
 class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):

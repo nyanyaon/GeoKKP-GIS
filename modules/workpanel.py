@@ -19,12 +19,13 @@ from .utils import (
     get_epsg_from_tm3_zone,
     set_project_crs_by_epsg,
     get_project_crs,
-    sdo_to_layer
+    sdo_to_layer,
 )
 from .api import endpoints
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/panel_kerjav2.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/panel_kerjav2.ui")
+)
 
 
 STACKWIDGET_LOKASI = 0
@@ -32,7 +33,7 @@ STACKWIDGET_RUTIN = 1
 
 
 class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
-    """ Dialog for Peta Bidang """
+    """Dialog for Peta Bidang"""
 
     closingPlugin = pyqtSignal()
 
@@ -89,7 +90,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         self.stackedWidget.setCurrentIndex(page)
 
     def openhelp(self):
-        QDesktopServices.openUrl(QUrl('https://geokkp-gis.github.io/docs/'))
+        QDesktopServices.openUrl(QUrl("https://geokkp-gis.github.io/docs/"))
         pass
 
     def setup_workpanel(self, index):
@@ -113,21 +114,33 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         provinsi = data_provinsi[index]
         self.current_provinsi_id = provinsi["PROPINSIID"]
         storeSetting("provinsiterpilih", provinsi)
-        self.populate_kabupaten(self.current_kantor_id, self.current_tipe_kantor_id, self.current_provinsi_id)
+        self.populate_kabupaten(
+            self.current_kantor_id,
+            self.current_tipe_kantor_id,
+            self.current_provinsi_id,
+        )
 
     def kabupaten_changed(self, index):
         data_kabupaten = readSetting("listkabupaten", [])
         kabupaten = data_kabupaten[index]
         self.current_kabupaten_id = kabupaten["KABUPATENID"]
         storeSetting("kabupatenterpilih", kabupaten)
-        self.populate_kecamatan(self.current_kantor_id, self.current_tipe_kantor_id, self.current_kabupaten_id)
+        self.populate_kecamatan(
+            self.current_kantor_id,
+            self.current_tipe_kantor_id,
+            self.current_kabupaten_id,
+        )
 
     def kecamatan_changed(self, index):
         data_kecamatan = readSetting("listkecamatan", [])
         kecamatan = data_kecamatan[index]
         self.current_kecamatan_id = kecamatan["KECAMATANID"]
         storeSetting("kecamatanterpilih", kecamatan)
-        self.populate_kelurahan(self.current_kantor_id, self.current_tipe_kantor_id, self.current_kecamatan_id)
+        self.populate_kelurahan(
+            self.current_kantor_id,
+            self.current_tipe_kantor_id,
+            self.current_kecamatan_id,
+        )
 
     def kelurahan_changed(self, index):
         data_kelurahan = readSetting("listkelurahan", [])
@@ -145,38 +158,44 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         self.combo_provinsi.clear()
         response = endpoints.get_provinsi_by_kantor(kantor_id, str(tipe_kantor_id))
         response_json = json.loads(response.content)
-        if response_json and len(response_json['PROPINSI']):
-            data_provinsi = response_json['PROPINSI']
+        if response_json and len(response_json["PROPINSI"]):
+            data_provinsi = response_json["PROPINSI"]
             storeSetting("listprovinsi", data_provinsi)
             for provinsi in data_provinsi:
                 self.combo_provinsi.addItem(provinsi["PROPNAMA"])
 
     def populate_kabupaten(self, kantor_id, tipe_kantor_id, provinsi_id):
         self.combo_kabupaten.clear()
-        response = endpoints.get_kabupaten_by_kantor(kantor_id, str(tipe_kantor_id), provinsi_id)
+        response = endpoints.get_kabupaten_by_kantor(
+            kantor_id, str(tipe_kantor_id), provinsi_id
+        )
         response_json = json.loads(response.content)
-        if response_json and len(response_json['KABUPATEN']):
-            data_kabupaten = response_json['KABUPATEN']
+        if response_json and len(response_json["KABUPATEN"]):
+            data_kabupaten = response_json["KABUPATEN"]
             storeSetting("listkabupaten", data_kabupaten)
             for kabupaten in data_kabupaten:
                 self.combo_kabupaten.addItem(kabupaten["KABUNAMA"])
 
     def populate_kecamatan(self, kantor_id, tipe_kantor_id, kabupaten_id):
         self.combo_kecamatan.clear()
-        response = endpoints.get_kecamatan_by_kantor(kantor_id, str(tipe_kantor_id), kabupaten_id)
+        response = endpoints.get_kecamatan_by_kantor(
+            kantor_id, str(tipe_kantor_id), kabupaten_id
+        )
         response_json = json.loads(response.content)
-        if response_json and len(response_json['KECAMATAN']):
-            data_kecamatan = response_json['KECAMATAN']
+        if response_json and len(response_json["KECAMATAN"]):
+            data_kecamatan = response_json["KECAMATAN"]
             storeSetting("listkecamatan", data_kecamatan)
             for kecamatan in data_kecamatan:
                 self.combo_kecamatan.addItem(kecamatan["KECANAMA"])
 
     def populate_kelurahan(self, kantor_id, tipe_kantor_id, kecamatan_id):
         self.combo_kelurahan.clear()
-        response = endpoints.get_desa_by_kantor(kantor_id, str(tipe_kantor_id), kecamatan_id)
+        response = endpoints.get_desa_by_kantor(
+            kantor_id, str(tipe_kantor_id), kecamatan_id
+        )
         response_json = json.loads(response.content)
-        if response_json and len(response_json['DESA']):
-            data_kelurahan = response_json['DESA']
+        if response_json and len(response_json["DESA"]):
+            data_kelurahan = response_json["DESA"]
             storeSetting("listkelurahan", data_kelurahan)
             for kelurahan in data_kelurahan:
                 self.combo_kelurahan.addItem(kelurahan["DESANAMA"])
@@ -184,26 +203,32 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
     def simpan_area_kerja(self):
         kabupaten = readSetting("kabupatenterpilih")
         kelurahan = readSetting("kelurahanterpilih")
-        tm3_zone = kelurahan['ZONATM3'] if kelurahan['ZONATM3'] else kabupaten['ZONATM3']
+        tm3_zone = (
+            kelurahan["ZONATM3"] if kelurahan["ZONATM3"] else kabupaten["ZONATM3"]
+        )
         if tm3_zone:
             epsg = get_epsg_from_tm3_zone(tm3_zone, False)
             self.set_project_crs(epsg)
             self.get_batas_desa(kelurahan["DESAID"], epsg)
         else:
-            QtWidgets.QMessageBox.critical(None, 'Error', 'Zona TM3 Tidak tersedia di server')
+            QtWidgets.QMessageBox.critical(
+                None, "Error", "Zona TM3 Tidak tersedia di server"
+            )
 
     def set_project_crs(self, epsg):
-        set_project_crs_by_epsg(f'EPSG:{epsg}')
+        set_project_crs_by_epsg(f"EPSG:{epsg}")
 
     def get_batas_desa(self, wilayah_id, epsg):
-        response = endpoints.get_wilayah_sdo(wilayah_id, 'Desa', epsg)
+        response = endpoints.get_wilayah_sdo(wilayah_id, "Desa", epsg)
         response_json = json.loads(response.content)
         if response_json["status"] and len(response_json["wilayahs"]):
-            layer = sdo_to_layer(response_json["wilayahs"], "Batas Desa", f"EPSG:{epsg}")
+            layer = sdo_to_layer(
+                response_json["wilayahs"], "Batas Desa", f"EPSG:{epsg}"
+            )
             layer.setReadOnly(True)
             QgsProject.instance().addMapLayer(layer)
         else:
-            QtWidgets.QMessageBox.critical(None, 'Error', 'Desa tidak ditemukan')
+            QtWidgets.QMessageBox.critical(None, "Error", "Desa tidak ditemukan")
 
     def cari_berkas_rutin(self):
         # TODO implement pagiation
@@ -213,7 +238,8 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
             nomor_berkas=no_berkas,
             tahun_berkas=th_berkas,
             kantor_id=self.current_kantor_id,
-            tipe_kantor_id=str(self.current_tipe_kantor_id))
+            tipe_kantor_id=str(self.current_tipe_kantor_id),
+        )
         response_json = json.loads(response.content)
         self.populate_berkas_rutin(response_json["BERKASSPATIAL"])
 
@@ -223,13 +249,23 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
             pos = self.table_rutin.rowCount()
             self.table_rutin.insertRow(pos)
 
-            self.table_rutin.setItem(pos, 0, QtWidgets.QTableWidgetItem(str(item["NOMOR"])))
-            self.table_rutin.setItem(pos, 1, QtWidgets.QTableWidgetItem(str(item["TAHUN"])))
-            self.table_rutin.setItem(pos, 2, QtWidgets.QTableWidgetItem(item["OPERASISPASIAL"]))
+            self.table_rutin.setItem(
+                pos, 0, QtWidgets.QTableWidgetItem(str(item["NOMOR"]))
+            )
+            self.table_rutin.setItem(
+                pos, 1, QtWidgets.QTableWidgetItem(str(item["TAHUN"]))
+            )
+            self.table_rutin.setItem(
+                pos, 2, QtWidgets.QTableWidgetItem(item["OPERASISPASIAL"])
+            )
 
     def mulai_berkas_rutin(self):
         if self.current_berkas is not None:
-            QtWidgets.QMessageBox.critical(None, 'Tutup berkas', 'Tutup berkas yang sedang dikerjakan terlebih dahulu')
+            QtWidgets.QMessageBox.critical(
+                None,
+                "Tutup berkas",
+                "Tutup berkas yang sedang dikerjakan terlebih dahulu",
+            )
             return
         selected_row = self.table_rutin.selectedItems()
         no_berkas = selected_row[0].text()
@@ -241,7 +277,8 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
             tahun_berkas=th_berkas,
             kantor_id=self.current_kantor_id,
             tipe_kantor_id=str(self.current_tipe_kantor_id),
-            username=username)
+            username=username,
+        )
 
         response_start_berkas_json = json.loads(response_start_berkas.content)
         print(response_start_berkas_json)
@@ -249,7 +286,9 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
             # TODO add additional steps for div
             pass
 
-        response_blanko = endpoints.get_blanko_by_berkas_id(response_start_berkas_json["berkasId"])
+        response_blanko = endpoints.get_blanko_by_berkas_id(
+            response_start_berkas_json["berkasId"]
+        )
         response_blanko_json = json.loads(response_blanko.content)
         print(response_blanko_json)
 
@@ -262,8 +301,8 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         layer = sdo_to_layer(
             response_spatial_sdo_json["geoKkpPolygons"],
             name="Batas Persil",
-            symbol='simplepersil.qml',
-            crs=epsg
+            symbol="simplepersil.qml",
+            crs=epsg,
         )
         self.current_layers.append(layer)
         self.current_berkas = response_start_berkas_json
@@ -272,7 +311,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         response_tutup_berkas = endpoints.stop_berkas(
             nomor_berkas=self.current_berkas["nomorBerkas"],
             tahun_berkas=self.current_berkas["tahunBerkas"],
-            kantor_id=self.current_kantor_id
+            kantor_id=self.current_kantor_id,
         )
         response_tutup_berkas_json = json.loads(response_tutup_berkas.content)
         if response_tutup_berkas_json:

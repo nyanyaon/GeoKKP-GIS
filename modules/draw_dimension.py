@@ -3,16 +3,19 @@ import math
 from qgis.PyQt import QtGui, QtCore
 
 from qgis.core import (
-    QgsCircle, QgsPoint, QgsPointXY, QgsFeature, QgsGeometry,
-    QgsCircularString, QgsSnappingConfig,
-    QgsProject, QgsTolerance
+    QgsCircle,
+    QgsPoint,
+    QgsPointXY,
+    QgsFeature,
+    QgsGeometry,
+    QgsCircularString,
+    QgsSnappingConfig,
+    QgsProject,
+    QgsTolerance,
 )
 
 from qgis.PyQt.QtCore import pyqtSignal
-from qgis.gui import (
-    QgsMapTool, QgsVertexMarker, QgsRubberBand,
-    QgsGeometryRubberBand
-)
+from qgis.gui import QgsMapTool, QgsVertexMarker, QgsRubberBand, QgsGeometryRubberBand
 
 
 # ----------------------------------------------------------- #
@@ -30,7 +33,7 @@ class DimensionPointTool(QgsMapTool):
 
         self.dimension_layer = dimension_layer
 
-        self.vm = create_vertex_marker(self.canvas, 'BOX')
+        self.vm = create_vertex_marker(self.canvas, "BOX")
 
     def canvasMoveEvent(self, event):
         point_snap, status = snapping_point(self.canvas, event.pos())
@@ -44,8 +47,8 @@ class DimensionPointTool(QgsMapTool):
 
             feat = QgsFeature()
             feat.setGeometry(geom_line_zero_length)
-            titik_nilai = str(round(pt.x(), 3))+','+str(round(pt.y(), 3))
-            feat.setAttributes(['Titik', titik_nilai])
+            titik_nilai = str(round(pt.x(), 3)) + "," + str(round(pt.y(), 3))
+            feat.setAttributes(["Titik", titik_nilai])
 
             self.dimension_layer_prov = self.dimension_layer.dataProvider()
             self.dimension_layer.startEditing()
@@ -75,18 +78,18 @@ class DimensionAngleTool(QgsMapTool):
 
         self.dimension_layer = dimension_layer
 
-        self.vm_center = create_vertex_marker(self.canvas, 'CIRCLE')
-        self.vm_1 = create_vertex_marker(self.canvas, 'CROSS')
+        self.vm_center = create_vertex_marker(self.canvas, "CIRCLE")
+        self.vm_1 = create_vertex_marker(self.canvas, "CROSS")
         # self.vm_1.hide()
-        self.vm_2 = create_vertex_marker(self.canvas, 'CROSS')
+        self.vm_2 = create_vertex_marker(self.canvas, "CROSS")
         # self.vm_2.hide()
 
-        self.rb_buffer = create_rubberband(self.canvas, 'SOLID')
-        self.geomrb_buffer = create_geom_rubberband(self.canvas, 'SOLID')
+        self.rb_buffer = create_rubberband(self.canvas, "SOLID")
+        self.geomrb_buffer = create_geom_rubberband(self.canvas, "SOLID")
         # self.geomrb_buffer.hide()
-        self.geomrb_short_arc = create_geom_rubberband(self.canvas, 'DOT_LINE')
+        self.geomrb_short_arc = create_geom_rubberband(self.canvas, "DOT_LINE")
         # self.geomrb_short_arc.hide()
-        self.geomrb_long_arc = create_geom_rubberband(self.canvas, 'DOT_LINE')
+        self.geomrb_long_arc = create_geom_rubberband(self.canvas, "DOT_LINE")
         # self.geomrb_long_arc.hide()
 
         self.click_counter = 0
@@ -157,7 +160,7 @@ class DimensionAngleTool(QgsMapTool):
                 # self.geomrb_long_arc.show()
 
             elif self.click_counter == 5:  # arc finalised
-                print('counter :', self.click_counter)
+                print("counter :", self.click_counter)
                 start_az = self.center_pt.azimuth(self.start_arc_pt)
                 end_az = self.center_pt.azimuth(self.end_arc_pt)
 
@@ -167,16 +170,16 @@ class DimensionAngleTool(QgsMapTool):
                 small_angle = delta_az
                 large_angle = 360 - delta_az
 
-                if self.arc_chosen == 'short':
+                if self.arc_chosen == "short":
                     angle = small_angle
-                elif self.arc_chosen == 'long':
+                elif self.arc_chosen == "long":
                     angle = large_angle
 
                 angle_feat = QgsFeature()
                 angle_feat.setGeometry(self.final_arc.segmentize(0.1))
 
                 angle_value = angle
-                angle_feat.setAttributes(['Sudut', str(angle_value)])
+                angle_feat.setAttributes(["Sudut", str(angle_value)])
 
                 self.dimension_layer_prov = self.dimension_layer.dataProvider()
                 self.dimension_layer.startEditing()
@@ -215,12 +218,12 @@ class DimensionAngleTool(QgsMapTool):
         if a1 < a2:
             arc_highlight(self.geomrb_short_arc)
             arc_dehighlight(self.geomrb_long_arc)
-            self.arc_chosen = 'short'
+            self.arc_chosen = "short"
             return short_arc
         elif a1 > a2:
             arc_highlight(self.geomrb_long_arc)
             arc_dehighlight(self.geomrb_short_arc)
-            self.arc_chosen = 'long'
+            self.arc_chosen = "long"
             return long_arc
 
 
@@ -238,13 +241,13 @@ class DimensionDistanceTool(QgsMapTool):
 
         enable_snapping()
 
-        self.vm_1 = create_vertex_marker(self.canvas, 'CROSS')
-        self.vm_2 = create_vertex_marker(self.canvas, 'CIRCLE')
+        self.vm_1 = create_vertex_marker(self.canvas, "CROSS")
+        self.vm_2 = create_vertex_marker(self.canvas, "CIRCLE")
 
         self.rb_draw = create_rubberband(self.canvas)
         self.rb_main = create_rubberband(self.canvas)
-        self.rb_start = create_rubberband(self.canvas, 'DASH_LINE')
-        self.rb_end = create_rubberband(self.canvas, 'DASH_LINE')
+        self.rb_start = create_rubberband(self.canvas, "DASH_LINE")
+        self.rb_end = create_rubberband(self.canvas, "DASH_LINE")
 
         self.list_vm = []
         self.list_vm.append(self.vm_1)
@@ -267,9 +270,13 @@ class DimensionDistanceTool(QgsMapTool):
             p = self.canvas.getCoordinateTransform().toMapCoordinates(event.pos())
             sqrdist, pt, nid, side = self.main_geom.closestSegmentWithContext(p)
             dist = math.sqrt(sqrdist)
-            self.offset_geom = self.main_geom.offsetCurve(-side*dist, 6, 1, 1)
-            _, offset_start, _, _ = self.offset_geom.closestSegmentWithContext(self.start_point)
-            _, offset_end, _, _ = self.offset_geom.closestSegmentWithContext(self.end_point)
+            self.offset_geom = self.main_geom.offsetCurve(-side * dist, 6, 1, 1)
+            _, offset_start, _, _ = self.offset_geom.closestSegmentWithContext(
+                self.start_point
+            )
+            _, offset_end, _, _ = self.offset_geom.closestSegmentWithContext(
+                self.end_point
+            )
             start_point_list = [self.start_point, offset_start]
             end_point_list = [self.end_point, offset_end]
             self.start_geom = QgsGeometry.fromPolylineXY(start_point_list)
@@ -297,16 +304,16 @@ class DimensionDistanceTool(QgsMapTool):
             elif self.click_counter == 3:  # indicates finished offsetting line
                 start_feat = QgsFeature()
                 start_feat.setGeometry(self.start_geom)
-                start_feat.setAttributes(['-', '-'])
+                start_feat.setAttributes(["-", "-"])
 
                 end_feat = QgsFeature()
                 end_feat.setGeometry(self.end_geom)
-                end_feat.setAttributes(['-', '-'])
+                end_feat.setAttributes(["-", "-"])
 
                 offset_feat = QgsFeature()
                 offset_feat.setGeometry(self.offset_geom)
                 distance_value = round(self.offset_geom.length(), 3)
-                offset_feat.setAttributes(['Jarak', str(distance_value)])
+                offset_feat.setAttributes(["Jarak", str(distance_value)])
 
                 result_feat = [start_feat, end_feat, offset_feat]
 
@@ -340,14 +347,14 @@ def snapping_point(canvas, point):
         return map_coord, snapped.isValid()
 
 
-def create_vertex_marker(canvas, type='BOX'):
+def create_vertex_marker(canvas, type="BOX"):
     vm = QgsVertexMarker(canvas)
 
-    if type == 'BOX':
+    if type == "BOX":
         icon_type = QgsVertexMarker.ICON_BOX
-    elif type == 'CIRCLE':
+    elif type == "CIRCLE":
         icon_type = QgsVertexMarker.ICON_CIRCLE
-    elif type == 'CROSS':
+    elif type == "CROSS":
         icon_type = QgsVertexMarker.ICON_CROSS
     else:
         icon_type = QgsVertexMarker.ICON_X
@@ -358,21 +365,21 @@ def create_vertex_marker(canvas, type='BOX'):
     return vm
 
 
-def create_rubberband(canvas, line_style='SOLID_LINE'):
+def create_rubberband(canvas, line_style="SOLID_LINE"):
     rb = QgsRubberBand(canvas, False)
     rb.setStrokeColor(QtGui.QColor(128, 128, 128, 180))  # grey
     rb.setFillColor(QtGui.QColor(0, 0, 0, 0))
     rb.setWidth(1)
-    if line_style == 'DASH_LINE':
+    if line_style == "DASH_LINE":
         rb.setLineStyle(QtCore.Qt.DashLine)
-    elif line_style == 'SOLID_LINE':
+    elif line_style == "SOLID_LINE":
         rb.setLineStyle(QtCore.Qt.SolidLine)
-    elif line_style == 'DOT_LINE':
+    elif line_style == "DOT_LINE":
         rb.setLineStyle(QtCore.Qt.DotLine)
     return rb
 
 
-def create_geom_rubberband(canvas, line_style='SOLID_LINE'):
+def create_geom_rubberband(canvas, line_style="SOLID_LINE"):
     # QgsGeometryRubberBand allows the usage of circular string so that it will
     # be possible to draw circle without using buffer function
 
@@ -381,11 +388,11 @@ def create_geom_rubberband(canvas, line_style='SOLID_LINE'):
     rb.setFillColor(QtGui.QColor(0, 0, 0, 0))
     rb.setVertexDrawingEnabled(False)
     rb.setStrokeWidth(1)
-    if line_style == 'DASH_LINE':
+    if line_style == "DASH_LINE":
         rb.setLineStyle(QtCore.Qt.DashLine)
-    elif line_style == 'SOLID_LINE':
+    elif line_style == "SOLID_LINE":
         rb.setLineStyle(QtCore.Qt.SolidLine)
-    elif line_style == 'DOT_LINE':
+    elif line_style == "DOT_LINE":
         rb.setLineStyle(QtCore.Qt.DotLine)
     return rb
 

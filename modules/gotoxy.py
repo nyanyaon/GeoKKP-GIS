@@ -10,7 +10,8 @@ from qgis.core import (
     QgsPointXY,
     QgsGeometry,
     QgsWkbTypes,
-    QgsProject)
+    QgsProject,
+)
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
@@ -18,12 +19,11 @@ from qgis.utils import iface
 # using utils
 from .utils import icon, parse_raw_coordinate
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/goto.ui'))
+FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), "../ui/goto.ui"))
 
 
 class GotoXYDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for Zoom to Location """
+    """Dialog for Zoom to Location"""
 
     closingPlugin = pyqtSignal()
 
