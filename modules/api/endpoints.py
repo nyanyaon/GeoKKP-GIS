@@ -50,6 +50,13 @@ def get_user_entity_by_username(username, kantor_id, only_valid=True, **kwargs):
     }
 
 
+@api(endpoint='isESertipikat')
+def get_is_e_sertifikat(kantor_id):
+    return {
+        "kantorId": str(kantor_id)
+    }
+
+
 @api(endpoint='getPropinsi')
 def get_provinsi_by_kantor(kantor_id, tipe_kantor_id, **kwargs):
     return {
@@ -184,6 +191,11 @@ def get_parcels(persil_ids, **kwargs):
     return persil_ids
 
 
+@api(endpoint='getApartments')
+def get_apartments(apartment_ids, **kwargs):
+    return apartment_ids
+
+
 @api(endpoint='submitSdo')
 def submit_sdo(
         nomor_berkas,
@@ -314,4 +326,27 @@ def get_wilayah_sdo(wilayah_id, tipe_wilayah, srs, **kwargs):
         "wilayahId": wilayah_id,
         "tipeWilayah": tipe_wilayah,
         "srsName": srs
+    }
+
+@api(endpoint='gantiDesa')
+def ganti_desa(
+        nomor_berkas,
+        tahun_berkas,
+        kantor_id,
+        tipe_kantor_id,
+        wilayah_baru,
+        object_name,
+        object_lama,
+        user_id,
+        **kwargs
+    ):
+    return {
+        "nomorBerkas": nomor_berkas,
+        "tahunBerkas": tahun_berkas,
+        "kantorId": kantor_id,
+        "tipeKantorId": tipe_kantor_id,
+        "wilayahBaru": wilayah_baru,
+        "objectName": object_name,
+        "objectLama": object_lama,
+        "userId": user_id
     }

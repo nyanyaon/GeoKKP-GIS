@@ -31,7 +31,7 @@ class API:
 
     @staticmethod
     def build_api_payload(payload):
-        print(payload)
+        print('api payload', payload)
         return json.dumps(payload).encode('utf8')
 
     def request(

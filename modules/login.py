@@ -71,21 +71,38 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             response = endpoints.login(username, password)
             content = json.loads(response.content)
+            print('login', content)
             if not content['status']:
                 dialogBox(content['information'],)
             else:
                 if self.checkboxSaveLogin.isChecked():
                     save_credentials(username, password)
                     storeSetting("isLoggedIn", content['status'])
-                logMessage(str(content))
                 self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
                 self.loginChanged.emit()
                 app_state.set('username', username)
                 app_state.set('logged_in', True)
                 self.getKantorProfile(username)
+                self.get_user(username)
         except Exception as e:
             print(e)
             dialogBox("Kesalahan koneksi. Periksa sambungan Anda ke server GeoKKP", "Koneksi Bermasalah", "Warning")
+
+    def get_geo_profile(self, kantor_id):
+        try:
+            response = endpoints.get_is_e_sertifikat(kantor_id)
+            is_e_sertifikat = response.content == "1"
+            storeSetting("isESertifikat", is_e_sertifikat)
+        except Exception as e:
+            print(e)
+            dialogBox("Gagal mengambil status data e sertifikat dari server",
+                        "Koneksi Bermasalah",
+                        "Warning")
+
+    def get_user(self, username):
+        response = endpoints.get_user_by_username(username)
+        response_json = json.loads(response.content)
+        app_state.set('user', response_json)
 
     def getKantorProfile(self, username):
         """

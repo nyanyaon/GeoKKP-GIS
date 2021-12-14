@@ -114,7 +114,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         idKantorTerpilih = kantor['kantorID']
         idTipeKantorTerpilih = kantor['tipeKantorId']
 
-        storeSetting("kantorterpilih", [idKantorTerpilih, namaKantorTerpilih])
+        storeSetting("kantorterpilih", kantor)
 
         provinsi = self.simpanProvinsiSettings(idKantorTerpilih, idTipeKantorTerpilih)
         kabupaten = self.simpanKabupatenSettings(idKantorTerpilih, idTipeKantorTerpilih, provinsi['PROPINSIID'])
@@ -175,7 +175,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
 
     def simpanUserSettings(self):
         username = app_state.get('username')
-        kantorID = readSetting("kantorterpilih")[0]
+        # kantorID = readSetting("kantorterpilih")[0]
         print(username, kantorID)
         # response = endpoints.get_user_entity_by_username(username.value, kantorID)
         # response_json = json.loads(response.content)
