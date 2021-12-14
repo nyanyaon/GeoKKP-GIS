@@ -637,6 +637,7 @@ class GeoKKP:
         self.popupPeralatan.addAction(self.actionNLP)
 
         #  --- Sub-menu Geocoding ---
+        # Sementara disembunyikan, diarahkan untuk menggunakan QGIS Locator
         self.actionGeocoding = self.add_action(
             icon("carialamat.png"),
             text=self.tr(u"Pencarian Alamat"),
@@ -646,7 +647,7 @@ class GeoKKP:
             need_auth=False,
             parent=self.popupPeralatan,
         )
-        self.popupPeralatan.addAction(self.actionGeocoding)
+        # self.popupPeralatan.addAction(self.actionGeocoding)
 
         #  --- Sub-menu Georeferencing/Rubbersheet ---
         self.actionGeoreference = self.add_action(
