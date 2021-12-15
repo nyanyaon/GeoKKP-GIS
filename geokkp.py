@@ -1198,6 +1198,9 @@ class GeoKKP:
         if not login_state.value:
             return
         self.workpanel.switch_panel(1)
+        # widget = self.workpanel.current_widget()
+        # widget.main_tab.setCurrentIndex(1)
+        # widget.main_tab.setCurrentIndex(0)
 
         # if getattr(self, 'workpanel', None) is None:
         #     self.workpanel = Workpanel()

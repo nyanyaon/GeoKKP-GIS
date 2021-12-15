@@ -1,5 +1,6 @@
 import os
 import json
+import locale
 
 from qgis.utils import iface
 from .utils import (
@@ -30,10 +31,14 @@ class Initialize:
     def __init__(self):
         self.iface = iface
 
+        self.set_locale()
         self.simpan_layer_settings()
         self.simpan_basemap_settings()
         self.simpan_boundary_settings()
         self.simpan_default_layout_settings()
+
+    def set_locale(self):
+        locale.setlocale(locale.LC_NUMERIC, 'en_US')
 
     def simpan_layer_settings(self):
         """

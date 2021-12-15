@@ -108,7 +108,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         idKantorTerpilih = kantor["kantorID"]
         idTipeKantorTerpilih = kantor["tipeKantorId"]
 
-        storeSetting("kantorterpilih", [idKantorTerpilih, namaKantorTerpilih])
+        storeSetting("kantorterpilih", kantor)
 
         provinsi = self.simpanProvinsiSettings(idKantorTerpilih, idTipeKantorTerpilih)
         kabupaten = self.simpanKabupatenSettings(

@@ -10,6 +10,7 @@ from qgis.utils import iface
 
 from .login import LoginDialog
 from .memo import app_state
+from .topology import quick_check_topology
 
 # using utils
 from .utils import (
@@ -245,6 +246,8 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
 
     def populate_berkas_rutin(self, data):
         self.table_rutin.setRowCount(0)
+        # self.table_rutin.setColumnCount(4)
+        # self.table_rutin.setColumnHidden(0, True)
         for item in data:
             pos = self.table_rutin.rowCount()
             self.table_rutin.insertRow(pos)
@@ -277,35 +280,95 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
             tahun_berkas=th_berkas,
             kantor_id=self.current_kantor_id,
             tipe_kantor_id=str(self.current_tipe_kantor_id),
-            username=username,
-        )
-
+            username=username)
         response_start_berkas_json = json.loads(response_start_berkas.content)
-        print(response_start_berkas_json)
-        if response_start_berkas_json["tipeBerkas"] == "DIV":
-            # TODO add additional steps for div
-            pass
-
-        response_blanko = endpoints.get_blanko_by_berkas_id(
-            response_start_berkas_json["berkasId"]
-        )
-        response_blanko_json = json.loads(response_blanko.content)
-        print(response_blanko_json)
-
-        gugus_ids = [response_start_berkas_json["newGugusId"]]
-        response_spatial_sdo = endpoints.get_spatial_document_sdo(gugus_ids=gugus_ids)
-        response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
-        print(response_spatial_sdo_json)
-
-        epsg = get_project_crs()
-        layer = sdo_to_layer(
-            response_spatial_sdo_json["geoKkpPolygons"],
-            name="Batas Persil",
-            symbol="simplepersil.qml",
-            crs=epsg,
-        )
-        self.current_layers.append(layer)
         self.current_berkas = response_start_berkas_json
+        print(self.current_berkas)
+
+        if self.current_berkas["valid"]:
+            lanjut_blanko = True
+            is_e_sertifikat = readSetting("isESertifikat")
+            if is_e_sertifikat and self.tipe_kantor_id not in ["1", "2"]:
+                response_blanko = endpoints.get_blanko_by_berkas_id(berkas_id=self.current_berkas["BERKASID"])
+                response_blanko_json = json.loads(response_blanko.content)
+                if len(response_blanko_json["BLANKO"]) > 0:
+                    lanjut_blanko = True
+                else:
+                    lanjut_blanko = False
+            
+            if self.current_berkas["kodeSpopp"] in [
+                "SPOPP-3.46.3",
+                "SPOPP-3.09.9",
+                "SPOPP-3.09.1",
+                "SPOPP-3.09.2",
+                "SPOPP-3.18.1",
+                "SPOPP-3.12.1"
+            ] or lanjut_blanko :
+                if self.current_berkas["newGugusId"] != "":
+                    if self.current_berkas["tipeBerkas"] != "DAG":
+                        gugus_id = self.current_berkas["newGugusId"]
+                        response_spatial_sdo = endpoints.get_spatial_document_sdo(gugus_ids=[gugus_id])
+                        response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
+                        print(response_spatial_sdo_json)
+
+                        epsg = get_project_crs()
+                        layer = sdo_to_layer(
+                            response_spatial_sdo_json["geoKkpPolygons"],
+                            name="Batas Persil",
+                            symbol='simplepersil.qml',
+                            crs=epsg
+                        )
+                        self.current_layers.append(layer)
+                else:
+                    if self.current_berkas["oldGugusIds"]:
+                        gugus_ids = [str(id) for id in self.current_berkas["oldGugusIds"]]
+                        response_spatial_sdo = endpoints.get_spatial_document_sdo(
+                            gugus_ids=[gugus_id], 
+                            include_riwayat=True
+                        )
+                        response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
+                        print(response_spatial_sdo_json)
+                        epsg = get_project_crs()
+                        layer = sdo_to_layer(
+                            response_spatial_sdo_json["geoKkpPolygons"],
+                            name="Batas Persil",
+                            symbol='simplepersil.qml',
+                            crs=epsg
+                        )
+                        self.current_layers.append(layer)
+                    else:
+                        # TODO: Add new blank layer
+                        pass
+
+                self.btn_rutin_cari.setDisabled(True)
+                self.btn_rutin_mulai.setDisabled(True)
+                self.input_rutin_no_berkas.setDisabled(True)
+                self.input_rutin_th_berkas.setDisabled(True)
+
+                if self.current_berkas["tipeBerkas"] == "DAG":
+                    # TODO: Add input gambar denah
+                    pass
+            else:
+                QtWidgets.QMessageBox.warning(None, "Perhatian", "Lakukan registrasi blanko terlebih dahulu")
+        else:
+            message = "\n".join(self.current_berkas["errorStack"])
+            QtWidgets.QMessageBox.critical(None, "Error", message)
+
+    def simpan_berkas_rutin(self):
+        if self.current_berkas and self.current_berkas["tipeBerkas"] == "DAG":
+            # TODO: Add input gambar denah
+            return
+
+        topo_error_message = []
+        for layer in self.current_layers:
+            valid, num = quick_check_topology(layer)
+            if not valid:
+                message = f"Ada {num} topology error di layer {layer.name()}"
+                topo_error_message.append(message)
+
+        if topo_error_message:
+            QtWidgets.QMessageBox.warning(None, "Perhatian", topo_error_message.join("\n"))
+            return
 
     def tutup_berkas_rutin(self):
         response_tutup_berkas = endpoints.stop_berkas(

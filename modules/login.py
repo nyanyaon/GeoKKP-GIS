@@ -86,8 +86,8 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 )
                 self.loginChanged.emit()
                 app_state.set("username", username)
-                app_state.set("logged_in", True)
                 self.getKantorProfile(username)
+                self.get_user(username)
         except Exception as e:
             print(e)
             dialogBox(
@@ -95,6 +95,22 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 "Koneksi Bermasalah",
                 "Warning",
             )
+
+    def get_geo_profile(self, kantor_id):
+        try:
+            response = endpoints.get_is_e_sertifikat(kantor_id)
+            is_e_sertifikat = response.content == "1"
+            storeSetting("isESertifikat", is_e_sertifikat)
+        except Exception as e:
+            print(e)
+            dialogBox("Gagal mengambil status data e sertifikat dari server",
+                        "Koneksi Bermasalah",
+                        "Warning")
+
+    def get_user(self, username):
+        response = endpoints.get_user_by_username(username)
+        response_json = json.loads(response.content)
+        app_state.set('user', response_json)
 
     def getKantorProfile(self, username):
         """
@@ -129,7 +145,8 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         what to do when user is logged in
         """
         self.accept()
-        if self.postlogin is None:
-            self.postlogin = PostLoginDock()
-        # show the dialog
-        self.postlogin.show()
+        app_state.set('logged_in', True)
+        # if self.postlogin is None:
+        #     self.postlogin = PostLoginDock()
+        # # show the dialog
+        # self.postlogin.show()
