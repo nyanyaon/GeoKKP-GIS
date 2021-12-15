@@ -6,7 +6,7 @@
 name=GeoKKP-GIS
 qgisMinimumVersion=3.0
 description=This plugin ports GeoKKP for National Land Agency of Indonesia
-version=1.0.0
+version=1.0.1
 author=Dany Laksono, Ivan Busthomi, Nur Izzahudin, Ismail Sunni
 email=danylaksono@ugm.ac.id
 
