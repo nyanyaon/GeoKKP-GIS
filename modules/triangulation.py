@@ -3,7 +3,12 @@ import math
 
 from qgis.PyQt import QtWidgets, uic, QtGui, QtCore
 from qgis.core import (
-    QgsProject, QgsPointXY, QgsFeature, QgsGeometry, QgsVectorLayer, Qgis
+    QgsProject,
+    QgsPointXY,
+    QgsFeature,
+    QgsGeometry,
+    QgsVectorLayer,
+    Qgis,
 )
 
 from qgis.PyQt.QtCore import pyqtSignal
@@ -11,16 +16,18 @@ from qgis.utils import iface
 from qgis.gui import QgsVertexMarker, QgsMessageBar, QgsRubberBand
 
 from .maptools import MapTool
+
 # using utils
 from .utils import icon
 
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/triangulation.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/triangulation.ui")
+)
 
 
 class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for Peta Bidang """
+    """Dialog for Peta Bidang"""
 
     closingPlugin = pyqtSignal()
 
@@ -36,9 +43,8 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
 
         self.dialog_bar = QgsMessageBar()
         self.dialog_bar.setSizePolicy(
-            QtWidgets.QSizePolicy.MinimumExpanding,
-            QtWidgets.QSizePolicy.Fixed
-            )
+            QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Fixed
+        )
         self.layout().insertWidget(0, self.dialog_bar)
 
         self.canvas.extentsChanged.connect(self.canvas_changed)
@@ -48,7 +54,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
     def on_triangulasi_titik_1_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_1)
-        except: # noqa
+        except:  # noqa
             pass
         self.vm_1 = self.create_vertex_marker()
         self.list_vm.append(self.vm_1)
@@ -60,9 +66,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def update_titik_1(self, x, y):
         self.point_1 = QgsPointXY(x, y)
-        self.triangulasi_koord_1.setText(
-            str(round(x, 3)) + ',' + str(round(y, 3))
-            )
+        self.triangulasi_koord_1.setText(str(round(x, 3)) + "," + str(round(y, 3)))
         self.iface.mapCanvas().unsetMapTool(self.point_tool_1)
 
         self.set_enabled([self.triangulasi_koord_1, self.input_azimuth_1])
@@ -70,7 +74,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
     def update_azimuth_1(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.rb_line_1)
-        except:
+        except Exception:
             pass
         self.azimuth_1 = self.validate_az(self.input_azimuth_1.text())
 
@@ -89,7 +93,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
     def on_triangulasi_titik_2_pressed(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.vm_2)
-        except: # noqa
+        except:  # noqa
             pass
         self.vm_2 = self.create_vertex_marker()
         self.list_vm.append(self.vm_2)
@@ -101,9 +105,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def update_titik_2(self, x, y):
         self.point_2 = QgsPointXY(x, y)
-        self.triangulasi_koord_2.setText(
-            str(round(x, 3)) + ',' + str(round(y, 3))
-            )
+        self.triangulasi_koord_2.setText(str(round(x, 3)) + "," + str(round(y, 3)))
         self.iface.mapCanvas().unsetMapTool(self.point_tool_2)
 
         self.set_enabled([self.triangulasi_koord_2, self.input_azimuth_2])
@@ -111,7 +113,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
     def update_azimuth_2(self):
         try:
             self.iface.mapCanvas().scene().removeItem(self.rb_line_2)
-        except:
+        except Exception:
             pass
         self.azimuth_2 = self.validate_az(self.input_azimuth_2.text())
 
@@ -140,7 +142,9 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         # create a memory vector
         project_crs = self.iface.mapCanvas().mapSettings().destinationCrs()
         project_epsg = project_crs.authid()
-        vl = QgsVectorLayer("Point?crs="+project_epsg, "trilateration point", "memory")
+        vl = QgsVectorLayer(
+            "Point?crs=" + project_epsg, "trilateration point", "memory"
+        )
 
         p1 = self.point_1
         p2 = self.point_2
@@ -171,22 +175,22 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         x2 = p2.x()
         y2 = p2.y()
 
-        m1 = 1/math.tan(math.radians(az1))
-        m2 = 1/math.tan(math.radians(az2))
+        m1 = 1 / math.tan(math.radians(az1))
+        m2 = 1 / math.tan(math.radians(az2))
 
         a1 = 1
-        b1 = -1/m1
-        c1 = -b1*y1 - a1*x1
+        b1 = -1 / m1
+        c1 = -b1 * y1 - a1 * x1
 
         a2 = 1
-        b2 = -1/m2
-        c2 = -b2*y2 - a2*x2
+        b2 = -1 / m2
+        c2 = -b2 * y2 - a2 * x2
 
         # print('abcm1',a1,b1,c1,m1)
         # print('abcm2',a2,b2,c2,m2)
 
-        x3 = ((b1*c2)-(b2*c1))/((a1*b2)-(a2*b1))
-        y3 = ((c1*a2)-(c2*a1))/((a1*b2)-(a2*b1))
+        x3 = ((b1 * c2) - (b2 * c1)) / ((a1 * b2) - (a2 * b1))
+        y3 = ((c1 * a2) - (c2 * a1)) / ((a1 * b2) - (a2 * b1))
 
         # print('p3', x3,y3)
 
@@ -203,16 +207,16 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         elif az % 90 == 0:
             return QgsPointXY(xmin, pt.y()), QgsPointXY(xmax, pt.y())
         else:
-            m = 1/math.tan(math.radians(az))
+            m = 1 / math.tan(math.radians(az))
 
             a = 1
-            b = -1/m
+            b = -1 / m
             c = -a * pt.x() - b * pt.y()
 
-            pxmin_y = -(a*xmin + c)/b
-            pymin_x = -(b*ymin + c)/a
-            pxmax_y = -(a*xmax + c)/b
-            pymax_x = -(b*ymax + c)/a
+            pxmin_y = -(a * xmin + c) / b
+            pymin_x = -(b * ymin + c) / a
+            pxmax_y = -(a * xmax + c) / b
+            pymax_x = -(b * ymax + c) / a
 
             point_list = []
 
@@ -233,14 +237,14 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
             else:
                 return False
 
-    def create_vertex_marker(self, type='BOX'):
+    def create_vertex_marker(self, type="BOX"):
         vm = QgsVertexMarker(self.canvas)
 
-        if type == 'BOX':
+        if type == "BOX":
             icon_type = QgsVertexMarker.ICON_BOX
-        elif type == 'CIRCLE':
+        elif type == "CIRCLE":
             icon_type = QgsVertexMarker.ICON_CIRCLE
-        elif type == 'CROSS':
+        elif type == "CROSS":
             icon_type = QgsVertexMarker.ICON_CROSS
         else:
             icon_type = QgsVertexMarker.ICON_X
@@ -268,12 +272,12 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
         for vm in self.list_vm:
             try:
                 self.iface.mapCanvas().scene().removeItem(vm)
-            except: # noqa
+            except:  # noqa
                 pass
         for rb in self.list_rb_line:
             try:
                 self.iface.mapCanvas().scene().removeItem(rb)
-            except:
+            except:  # noqa
                 pass
 
     def canvas_changed(self):
@@ -285,7 +289,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
     def validate_az(self, az_str):
         if not az_str:
             return False
-        az_split = az_str.strip().split(' ')
+        az_split = az_str.strip().split(" ")
 
         if len(az_split) == 3:
             self.dialog_bar.clearWidgets()
@@ -295,7 +299,7 @@ class TriangulationDialog(QtWidgets.QDialog, FORM_CLASS):
                 s = float(az_split[2])
             except ValueError:
                 return False
-            return d + (m/60) + (s/3600)
+            return d + (m / 60) + (s / 3600)
 
         elif len(az_split) == 1:
             self.dialog_bar.clearWidgets()

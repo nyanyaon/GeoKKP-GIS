@@ -7,25 +7,24 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtGui import QCursor
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
+
 try:
     from qgis.gui import QgsMapLayerProxyModel
 except ImportError:
     from qgis.core import QgsMapLayerProxyModel
 
 # using utils
-from .utils import (
-    icon,
-    snap_geometries_to_layer
+from .utils import icon, snap_geometries_to_layer
+
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/adjust.ui")
 )
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/adjust.ui'))
-
-TARGET_LAYER = '(20100) Batas Persil'
+TARGET_LAYER = "(20100) Batas Persil"
 
 
 class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for Parcel Adjust"""
+    """Dialog for Parcel Adjust"""
 
     closingPlugin = pyqtSignal()
 
@@ -58,11 +57,14 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
     def layer_target_not_found(self):
         QtWidgets.QMessageBox.warning(
             None,
-            'Layer Batas Persil Tidak ditemukan',
-            f'Buat persil di layer {TARGET_LAYER} terlebih dahulu')
+            "Layer Batas Persil Tidak ditemukan",
+            f"Buat persil di layer {TARGET_LAYER} terlebih dahulu",
+        )
 
     def layer_acuan_not_found(self):
-        QtWidgets.QMessageBox.warning(None, 'Layer Acuan Tidak ditemukan', 'Import Layer Acuan terlebih dahulu')
+        QtWidgets.QMessageBox.warning(
+            None, "Layer Acuan Tidak ditemukan", "Import Layer Acuan terlebih dahulu"
+        )
 
     def selection_changed(self, layer):
         if layer.name() != TARGET_LAYER:
@@ -70,13 +72,15 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
 
         self._selected_features = layer.selectedFeatures()
         if self._selected_features:
-            self.bidang_terpilih.setText(f'{len(self._selected_features)} bidang terpilih')
+            self.bidang_terpilih.setText(
+                f"{len(self._selected_features)} bidang terpilih"
+            )
         else:
-            self.bidang_terpilih.setText('0 bidang terpilih')
+            self.bidang_terpilih.setText("0 bidang terpilih")
 
     def set_identify_layer(self):
         for layer in self.project.instance().mapLayers().values():
-            if (layer.name() == TARGET_LAYER):
+            if layer.name() == TARGET_LAYER:
                 self._layer = layer
                 return
         self.layer_target_not_found()

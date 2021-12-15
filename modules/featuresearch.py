@@ -6,12 +6,13 @@ from qgis.utils import iface
 from qgis.core import QgsMapLayerProxyModel
 
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/pencarian_fitur.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/pencarian_fitur.ui")
+)
 
 
 class FeatureSearchDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for FeatureSearch """
+    """Dialog for FeatureSearch"""
 
     closingPlugin = pyqtSignal()
 

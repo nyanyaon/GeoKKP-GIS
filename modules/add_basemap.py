@@ -16,12 +16,13 @@ from .utils import icon
 data_basemap = readSetting("basemaps")
 
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/basemap.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/basemap.ui")
+)
 
 
 class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for Add Basemap from List """
+    """Dialog for Add Basemap from List"""
 
     closingPlugin = pyqtSignal()
 

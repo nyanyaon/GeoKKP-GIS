@@ -1,13 +1,15 @@
 from qgis.gui import QgsMapTool  # , QgsVertexMarker
+
 # from qgis.core import QgsPointXY
 # from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtCore import pyqtSignal
 
 
 class MapTool(QgsMapTool):
-    '''
+    """
     Docstring is needed here
-    '''
+    """
+
     map_clicked = pyqtSignal(float, float)
 
     def __init__(self, canvas, vm):
