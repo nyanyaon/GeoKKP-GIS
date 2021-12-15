@@ -195,6 +195,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         topo_error_message = []
         for layer in self.current_layers:
             valid, num = quick_check_topology(layer)
+            print(valid, num)
             if not valid:
                 message = f"Ada {num} topology error di layer {layer.name()}"
                 topo_error_message.append(message)

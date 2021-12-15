@@ -11,14 +11,9 @@ from qgis.PyQt.QtWidgets import (
 
 SCOPE = "Topol"
 KEY_LAYER_1 = "layer1"
-KEY_LAYER_2 = "layer1"
+KEY_LAYER_2 = "layer2"
 KEY_TEST_COUNT = "testCount"
 KEY_TEST_NAME = "testname"
-
-DEFAULT_RULES = {
-    KEY_TEST_COUNT: 0,
-    "tests": []
-}
 
 PLUGIN_NOT_FOUND_ERROR_MESSAGE = "Plugin Topology Checker belum diinstal / diaktifkan"
 
@@ -54,7 +49,6 @@ class Topology:
         self._action_topo_plugin = None
         self._action_topo_validate_all = None
         self._action_topo_validate_extent = None   
-        self._rules = DEFAULT_RULES
 
         self._ready = False
         
@@ -77,48 +71,24 @@ class Topology:
         self._check_topo_show_error = topo_panel.findChild(QCheckBox, "mToggleRubberband")
         self._label_topo_status = topo_panel.findChild(QLabel, "mComment")
         
-        self._read_rules()
-
         self._ready = True
 
-    def _read_rules(self):
+    def get_test_count(self):
         test_count, exists = self._project.readEntry(SCOPE, KEY_TEST_COUNT)
-        test_count = 0 if not test_count else int(test_count)
-        if exists:
-            for i in range(0, test_count):
-                key_layer1 = self._build_key(KEY_LAYER_1, i)
-                key_layer2 = self._build_key(KEY_LAYER_2, i)
-                key_test_name = self._build_key(KEY_TEST_NAME, i)
-
-                id_layer1, _ = self._project.readEntry(SCOPE, key_layer1) 
-                id_layer2, _ = self._project.readEntry(SCOPE, key_layer2)
-                test_name, _ = self._project.readEntry(SCOPE, key_test_name)
-                
-                self._write_rule(
-                    id_layer1=id_layer1,
-                    id_layer2=id_layer2,
-                    test_name=test_name
-                )
+        return 0 if not exists else int(test_count)
 
     def _write_rule(self, id_layer1, test_name, id_layer2="No layer"):
-        test_count = self._rules[KEY_TEST_COUNT]
+        test_count = self.get_test_count()
         
         key_layer1 = self._build_key(KEY_LAYER_1, test_count)
         key_layer2 = self._build_key(KEY_LAYER_2, test_count)
         key_test_name = self._build_key(KEY_TEST_NAME, test_count)
                 
-        self._rules[KEY_TEST_COUNT] = test_count + 1
-        self._rules["tests"].append({
-            KEY_LAYER_1: id_layer1,
-            KEY_LAYER_2: id_layer2,
-            KEY_TEST_NAME: test_name
-        })
-
         self._project.writeEntry(SCOPE, KEY_TEST_COUNT, test_count + 1)
         self._project.writeEntry(SCOPE, key_layer1, id_layer1)
         self._project.writeEntry(SCOPE, key_layer2, id_layer2)
         self._project.writeEntry(SCOPE, key_test_name, test_name)
-
+        iface.projectRead.emit()
 
     def _build_key(self, name, index):
         return f"{name}_{index}"
@@ -133,7 +103,7 @@ class Topology:
         )
     
     def reset_rules(self):
-        test_count = self._rules[KEY_TEST_COUNT]
+        test_count = self.get_test_count()
         for i in range(0, test_count):
             key_layer1 = self._build_key(KEY_LAYER_1, test_count)
             key_layer2 = self._build_key(KEY_LAYER_2, test_count)
@@ -143,8 +113,6 @@ class Topology:
             self._project.removeEntry(SCOPE, key_layer2)
             self._project.removeEntry(SCOPE, key_test_name)
             self._project.removeEntry(SCOPE, KEY_TEST_COUNT)
-
-        self._rules = DEFAULT_RULES
 
     def _execute(self, action_name):
         if not self._ready:
