@@ -97,6 +97,9 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
     def switch_panel(self, page):
         self.stackedWidget.setCurrentIndex(page)
     
+    def current_widget(self):
+        return self.stackedWidget.currentWidget()
+    
     def _handle_login_callback(self, success):
         if success:
             current_index = self._main_tab.currentIndex()

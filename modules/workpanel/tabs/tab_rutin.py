@@ -12,7 +12,8 @@ from ...utils import (
     readSetting,
     storeSetting,
     get_project_crs,
-    sdo_to_layer
+    sdo_to_layer,
+    get_layer_config
 )
 from ...api import endpoints
 from ...memo import app_state
@@ -36,16 +37,23 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         super(TabRutin, self).__init__(parent)
         self.setupUi(self)
         self.project = QgsProject
+        self.btn_rutin_simpan.setDisabled(True)
+        self.btn_rutin_selesai.setDisabled(True)
+        self.btn_rutin_layout.setDisabled(True)
 
         self.current_berkas = None
         self.current_layers = []
-        
+        self._sistem_koordinat = ""
+
         self.current_settings = self._get_current_settings()
+
+        self._parcel_ready_to_map = []
 
         self.btn_rutin_cari.clicked.connect(self.cari_berkas_rutin)
         self.btn_rutin_mulai.clicked.connect(self.mulai_berkas_rutin)
         self.btn_rutin_simpan.clicked.connect(self.simpan_berkas_rutin)
         self.btn_rutin_tutup.clicked.connect(self.tutup_berkas_rutin)
+        self.btn_rutin_selesai.clicked.connect(self.selesai_berkas_rutin)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -140,52 +148,59 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
                 if self.current_berkas["newGugusId"] != "":
                     if self.current_berkas["tipeBerkas"] != "DAG":
                         gugus_id = self.current_berkas["newGugusId"]
-                        response_spatial_sdo = endpoints.get_spatial_document_sdo(gugus_ids=[gugus_id])
-                        response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
-                        print(response_spatial_sdo_json.keys())
-
-                        epsg = get_project_crs()
-                        layer = sdo_to_layer(
-                            response_spatial_sdo_json["geoKkpPolygons"],
-                            name="Batas Persil",
-                            symbol='simplepersil.qml',
-                            crs=epsg
-                        )
-                        self.current_layers.append(layer)
+                        self._load_berkas_spasial([gugus_id], False)
                 else:
                     if self.current_berkas["oldGugusIds"]:
                         gugus_ids = [str(id) for id in self.current_berkas["oldGugusIds"]]
-                        response_spatial_sdo = endpoints.get_spatial_document_sdo(
-                            gugus_ids=[gugus_id], 
-                            include_riwayat=True
-                        )
-                        response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
-                        print(response_spatial_sdo_json)
-                        epsg = get_project_crs()
-                        layer = sdo_to_layer(
-                            response_spatial_sdo_json["geoKkpPolygons"],
-                            name="Batas Persil",
-                            symbol='simplepersil.qml',
-                            crs=epsg
-                        )
-                        self.current_layers.append(layer)
+                        self._load_berkas_spasial(gugus_ids, True)
                     else:
                         # TODO: Add new blank layer
                         pass
 
                 self.btn_rutin_cari.setDisabled(True)
                 self.btn_rutin_mulai.setDisabled(True)
+                self.btn_rutin_simpan.setDisabled(False)
                 self.input_rutin_no_berkas.setDisabled(True)
                 self.input_rutin_th_berkas.setDisabled(True)
 
                 if self.current_berkas["tipeBerkas"] == "DAG":
                     # TODO: Add input gambar denah
                     pass
+                else:
+                    self._sistem_koordinat = 'TM3'
             else:
                 QtWidgets.QMessageBox.warning(None, "Perhatian", "Lakukan registrasi blanko terlebih dahulu")
         else:
             message = "\n".join(self.current_berkas["errorStack"])
             QtWidgets.QMessageBox.critical(None, "Error", message)
+
+    def _load_berkas_spasial(self, gugus_ids, riwayat=False):
+        response_spatial_sdo = endpoints.get_spatial_document_sdo(
+            gugus_ids=gugus_ids, 
+            include_riwayat=riwayat
+        )
+        response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
+        print(response_spatial_sdo_json)
+
+        if not response_spatial_sdo_json["status"]:
+            QtWidgets.QMessageBox.critical(None, "Errror", "Proses Unduh Geometri gagal")
+            return
+
+        epsg = get_project_crs()
+        if response_spatial_sdo_json["geoKkpPolygons"]:
+            print(response_spatial_sdo_json["geoKkpPolygons"][0])
+            
+            if response_spatial_sdo_json["geoKkpPolygons"]:
+                layer_config = get_layer_config(20100)
+                layer = sdo_to_layer(
+                    response_spatial_sdo_json["geoKkpPolygons"],
+                    name=layer_config["Nama Layer"],
+                    symbol=layer_config["Style Path"],
+                    crs=epsg,
+                    coords_field='boundary'
+                )
+                self.current_layers.append(layer)
+        
 
     def simpan_berkas_rutin(self):
         if self.current_berkas and self.current_berkas["tipeBerkas"] == "DAG":
@@ -201,12 +216,14 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
                 topo_error_message.append(message)
 
         if topo_error_message:
-            QtWidgets.QMessageBox.warning(None, "Perhatian", topo_error_message.join("\n"))
+            QtWidgets.QMessageBox.warning(None, "Perhatian", "\n".join(topo_error_message))
             return
 
-        # _create_dataset_integration save to self
+        self._create_dataset_integration()
+
         gambar_ukur_id = self.current_berkas["gambarUkurs"] if self.current_berkas["gambarUkurs"] else ""
         desain_persil = DesainPersil(
+            parent=self,
             nomor_berkas=self.current_berkas["nomorBerkas"],
             tahun_berkas=self.current_berkas["tahunBerkas"],
             kantor_id=self.current_settings["kantor"]["kantorID"],
@@ -214,7 +231,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             tipe_berkas=self.current_berkas["tipeBerkas"],
             gambar_ukur_id=gambar_ukur_id,
             kelurahan_id=self.current_settings["kelurahan"]["DESAID"],
-            tipe_sistem_koordinat="3",
+            tipe_sistem_koordinat="TM3",
             new_parcel_number=self.current_berkas["newParcelNumber"],
             new_apartment_number=self.current_berkas["newApartmentNumber"],
             new_parcels=self.current_berkas["newParcels"],
@@ -223,9 +240,174 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             old_apartments=self.current_berkas["oldApartments"]
         )
         desain_persil.show()
+        desain_persil.integrasi.connect(self._process_integration)
+
+    def _process_integration(self, payload):
+        sdo_to_submit = {}
+        # not saving wilayah id
+
+        list_data = []
+        print('integrasi', payload)
+        for data in payload['ds_parcel']["PersilBaru"]:
+            temp = {
+                "OID": data["OID"],
+                "Label": data["LABEL"],
+                "Area": float(str(data["AREA"]).replace(',', '.')),
+                "Boundary": data["BOUNDARY"],
+                "Text": data["TEXT"],
+                "Keterangan": data["KETERANGAN"],
+                "Height": data["HEIGHT"],
+                "Orientation": data["ORIENTATION"],
+            }
+            list_data.append(temp)
+        sdo_to_submit['PersilBaru'] = list_data
+
+        list_data = []
+        for data in payload['ds_parcel']["PersilEdit"]:
+            temp = {
+                "OID": data["OID"],
+                "REGID": data["REGID"],
+                "NIB": data["NIB"],
+                "Luast": float(str(data["LUAST"]).replace(',', '.')),
+                "Label": data["LABEL"],
+                "Area": float(str(data["AREA"]).replace(',', '.')),
+                "Boundary": data["BOUNDARY"],
+                "Text": data["TEXT"],
+                "Keterangan": data["KETERANGAN"],
+                "Height": data["HEIGHT"],
+                "Orientation": data["ORIENTATION"],
+            }
+            list_data.append(temp)
+        sdo_to_submit['PersilEdit'] = list_data
+
+        list_data = []
+        for data in payload['ds_parcel']["PersilInduk"]:
+            if data['OID'] is null:
+                continue
+
+            temp = {
+                "OID": data["OID"],
+                "REGID": data["REGID"],
+                "NIB": data["NIB"],
+                "Luast": float(str(data["LUAST"]).replace(',', '.')),
+                "Label": data["LABEL"],
+                "Area": float(str(data["AREA"]).replace(',', '.')),
+                "Boundary": data["BOUNDARY"],
+                "Text": data["TEXT"],
+                "Keterangan": data["KETERANGAN"],
+                "Height": data["HEIGHT"],
+                "Orientation": data["ORIENTATION"],
+            }
+            list_data.append(temp)
+        sdo_to_submit['PersilInduk'] = list_data
+
+        if self.current_berkas["tipeBerkas"] in ["SUB", "UNI"]:
+            if self.current_berkas["delParcels"]:
+                for p in self.current_berkas["delParcels"]:
+                    self.dataset_integration["PersilMati"].append([str(p)])
+        
+        self._fill_entity_datatable()
+        self._fill_text_entity()
+        self._fill_point_entity()
+        self._fill_dimensi_entity()
+
+        self._run_integration(sdo_to_submit, payload["reset_302"], payload["wilayah_id"])
+    
+    def _run_integration(self, sdo_to_submit, reset302, wilayah_id):
+        current_settings = self._get_current_settings()
+        if not current_settings["kantor"]:
+            return
+
+        gu_reg_id = ""
+        if self.current_berkas["gambarUkurs"]:
+            gu_reg_id = str(self.current_berkas["gambarUkurs"][0])
+        
+        skb = "NonTM3" if self._sistem_koordinat not in ["TM3", "NonTM3"] else "TM3"
+        user_id = app_state.get('user_id', '')
+        print(self.current_berkas.keys())
+        response = endpoints.submit_sdo(
+            nomor_berkas=self.current_berkas["nomorBerkas"],
+            tahun_berkas=self.current_berkas["tahunBerkas"],
+            kantor_id=current_settings["kantor"]["kantorID"],
+            tipe_kantor_id=str(current_settings["kantor"]["tipeKantorId"]),
+            wilayah_id=wilayah_id,
+            petugas_id=user_id.value,
+            user_id=user_id.value,
+            gugus_ids=self.current_berkas["newGugusId"],
+            gu_id=gu_reg_id,
+            sistem_koordinat=skb,
+            keterangan="",
+            reset302=reset302,
+            sdo_to_submit=sdo_to_submit
+        )
+        response_json = json.loads(response.content)
+        print(response_json)
+        if not response_json:
+            QtWidgets.QMessageBox.critical(
+                None, 
+                'Integrasi', 
+                'Integrasi gagal!\nCek service berkas spatial di server sudah dijalankan!'
+            )
+        
+        if response_json["Error"]:
+            if response_json["Error"][0]["message"].startswith('Geometri persil dengan ID') \
+                    or response_json["Error"][0]["message"].startswith('Geometri apartemen dengan ID'):
+                msg = str(response_json["Error"][0]["message"]).split('|')[0]
+                QtWidgets.QMessageBox.critical(
+                    None, 
+                    'GeoKKP Web', 
+                    msg
+                )
+            else:
+                msg = str(response_json["Error"][0]["message"])
+                QtWidgets.QMessageBox.critical(
+                    None, 
+                    'GeoKKP Web', 
+                    msg
+                )
+            return
+        
+
+        self._parcel_ready_to_map = []
+        for persil in response_json["PersilBaru"]:
+            regid = persil["regid"]
+            self._parcel_ready_to_map.append(regid)
+
+            if regid not in self.current_berkas["oldParcels"] \
+                and regid not in self.current_berkas["delParcels"] \
+                and regid not in self.current_berkas["oldApartments"] \
+                and regid not in self.current_berkas["delApartments"]:
+                self.current_berkas["newParcels"].append(regid)
+            
+            nib = persil["nib"]
+            # TODO: Update NIB to new parcels
+
+        self.btn_rutin_selesai.setDisabled(False)
+        self.btn_rutin_layout.setDisabled(False)
+        
+        QtWidgets.QMessageBox.information(
+            None, 
+            'GeoKKP Web', 
+            "Data telah disimpan ke dalam database. \nLanjutkan ke pencetakan dan plotting peta"
+        )
+
+    def _fill_entity_datatable(self):
+        pass
+    
+    def _fill_text_entity(self):
+        pass
+
+    def _fill_point_entity(self):
+        pass
+
+    def _fill_dimensi_entity(self):
+        pass
+
+    def _process_ganti_desa(self, payload):
+        pass
 
     def _create_dataset_integration(self):
-        dataset_integration = {
+        self.dataset_integration = {
             "PersilMati": [], # REGID
             "Poligon": [], # Key, Type, Label, Height, Orientation, Boundary, Text
             "Garis": [], # KEY, TYPE, LINE
@@ -252,3 +434,6 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             iface.mapCanvas().refresh()
             self.current_layers = []
             self.btn_rutin_mulai.setDisabled(False)
+
+    def selesai_berkas_rutin(self):
+        pass

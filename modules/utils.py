@@ -1,4 +1,5 @@
 import re
+import json
 import os
 import math
 import urllib.parse
@@ -40,6 +41,8 @@ Variabel global dan modul global untuk digunakan di plugin GeoKKP-GIS
 TODO: Pindah variabel & konstanta global ke modul terpisah
 """
 
+layer_json_file = os.path.join(
+    os.path.dirname(__file__), '../config/layers.json')
 
 epsg4326 = QgsCoordinateReferenceSystem('EPSG:4326')
 
@@ -96,7 +99,7 @@ SDO_GTYPE_MAP = {
     '09': 'MultiSolid',
 }
 
-SDO_FIELD_EXCLUDE = ['text', 'boundary', 'rotation', 'height']
+SDO_FIELD_EXCLUDE = ['text', 'boundary']
 
 
 # constants for processing snap parameter (auto-adjust)
@@ -410,9 +413,9 @@ def parse_sdo_geometry(elem_info, ordinates):
         return QgsGeometry.fromPolygonXY([result])
 
 
-def sdo_to_feature(sdo, fields):
+def sdo_to_feature(sdo, fields, coords_field='boundary'):
     attrs = [sdo[f] for f in fields]
-    geometry = parse_sdo_geometry(sdo['boundary']['sdoElemInfo'], sdo['boundary']['sdoOrdinates'])
+    geometry = parse_sdo_geometry(sdo[coords_field]['sdoElemInfo'], sdo[coords_field]['sdoOrdinates'])
 
     feature = QgsFeature()
     feature.setGeometry(geometry)
@@ -420,8 +423,7 @@ def sdo_to_feature(sdo, fields):
 
     return feature
 
-
-def sdo_to_layer(sdo, name, crs=None, symbol=None):
+def sdo_to_layer(sdo, name, crs=None, symbol=None, coords_field='boundary'):
     if not isinstance(sdo, list):
         sdo = [sdo]
 
@@ -431,14 +433,47 @@ def sdo_to_layer(sdo, name, crs=None, symbol=None):
     provider = layer.dataProvider()
 
     pool = ThreadPool()
-    func = partial(sdo_to_feature, fields=fields.keys())
-    features = pool.map(func, sdo)
+    func1 = partial(sdo_to_feature, fields=fields.keys())
+    func2 = partial(func1, coords_field=coords_field)
+    features = pool.map(func2, sdo)
     pool.close()
     pool.join()
     provider.addFeatures(features)
     layer.commitChanges()
 
     return layer
+
+
+def get_layer_config(kode):
+    with open(layer_json_file, "r") as f:
+        layer_config = json.loads(f.read())
+    for layers in layer_config['layers'].values():
+        for layer in layers:
+            if layer["Kode"] == kode:
+                return layer
+    return None
+
+
+def sdo_geokkp_to_layer(sdo, crs):
+    layers = []
+    if sdo["geoKkpPolygons"]:
+        if sdo["geoKkpPolygons"]['boundary']:
+            fields = parse_sdo_fields(sdo["geoKkpPolygons"]["boundary"][0])
+            features = sdo_to_feature(fields, sdo["geoKkpPolygons"]["boundary"])
+            layer_config = get_layer_config(20100)
+            layer = add_layer(
+                layer_config["Nama Layer"],
+                layer_config["Tipe Layer"], 
+                layer_config["Style Path"],
+                fields,
+                crs
+            )
+            layers.append(layer)
+            provider = layer.dataProvider()
+            provider.addFeatures(features)
+            layer.commitChanges()
+
+    return layers
 
 
 def get_epsg_from_tm3_zone(zone, include_epsg_key=True):

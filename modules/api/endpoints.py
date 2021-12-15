@@ -210,18 +210,7 @@ def submit_sdo(
         sistem_koordinat='TM3',
         keterangan='',
         reset302=False,
-        persil_baru=None,
-        persil_edit=None,
-        persil_induk=None,
-        persil_mati=None,
-        persil_rincikan=None,
-        apartemen_baru=None,
-        apartemen_edit=None,
-        poligon=None,
-        garis=None,
-        teks=None,
-        titik=None,
-        dimensi=None,
+        sdo_to_submit={},
         **kwargs):
     return {
         "nomorBerkas": nomor_berkas,
@@ -236,20 +225,7 @@ def submit_sdo(
         "guId": gu_id,
         "reset302": reset302,
         "userid": user_id,
-        "sts": {
-            "PersilBaru": persil_baru,
-            "PersilEdit": persil_edit,
-            "PersilInduk": persil_induk,
-            "PersilMati": persil_mati,
-            "PersilRincikan": persil_rincikan,
-            "ApartemenBaru": apartemen_baru,
-            "ApartemenEdit": apartemen_edit,
-            "Poligon": poligon,
-            "Garis": garis,
-            "Teks": teks,
-            "Titik": titik,
-            "Dimensi": dimensi
-        }
+        "sts": sdo_to_submit
     }
 
 

@@ -81,7 +81,6 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.iface.messageBar().pushMessage("Login Pengguna Berhasil:", username, level=Qgis.Success)
                 self.loginChanged.emit()
                 app_state.set('username', username)
-                app_state.set('logged_in', True)
                 self.getKantorProfile(username)
                 self.get_user(username)
         except Exception as e:
@@ -133,7 +132,8 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         what to do when user is logged in
         """
         self.accept()
-        if self.postlogin is None:
-            self.postlogin = PostLoginDock()
-        # show the dialog
-        self.postlogin.show()
+        app_state.set('logged_in', True)
+        # if self.postlogin is None:
+        #     self.postlogin = PostLoginDock()
+        # # show the dialog
+        # self.postlogin.show()

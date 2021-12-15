@@ -1,5 +1,8 @@
 import os
 import json
+import hashlib
+import shapely
+import shapely.wkt
 
 from qgis.PyQt import QtWidgets, uic
 from qgis.core import QgsProject
@@ -107,7 +110,8 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
     """ Dialog for Desain Persil """
 
     closingPlugin = pyqtSignal()
-    parcel_design_event = pyqtSignal(object)
+    ganti_desa = pyqtSignal(object)
+    integrasi = pyqtSignal(object)
 
     def __init__(self, 
                 parent=iface.mainWindow(),
@@ -129,6 +133,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         super(DesainPersil, self).__init__(parent)
         self.setupUi(self)
         self.btn_proses.setDisabled(True)
+        self._parent = parent
 
         self._current_kantor = {}
         self._current_provinsi = {}
@@ -318,10 +323,163 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         return self._wilayah_prior
 
     def _autofill_persil_data(self):
-        pass
+        for layer in self._parent.current_layers:
+            if layer.name().startswith('(20100)'):
+                features = layer.getFeatures()
+                for feature in features:
+                    identifier = f'{layer.id()}|{feature.id()}'.encode('utf-8')
+                    objectid = hashlib.md5(identifier).hexdigest().upper()
+
+                    # TODO: Text handling
+                    # TODO: freeze qgis layer in here to avoid editing 
+                    teks = self.get_sdo_point(feature)
+                    poli = self.get_sdo_polygon(feature)
+                    if not poli['batas']:
+                        continue
+                    data_row = None
+                    nib = feature.attribute('label') # TODO: Adjust to correct field naming
+                    height = int(feature.attribute('height')) if feature.attribute('height') else 0
+                    orientation = int(feature.attribute('rotation'))  if feature.attribute('rotation') else 0 # TODO: Adjust to correct field naming
+                    luas_round = str(round(poli['luas'], 3))
+                    if len(self._ds_parcel[DS_PERSIL_EDIT]) > 0:
+                        filter_ds = [row for row in self._ds_parcel[DS_PERSIL_EDIT] if row["NIB"] == nib]
+                        if filter_ds:
+                            data_row = filter_ds[0]
+                            # TODO: calculate this
+                            # data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][11]] = sheetNumber
+                            # data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][12]] = boxNumber
+
+                    if len(self._ds_parcel[DS_PERSIL_INDUK]) > 0:
+                        filter_ds = [row for row in self._ds_parcel[DS_PERSIL_INDUK] if row["NIB"] == nib]
+                        if filter_ds:
+                            data_row = filter_ds[0]
+                    
+                    if data_row is not None:
+                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][0]] = objectid # 32 char md5 hash of layer id + feature id
+                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][4]] = nib
+                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][5]] = luas_round
+                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][6]] = poli['batas']
+                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][7]] = teks
+                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][8]] = "Tunggal"
+                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][9]] = height # TODO: get this
+                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][10]] = orientation # TODO: get this
+                    else:
+                        if self._tipe_berkas in ["DAG", "NPR"]:
+                            a_row = {}
+                            for index, col in enumerate(DS_COLUMN_MAP[DS_PERSIL_EDIT]):
+                                a_row[col] = None
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][0]] = objectid
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][4]] = nib
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][5]] = luas_round
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][6]] = poli['batas']
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][7]] = teks
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][8]] = "Tunggal"
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][9]] = height # TODO: get this
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][10]] = orientation # TODO: get this
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][11]] = sheetNumber
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][12]] = boxNumber
+                            self._ds_parcel[DS_PERSIL_EDIT].append(a_row)
+                        elif self._tipe_berkas == "NME":
+                            a_row = {}
+                            for index, col in enumerate(DS_COLUMN_MAP[DS_PERSIL_INDUK]):
+                                a_row[col] = None
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_INDUK][0]] = objectid
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_INDUK][4]] = nib
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_INDUK][5]] = luas_round
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_INDUK][6]] = poli['batas']
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_INDUK][7]] = teks
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_INDUK][8]] = "Tunggal"
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_INDUK][9]] = height # TODO: get this
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_INDUK][10]] = orientation # TODO: get this
+                            self._ds_parcel[DS_PERSIL_INDUK].append(a_row)
+                        else:
+                            a_row = {}
+                            for index, col in enumerate(DS_COLUMN_MAP[DS_PERSIL_BARU]):
+                                a_row[col] = None
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][0]] = objectid
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][1]] = nib
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][2]] = luas_round
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][3]] = poli['batas']
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][4]] = teks
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][5]] = "Tunggal"
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][6]] = 1 # TODO
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][7]] = 0 # TODO
+                            try:
+                                a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][8]] = int(teks.replace("#", ""))
+                            except:
+                                a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][8]] = 0
+                            # a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][9]] = sheetNumber TODO
+                            # a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][10]] = boxNumber TODO
+                            self._ds_parcel[DS_PERSIL_BARU].append(a_row)
+
+        
+        key_function = lambda d: d['URUT']
+        if self._ds_parcel[DS_PERSIL_BARU]:
+            persil_baru_sorted = list(sorted(self._ds_parcel[DS_PERSIL_BARU], key=key_function))
+            self._ds_parcel[DS_PERSIL_BARU] = persil_baru_sorted
+
 
     def _autofill_apartemen_data(self):
-        pass
+        for layer in self._parent.current_layers:
+            if layer.name().startswith('(20100)'):
+                features = layer.getFeatures()
+                for feature in features:
+                    identifier = f'{layer.id()}|{feature.id()}'.encode('utf-8')
+                    objectid = hashlib.md5(identifier).hexdigest().upper()
+
+                    poli = self.get_sdo_polygon(feature)
+                    if not poli['batas']:
+                        continue
+                    data_row = None
+                    nogd = feature.attribute('label') # TODO: Adjust to correct field naming
+                    height = int(feature.attribute('height')) if feature.attribute('height') else 0
+                    orientation = int(feature.attribute('rotation')) if feature.attribute('rotation') else 0 # TODO: Adjust to correct field naming
+                    luas_round = str(round(poli['luas'], 3))
+                    if len(self._ds_parcel[DS_APARTEMEN_EDIT]) > 0:
+                        filter_ds = [row for row in self._ds_parcel[DS_APARTEMEN_EDIT] if row["NOGD"] == nogd]
+                        if filter_ds:
+                            data_row = filter_ds[0]
+                    if data_row is not None:
+                        data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][0]] = objectid # 32 char md5 hash of layer id + feature id
+                        data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][4]] = nogd
+                        data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][5]] = luas_round
+                        data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][6]] = poli['batas']
+                        data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][7]] = "" # TODO
+                        data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][8]] = "Tunggal"
+                        data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][9]] = height # TODO
+                        data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][10]] = orientation # TODO
+                    else:
+                        if self._tipe_berkas == "DEG":
+                            a_row = {}
+                            for index, col in enumerate(DS_COLUMN_MAP[DS_APARTEMEN_EDIT]):
+                                a_row[col] = None
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][0]] = objectid
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][4]] = nogd
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][5]] = luas_round
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][6]] = poli['batas']
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][7]] = "" # TODO
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][8]] = "Tunggal"
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][9]] = height # TODO
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][10]] = orientation # TODO
+                            self._ds_parcel[DS_APARTEMEN_EDIT].append(a_row)
+                        else:
+                            a_row = {}
+                            for index, col in enumerate(DS_COLUMN_MAP[DS_APARTEMEN_BARU]):
+                                a_row[col] = None
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][0]] = objectid
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][1]] = nogd
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][2]] = luas_round
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][3]] = poli['batas']
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][4]] = "" # TODO
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][5]] = "Tunggal"
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][6]] = 1 # TODO
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][7]] = 0 # TODO
+                            self._ds_parcel[DS_APARTEMEN_BARU].append(a_row)
+        
+        key_function = lambda d: d['URUT']
+        if self._ds_parcel[DS_APARTEMEN_BARU]:
+            apartemen_baru_sorted = list(sorted(self._ds_parcel[DS_APARTEMEN_BARU], key=key_function))
+            self._ds_parcel[DS_APARTEMEN_BARU] = apartemen_baru_sorted
 
     def _fill_new_persil(self):
         if not self._new_parcels:
@@ -610,7 +768,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                 parcel_design["old_parcel"] = self._old_parcels
                 parcel_design["ganti_desa"] = self._ganti_desa
                 parcel_design["reset_302"] = self.check_reset_di302.isChecked()
-                self.parcel_design_event.emit(parcel_design)
+                self.integrasi.emit(parcel_design)
         else:
             parcel_design = {
                 "wilayah_id": '',
@@ -628,7 +786,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
             parcel_design["old_parcel"] = self._old_parcels
             parcel_design["ganti_desa"] = self._ganti_desa
             parcel_design["reset_302"] = self.check_reset_di302.isChecked()
-            self.parcel_design_event.emit(parcel_design)
+            self.integrasi.emit(parcel_design)
         self.close()
 
     def _handle_validate(self):
@@ -778,7 +936,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                         "ganti_desa": "1",
                         "reset_302": False
                     }
-                    self.parcel_design_event.emit(parcel_design)
+                    self.ganti_desa.emit(parcel_design)
 
                     QtWidgets.QMessageBox.information(
                         None, 
@@ -803,29 +961,70 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                self.btn_proses.setDisabled(True)
                self.btn_ganti_desa.setDisabled(False)
 
-    def get_sdo_point(self):
-        pass
+    def get_sdo_point(self, feature, srid=24091960):
+        point = feature.geometry().pointOnSurface().asPoint()
+        parcel_geom = {}
+        parcel_geom["ElemArrayOfInts"] = None
+        parcel_geom["OrdinatesArrayOfDoubles"] = None
+        parcel_geom["Dimensionality"] = 0
+        parcel_geom["LRS"] = 0
+        parcel_geom["GeometryType"] = 0
+        parcel_geom["SdoElemInfo"] = [1, 1, 1]
+        parcel_geom["SdoOrdinates"] = [point.x(), point.y()]
+        parcel_geom['SdoGtype'] = 2001
+        parcel_geom['SdoSRID'] = srid
+        parcel_geom['SdoSRIDAsInt'] = srid
+        parcel_geom['SdoPoint'] = None
+        return parcel_geom
 
-    def get_sdo_polygon(self):
-        pass
+    def get_sdo_polygon(self, feature, srid=24091960):
+        polygon_info = {
+            "id": "",
+            "batas": "",
+            "luas": ""
+        }
 
-    def create_sdo_polygon_from_ring(self):
-        pass
+        polygon_info["batas"], polygon_info["luas"] = self.build_sdo_from_polygon(feature, srid)
+        return polygon_info
 
-    def calculate_area(self):
-        pass
+    def build_sdo_from_polygon(self, feature, srid):
+        geom_wkt = feature.geometry().asWkt()
+        geom_shapely = shapely.wkt.loads(geom_wkt)        
+        geom_shapely_ccw = shapely.geometry.polygon.orient(geom_shapely, 1.0)
+        
+        luas = geom_shapely_ccw.area
+        exterior = geom_shapely_ccw.exterior
+        interiors = geom_shapely_ccw.interiors
 
-    def get_linear_ring(self):
-        pass
-    
-    def set_context_menu_visibility(self):
-        pass
-    
-    def move_apartment(self):
-        pass
+        parcel_geom = {}
+        parcel_geom["ElemArrayOfInts"] = None
+        parcel_geom["OrdinatesArrayOfDoubles"] = None
+        parcel_geom["Dimensionality"] = 0
+        parcel_geom["LRS"] = 0
+        parcel_geom["GeometryType"] = 0
+        parcel_geom["SdoElemInfo"] = [1, 1003, 1] # start from index 1
+        prev_end = len(exterior.coords) * 2
+        for interior in interiors:
+            curr_start = prev_end + 1
+            parcel_geom["SdoElemInfo"].append(curr_start)  # continue after exterior position
+            parcel_geom["SdoElemInfo"].append(2003)
+            parcel_geom["SdoElemInfo"].append(1)
+            prev_end += len(interior.coords) * 2 
+        
+        parcel_geom['SdoOrdinates'] = []
+        parcel_geom['SdoGtype'] = 2003
 
-    def refresh_status(self):
-        pass
+        for coord in exterior.coords:
+            parcel_geom['SdoOrdinates'] += coord
+
+        for interior in interiors:
+            for coord in interior.coords:
+                parcel_geom['SdoOrdinates'] += coord
+
+        parcel_geom['SdoSRID'] = srid
+        parcel_geom['SdoSRIDAsInt'] = srid
+
+        return parcel_geom, luas
     
     def _handle_check_nib(self, checked):
         edit_null_count = len([p for p in self._ds_parcel[DS_PERSIL_EDIT] if "NIB" not in p.keys() or not p["NIB"]])

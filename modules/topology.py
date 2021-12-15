@@ -60,9 +60,11 @@ class Topology:
         if not topo_plugin:
             QMessageBox.critical(None, "Error", PLUGIN_NOT_FOUND_ERROR_MESSAGE)
             return
-        self._action_topo_plugin = topo_plugin.findChild(QAction, "mQActionPointer")
-        self._action_topo_plugin.trigger()
 
+        topo_action = topo_plugin.findChild(QAction, 'mQActionPointer')
+        if not topo_action:
+            return
+        topo_action.trigger()
         topo_panel = self._app.findChild(QWidget, "checkDock")
         if not topo_panel:
             return 
