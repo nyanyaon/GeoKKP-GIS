@@ -280,7 +280,8 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
             tahun_berkas=th_berkas,
             kantor_id=self.current_kantor_id,
             tipe_kantor_id=str(self.current_tipe_kantor_id),
-            username=username)
+            username=username,
+        )
         response_start_berkas_json = json.loads(response_start_berkas.content)
         self.current_berkas = response_start_berkas_json
         print(self.current_berkas)
@@ -289,51 +290,64 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
             lanjut_blanko = True
             is_e_sertifikat = readSetting("isESertifikat")
             if is_e_sertifikat and self.tipe_kantor_id not in ["1", "2"]:
-                response_blanko = endpoints.get_blanko_by_berkas_id(berkas_id=self.current_berkas["BERKASID"])
+                response_blanko = endpoints.get_blanko_by_berkas_id(
+                    berkas_id=self.current_berkas["BERKASID"]
+                )
                 response_blanko_json = json.loads(response_blanko.content)
                 if len(response_blanko_json["BLANKO"]) > 0:
                     lanjut_blanko = True
                 else:
                     lanjut_blanko = False
-            
-            if self.current_berkas["kodeSpopp"] in [
-                "SPOPP-3.46.3",
-                "SPOPP-3.09.9",
-                "SPOPP-3.09.1",
-                "SPOPP-3.09.2",
-                "SPOPP-3.18.1",
-                "SPOPP-3.12.1"
-            ] or lanjut_blanko :
+
+            if (
+                self.current_berkas["kodeSpopp"]
+                in [
+                    "SPOPP-3.46.3",
+                    "SPOPP-3.09.9",
+                    "SPOPP-3.09.1",
+                    "SPOPP-3.09.2",
+                    "SPOPP-3.18.1",
+                    "SPOPP-3.12.1",
+                ]
+                or lanjut_blanko
+            ):
                 if self.current_berkas["newGugusId"] != "":
                     if self.current_berkas["tipeBerkas"] != "DAG":
                         gugus_id = self.current_berkas["newGugusId"]
-                        response_spatial_sdo = endpoints.get_spatial_document_sdo(gugus_ids=[gugus_id])
-                        response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
+                        response_spatial_sdo = endpoints.get_spatial_document_sdo(
+                            gugus_ids=[gugus_id]
+                        )
+                        response_spatial_sdo_json = json.loads(
+                            response_spatial_sdo.content
+                        )
                         print(response_spatial_sdo_json)
 
                         epsg = get_project_crs()
                         layer = sdo_to_layer(
                             response_spatial_sdo_json["geoKkpPolygons"],
                             name="Batas Persil",
-                            symbol='simplepersil.qml',
-                            crs=epsg
+                            symbol="simplepersil.qml",
+                            crs=epsg,
                         )
                         self.current_layers.append(layer)
                 else:
                     if self.current_berkas["oldGugusIds"]:
-                        gugus_ids = [str(id) for id in self.current_berkas["oldGugusIds"]]
+                        gugus_ids = [
+                            str(id) for id in self.current_berkas["oldGugusIds"]
+                        ]
                         response_spatial_sdo = endpoints.get_spatial_document_sdo(
-                            gugus_ids=[gugus_id], 
-                            include_riwayat=True
+                            gugus_ids=[gugus_id], include_riwayat=True
                         )
-                        response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
+                        response_spatial_sdo_json = json.loads(
+                            response_spatial_sdo.content
+                        )
                         print(response_spatial_sdo_json)
                         epsg = get_project_crs()
                         layer = sdo_to_layer(
                             response_spatial_sdo_json["geoKkpPolygons"],
                             name="Batas Persil",
-                            symbol='simplepersil.qml',
-                            crs=epsg
+                            symbol="simplepersil.qml",
+                            crs=epsg,
                         )
                         self.current_layers.append(layer)
                     else:
@@ -349,7 +363,9 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
                     # TODO: Add input gambar denah
                     pass
             else:
-                QtWidgets.QMessageBox.warning(None, "Perhatian", "Lakukan registrasi blanko terlebih dahulu")
+                QtWidgets.QMessageBox.warning(
+                    None, "Perhatian", "Lakukan registrasi blanko terlebih dahulu"
+                )
         else:
             message = "\n".join(self.current_berkas["errorStack"])
             QtWidgets.QMessageBox.critical(None, "Error", message)
@@ -367,7 +383,9 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
                 topo_error_message.append(message)
 
         if topo_error_message:
-            QtWidgets.QMessageBox.warning(None, "Perhatian", topo_error_message.join("\n"))
+            QtWidgets.QMessageBox.warning(
+                None, "Perhatian", topo_error_message.join("\n")
+            )
             return
 
     def tutup_berkas_rutin(self):
