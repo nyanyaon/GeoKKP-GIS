@@ -42,8 +42,7 @@ Variabel global dan modul global untuk digunakan di plugin GeoKKP-GIS
 TODO: Pindah variabel & konstanta global ke modul terpisah
 """
 
-layer_json_file = os.path.join(
-    os.path.dirname(__file__), '../config/layers.json')
+layer_json_file = os.path.join(os.path.dirname(__file__), "../config/layers.json")
 
 epsg4326 = QgsCoordinateReferenceSystem("EPSG:4326")
 
@@ -102,7 +101,7 @@ SDO_GTYPE_MAP = {
     "09": "MultiSolid",
 }
 
-SDO_FIELD_EXCLUDE = ['text', 'boundary']
+SDO_FIELD_EXCLUDE = ["text", "boundary"]
 
 
 # constants for processing snap parameter (auto-adjust)
@@ -422,9 +421,11 @@ def parse_sdo_geometry(elem_info, ordinates):
         return QgsGeometry.fromPolygonXY([result])
 
 
-def sdo_to_feature(sdo, fields, coords_field='boundary'):
+def sdo_to_feature(sdo, fields, coords_field="boundary"):
     attrs = [sdo[f] for f in fields]
-    geometry = parse_sdo_geometry(sdo[coords_field]['sdoElemInfo'], sdo[coords_field]['sdoOrdinates'])
+    geometry = parse_sdo_geometry(
+        sdo[coords_field]["sdoElemInfo"], sdo[coords_field]["sdoOrdinates"]
+    )
 
     feature = QgsFeature()
     feature.setGeometry(geometry)
@@ -432,7 +433,8 @@ def sdo_to_feature(sdo, fields, coords_field='boundary'):
 
     return feature
 
-def sdo_to_layer(sdo, name, crs=None, symbol=None, coords_field='boundary'):
+
+def sdo_to_layer(sdo, name, crs=None, symbol=None, coords_field="boundary"):
     if not isinstance(sdo, list):
         sdo = [sdo]
 
@@ -456,7 +458,7 @@ def sdo_to_layer(sdo, name, crs=None, symbol=None, coords_field='boundary'):
 def get_layer_config(kode):
     with open(layer_json_file, "r") as f:
         layer_config = json.loads(f.read())
-    for layers in layer_config['layers'].values():
+    for layers in layer_config["layers"].values():
         for layer in layers:
             if layer["Kode"] == kode:
                 return layer
@@ -466,16 +468,16 @@ def get_layer_config(kode):
 def sdo_geokkp_to_layer(sdo, crs):
     layers = []
     if sdo["geoKkpPolygons"]:
-        if sdo["geoKkpPolygons"]['boundary']:
+        if sdo["geoKkpPolygons"]["boundary"]:
             fields = parse_sdo_fields(sdo["geoKkpPolygons"]["boundary"][0])
             features = sdo_to_feature(fields, sdo["geoKkpPolygons"]["boundary"])
             layer_config = get_layer_config(20100)
             layer = add_layer(
                 layer_config["Nama Layer"],
-                layer_config["Tipe Layer"], 
+                layer_config["Tipe Layer"],
                 layer_config["Style Path"],
                 fields,
-                crs
+                crs,
             )
             layers.append(layer)
             provider = layer.dataProvider()

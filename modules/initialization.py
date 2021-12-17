@@ -38,7 +38,7 @@ class Initialize:
         self.simpan_default_layout_settings()
 
     def set_locale(self):
-        locale.setlocale(locale.LC_NUMERIC, 'en_US')
+        locale.setlocale(locale.LC_NUMERIC, "en_US")
 
     def simpan_layer_settings(self):
         """

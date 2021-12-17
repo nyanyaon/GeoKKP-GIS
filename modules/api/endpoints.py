@@ -48,14 +48,12 @@ def get_user_entity_by_username(username, kantor_id, only_valid=True, **kwargs):
     }
 
 
-@api(endpoint='isESertipikat')
+@api(endpoint="isESertipikat")
 def get_is_e_sertifikat(kantor_id):
-    return {
-        "kantorId": str(kantor_id)
-    }
+    return {"kantorId": str(kantor_id)}
 
 
-@api(endpoint='getPropinsi')
+@api(endpoint="getPropinsi")
 def get_provinsi_by_kantor(kantor_id, tipe_kantor_id, **kwargs):
     return {"kantorId": kantor_id, "tipeKantorId": tipe_kantor_id}
 
@@ -170,27 +168,28 @@ def get_parcels(persil_ids, **kwargs):
     return persil_ids
 
 
-@api(endpoint='getApartments')
+@api(endpoint="getApartments")
 def get_apartments(apartment_ids, **kwargs):
     return apartment_ids
 
 
-@api(endpoint='submitSdo')
+@api(endpoint="submitSdo")
 def submit_sdo(
-        nomor_berkas,
-        tahun_berkas,
-        kantor_id,
-        tipe_kantor_id,
-        wilayah_id,
-        petugas_id,
-        user_id,
-        gugus_ids,
-        gu_id,
-        sistem_koordinat='TM3',
-        keterangan='',
-        reset302=False,
-        sdo_to_submit={},
-        **kwargs):
+    nomor_berkas,
+    tahun_berkas,
+    kantor_id,
+    tipe_kantor_id,
+    wilayah_id,
+    petugas_id,
+    user_id,
+    gugus_ids,
+    gu_id,
+    sistem_koordinat="TM3",
+    keterangan="",
+    reset302=False,
+    sdo_to_submit={},
+    **kwargs
+):
     return {
         "nomorBerkas": nomor_berkas,
         "tahunBerkas": tahun_berkas,
@@ -204,7 +203,7 @@ def submit_sdo(
         "guId": gu_id,
         "reset302": reset302,
         "userid": user_id,
-        "sts": sdo_to_submit
+        "sts": sdo_to_submit,
     }
 
 
@@ -266,24 +265,21 @@ def get_zona_tm3_by_berkas(nomor_berkas, tahun_berkas, kantor_id, **kwargs):
 # Wilayah
 @api(endpoint="unduhWilayahSdo")
 def get_wilayah_sdo(wilayah_id, tipe_wilayah, srs, **kwargs):
-    return {
-        "wilayahId": wilayah_id,
-        "tipeWilayah": tipe_wilayah,
-        "srsName": srs
-    }
+    return {"wilayahId": wilayah_id, "tipeWilayah": tipe_wilayah, "srsName": srs}
 
-@api(endpoint='gantiDesa')
+
+@api(endpoint="gantiDesa")
 def ganti_desa(
-        nomor_berkas,
-        tahun_berkas,
-        kantor_id,
-        tipe_kantor_id,
-        wilayah_baru,
-        object_name,
-        object_lama,
-        user_id,
-        **kwargs
-    ):
+    nomor_berkas,
+    tahun_berkas,
+    kantor_id,
+    tipe_kantor_id,
+    wilayah_baru,
+    object_name,
+    object_lama,
+    user_id,
+    **kwargs
+):
     return {
         "nomorBerkas": nomor_berkas,
         "tahunBerkas": tahun_berkas,
@@ -292,5 +288,5 @@ def ganti_desa(
         "wilayahBaru": wilayah_baru,
         "objectName": object_name,
         "objectLama": object_lama,
-        "userId": user_id
+        "userId": user_id,
     }

@@ -6,7 +6,7 @@
 name=GeoKKP-GIS
 qgisMinimumVersion=3.0
 description=This plugin ports GeoKKP for National Land Agency of Indonesia
-version=1.0.0
+version=1.1.0
 author=Dany Laksono, Ivan Busthomi, Nur Izzahudin, Ismail Sunni
 email=danylaksono@ugm.ac.id
 
@@ -21,6 +21,9 @@ repository=https://github.com/danylaksono/GeoKKP-GIS
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 # changelog=
+- Implement API routine
+- Azimuth distance feature
+- Bug fix
 
 # Tags are comma separated with spaces allowed
 tags=GeoKKP, National Land Agency, Parcels
