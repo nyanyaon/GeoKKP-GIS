@@ -31,7 +31,8 @@ class Initialize:
     def __init__(self):
         self.iface = iface
 
-        self.set_locale()
+        # Comment out for removing a bug
+        # self.set_locale()
         self.simpan_layer_settings()
         self.simpan_basemap_settings()
         self.simpan_boundary_settings()
