@@ -21,6 +21,9 @@ repository=https://github.com/danylaksono/GeoKKP-GIS
 hasProcessingProvider=no
 # Uncomment the following line and add your changelog:
 # changelog=
+- Implement API routine
+- Azimuth distance feature
+- Bug fix
 
 # Tags are comma separated with spaces allowed
 tags=GeoKKP, National Land Agency, Parcels
