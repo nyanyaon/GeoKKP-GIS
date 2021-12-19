@@ -64,6 +64,9 @@ grid_1000 = 500
 grid_500 = 250
 grid_250 = 125
 
+# constants for NLP_INDEX
+NLP_INDEX = ["A", "B", "C", "D", "E", "F"]
+
 # constants for TM-3 Zone
 zona_TM3 = {
     "46.2": "EPSG:23830",
@@ -821,3 +824,103 @@ def get_nlp(skala, x, y):
         )
     else:
         return "Kesalahan Penentuan skala"
+
+
+def get_nlp_index(scale, x, y):
+    """
+    Cetak Nomor Index Sel TM3 Berdasar Skala
+
+    argumen:
+        skala   : skala peta dalam string
+        x       : koordinat x dalam CRS TM-3
+        y       : koordinat y dalam CRS TM-3
+    output: string Nomor Index
+    """
+
+    min_x = x_origin
+    min_y = y_origin
+    max_x = x_origin + (56 * 6000)
+    max_y = y_origin + (314 * 6000)
+
+    if x < min_x or x > max_x or y < min_y or y > max_y:
+        return "-"
+
+    k_10rb, b_10rb = map(lambda x: x - 1, bk_10000(x, y))
+    k_2500, b_2500 = map(lambda x: x - 1, bk_2500(x, y))
+    k_1000, b_1000 = map(lambda x: x - 1, bk_1000(x, y))
+    k_500, b_500 = map(lambda x: x - 1, bk_500(x, y))
+    k_250, b_250 = map(lambda x: x - 1, bk_250(x, y))
+
+    if scale == "10000":
+        col = math.floor((x - min_x - (k_10rb * grid_10rb)) / 1000)
+        row = math.floor((y - min_y - (b_10rb * grid_10rb)) / 1000)
+    elif scale == "2500":
+        col = math.floor((x - min_x - (k_10rb * grid_10rb + k_2500 * grid_2500)) / 250)
+        row = math.floor((y - min_y - (b_10rb * grid_10rb + b_2500 * grid_2500)) / 250)
+    elif scale == "1000":
+        col = math.floor(
+            (x - min_x - (k_10rb * grid_10rb + k_2500 * grid_2500 + k_1000 * grid_1000))
+            / 100
+        )
+        row = math.floor(
+            (y - min_y - (b_10rb * grid_10rb + b_2500 * grid_2500 + b_1000 * grid_1000))
+            / 100
+        )
+    elif scale == "500":
+        col = math.floor(
+            (
+                x
+                - min_x
+                - (
+                    k_10rb * grid_10rb
+                    + k_2500 * grid_2500
+                    + k_1000 * grid_1000
+                    + k_500 * grid_500
+                )
+            )
+            / 50
+        )
+        row = math.floor(
+            (
+                y
+                - min_y
+                - (
+                    b_10rb * grid_10rb
+                    + b_2500 * grid_2500
+                    + b_1000 * grid_1000
+                    + b_500 * grid_500
+                )
+            )
+            / 50
+        )
+    elif scale == "250":
+        col = math.floor(
+            (
+                x
+                - min_x
+                - (
+                    k_10rb * grid_10rb
+                    + k_2500 * grid_2500
+                    + k_1000 * grid_1000
+                    + k_500 * grid_500
+                    + k_250 * grid_250
+                )
+            )
+            / 25
+        )
+        row = math.floor(
+            (
+                y
+                - min_y
+                - (
+                    b_10rb * grid_10rb
+                    + b_2500 * grid_2500
+                    + b_1000 * grid_1000
+                    + b_500 * grid_500
+                    + b_250 * grid_250
+                )
+            )
+            / 25
+        )
+
+    return f"{NLP_INDEX[int(col)]}{int(row + 1)}"

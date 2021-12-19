@@ -9,7 +9,7 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-from .utils import readSetting, storeSetting
+from .utils import get_nlp, get_nlp_index, readSetting, storeSetting
 from .api import endpoints
 from .memo import app_state
 
@@ -268,8 +268,19 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
             self._autofill_apartemen_data()
 
         if not self._validate_extent():
-            # TODO: Show error message tergantung proyeksi, tm3 atau bukan
-            pass
+            if self._tipe_sistem_koordinat == "TM3":
+                QtWidgets.QMessageBox.warning(
+                    None,
+                    "KKP Web",
+                    "Koordinat diluar TM3!",
+                )
+            else:
+                QtWidgets.QMessageBox.warning(
+                    None,
+                    "KKP Web",
+                    "Koordinat diluar area penggambaran!",
+                )
+            return
 
         if (
             len(self._ds_parcel[DS_PERSIL_EDIT]) > 0
@@ -334,8 +345,33 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
             self.check_nib.show()
 
     def _validate_extent(self):
-        # TODO: validate extent is it correct
-        return True
+        min_x = 0
+        min_y = 0
+        max_x = 0
+        max_y = 0
+        for layer in self._parent.current_layers:
+            if not layer.name().startswith("(20100)"):
+                continue
+            extent = layer.extent()
+            min_x = min(min_x, extent.xMinimum())
+            min_y = min(min_y, extent.yMinimum())
+            max_x = max(max_x, extent.xMaximum())
+            max_y = max(max_y, extent.xMaximum())
+
+        if self._tipe_sistem_koordinat == "TM3":
+            return not (
+                min_x < 32000 - 10000
+                and max_x > 368000 + 10000
+                and min_y < 282000 - 10000
+                and max_y > 2166000 + 10000
+            )
+        else:
+            return not (
+                min_x < -2200000
+                and max_x > 2200000
+                and min_y < -2200000
+                and max_y > 2200000
+            )
 
     def _handle_lihat_data_changed(self, label):
         if label == LIHAT_DATA_PERSIL_BARU:
@@ -367,8 +403,13 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
 
                     # TODO: Text handling
                     # TODO: freeze qgis layer in here to avoid editing
-                    teks = self.get_sdo_point(feature)
+                    point = feature.geometry().pointOnSurface().asPoint()
+                    teks = self.get_sdo_point(point)
                     poli = self.get_sdo_polygon(feature)
+
+                    sheet_number = get_nlp("250", point.x(), point.y())
+                    box_number = get_nlp_index("250", point.x(), point.y())
+
                     if not poli["batas"]:
                         continue
                     data_row = None
@@ -394,9 +435,8 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                         ]
                         if filter_ds:
                             data_row = filter_ds[0]
-                            # TODO: calculate this
-                            # data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][11]] = sheetNumber TODO
-                            # data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][12]] = boxNumber
+                            data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][11]] = sheet_number
+                            data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][12]] = box_number
 
                     if len(self._ds_parcel[DS_PERSIL_INDUK]) > 0:
                         filter_ds = [
@@ -416,12 +456,8 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                         data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][6]] = poli["batas"]
                         data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][7]] = teks
                         data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][8]] = "Tunggal"
-                        data_row[
-                            DS_COLUMN_MAP[DS_PERSIL_EDIT][9]
-                        ] = height  # TODO: get this
-                        data_row[
-                            DS_COLUMN_MAP[DS_PERSIL_EDIT][10]
-                        ] = orientation  # TODO: get this
+                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][9]] = height
+                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][10]] = orientation
                     else:
                         if self._tipe_berkas in ["DAG", "NPR"]:
                             a_row = {}
@@ -433,14 +469,10 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                             a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][6]] = poli["batas"]
                             a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][7]] = teks
                             a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][8]] = "Tunggal"
-                            a_row[
-                                DS_COLUMN_MAP[DS_PERSIL_EDIT][9]
-                            ] = height  # TODO: get this
-                            a_row[
-                                DS_COLUMN_MAP[DS_PERSIL_EDIT][10]
-                            ] = orientation  # TODO: get this
-                            # a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][11]] = sheetNumber TODO
-                            # a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][12]] = boxNumber
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][9]] = height
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][10]] = orientation
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][11]] = sheet_number
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][12]] = box_number
                             self._ds_parcel[DS_PERSIL_EDIT].append(a_row)
                         elif self._tipe_berkas == "NME":
                             a_row = {}
@@ -452,12 +484,8 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                             a_row[DS_COLUMN_MAP[DS_PERSIL_INDUK][6]] = poli["batas"]
                             a_row[DS_COLUMN_MAP[DS_PERSIL_INDUK][7]] = teks
                             a_row[DS_COLUMN_MAP[DS_PERSIL_INDUK][8]] = "Tunggal"
-                            a_row[
-                                DS_COLUMN_MAP[DS_PERSIL_INDUK][9]
-                            ] = height  # TODO: get this
-                            a_row[
-                                DS_COLUMN_MAP[DS_PERSIL_INDUK][10]
-                            ] = orientation  # TODO: get this
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_INDUK][9]] = height
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_INDUK][10]] = orientation
                             self._ds_parcel[DS_PERSIL_INDUK].append(a_row)
                         else:
                             a_row = {}
@@ -469,16 +497,16 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                             a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][3]] = poli["batas"]
                             a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][4]] = teks
                             a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][5]] = "Tunggal"
-                            a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][6]] = 1  # TODO
-                            a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][7]] = 0  # TODO
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][6]] = 1
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][7]] = 0
                             try:
                                 a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][8]] = int(
                                     teks.replace("#", "")
                                 )
                             except:
                                 a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][8]] = 0
-                            # a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][9]] = sheetNumber TODO
-                            # a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][10]] = boxNumber TODO
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][9]] = box_number
+                            a_row[DS_COLUMN_MAP[DS_PERSIL_BARU][10]] = sheet_number
                             self._ds_parcel[DS_PERSIL_BARU].append(a_row)
 
         if self._ds_parcel[DS_PERSIL_BARU]:
@@ -495,13 +523,15 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                     identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
                     objectid = hashlib.md5(identifier).hexdigest().upper()
 
+                    point = feature.geometry().pointOnSurface().asPoint()
+                    teks = self.get_sdo_point(point)
                     poli = self.get_sdo_polygon(feature)
                     if not poli["batas"]:
                         continue
                     data_row = None
-                    nogd = feature.attribute(
-                        "label"
-                    )  # TODO: Adjust to correct field naming
+                    nogd = (
+                        feature.attribute("label") if feature.attribute("label") else ""
+                    )
                     height = (
                         float(feature.attribute("height"))
                         if feature.attribute("height")
@@ -511,7 +541,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                         float(feature.attribute("rotation"))
                         if feature.attribute("rotation")
                         else 0
-                    )  # TODO: Adjust to correct field naming
+                    )
                     luas_round = str(round(poli["luas"], 3))
                     if len(self._ds_parcel[DS_APARTEMEN_EDIT]) > 0:
                         filter_ds = [
@@ -528,12 +558,10 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                         data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][4]] = nogd
                         data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][5]] = luas_round
                         data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][6]] = poli["batas"]
-                        data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][7]] = ""  # TODO
+                        data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][7]] = teks
                         data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][8]] = "Tunggal"
-                        data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][9]] = height  # TODO
-                        data_row[
-                            DS_COLUMN_MAP[DS_APARTEMEN_EDIT][10]
-                        ] = orientation  # TODO
+                        data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][9]] = height
+                        data_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][10]] = orientation
                     else:
                         if self._tipe_berkas == "DEG":
                             a_row = {}
@@ -543,12 +571,10 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                             a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][4]] = nogd
                             a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][5]] = luas_round
                             a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][6]] = poli["batas"]
-                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][7]] = ""  # TODO
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][7]] = teks
                             a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][8]] = "Tunggal"
-                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][9]] = height  # TODO
-                            a_row[
-                                DS_COLUMN_MAP[DS_APARTEMEN_EDIT][10]
-                            ] = orientation  # TODO
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][9]] = height
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_EDIT][10]] = orientation
                             self._ds_parcel[DS_APARTEMEN_EDIT].append(a_row)
                         else:
                             a_row = {}
@@ -558,10 +584,10 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                             a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][1]] = nogd
                             a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][2]] = luas_round
                             a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][3]] = poli["batas"]
-                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][4]] = ""  # TODO
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][4]] = teks
                             a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][5]] = "Tunggal"
-                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][6]] = 1  # TODO
-                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][7]] = 0  # TODO
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][6]] = 1
+                            a_row[DS_COLUMN_MAP[DS_APARTEMEN_BARU][7]] = 0
                             self._ds_parcel[DS_APARTEMEN_BARU].append(a_row)
 
         if self._ds_parcel[DS_APARTEMEN_BARU]:
@@ -1086,8 +1112,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                 self.btn_proses.setDisabled(True)
                 self.btn_ganti_desa.setDisabled(False)
 
-    def get_sdo_point(self, feature, srid=24091960):
-        point = feature.geometry().pointOnSurface().asPoint()
+    def get_sdo_point(self, point, srid=24091960):
         parcel_geom = {}
         parcel_geom["ElemArrayOfInts"] = None
         parcel_geom["OrdinatesArrayOfDoubles"] = None
