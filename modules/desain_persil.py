@@ -133,6 +133,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
         self.btn_proses.setDisabled(True)
         self._parent = parent
+        self._current_parcel_table = ""
 
         self._current_kantor = {}
         self._current_provinsi = {}
@@ -210,6 +211,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
             self.combo_lihat_data.addItems(
                 [LIHAT_DATA_PERSIL_BARU, LIHAT_DATA_PERSIL_EDIT]
             )
+            self._current_parcel_table = "PersilBaru"
             self._fill_new_persil()
             if self._tipe_berkas in ["DIV", "SPL"]:
                 self.combo_lihat_data.addItem(LIHAT_DATA_PERSIL_INDUK)
@@ -217,19 +219,23 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         elif self._tipe_berkas in ["DEG", "NPR"]:
             if len(self._old_parcels) > 0:
                 self.combo_lihat_data.addItem(LIHAT_DATA_PERSIL_EDIT)
+                self._current_parcel_table = "PersilEdit"
                 self._fill_old_persil(DS_PERSIL_EDIT)
             else:
                 self._process_parcels = False
                 self.combo_lihat_data.addItem(LIHAT_DATA_APARTEMENT_EDIT)
+                self._current_parcel_table = "ApartemenEdit"
                 self._fill_old_apartment(DS_APARTEMEN_EDIT)
         elif self._tipe_berkas == "NME":
             self.combo_lihat_data.addItem(LIHAT_DATA_PERSIL_INDUK)
+            self._current_parcel_table = "PersilInduk"
             self._fill_old_persil(DS_PERSIL_INDUK)
         elif self._tipe_berkas == "DAG":
             self._process_parcels = False
             self.combo_lihat_data.addItems(
                 [LIHAT_DATA_APARTEMENT_BARU, LIHAT_DATA_APARTEMENT_EDIT]
             )
+            self._current_parcel_table = "ApartemenBaru"
             self._fill_new_apartment()
 
         if self._kantor_id is None and self._tipe_kantor_id is not None:
@@ -373,17 +379,135 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                 and max_y > 2200000
             )
 
-    def _handle_lihat_data_changed(self, label):
-        if label == LIHAT_DATA_PERSIL_BARU:
-            pass
-        elif label == LIHAT_DATA_PERSIL_EDIT:
-            pass
-        elif label == LIHAT_DATA_PERSIL_INDUK:
-            pass
-        elif label == LIHAT_DATA_APARTEMENT_BARU:
-            pass
-        elif label == LIHAT_DATA_APARTEMENT_EDIT:
-            pass
+    def _handle_lihat_data_changed(self):
+        self.refresh_status()
+        self.set_context_menu_visibility()
+
+    def set_context_menu_visibility(self):
+        if self._current_parcel_table == "PersilBaru":
+            self.combo_kelurahan.hide()
+            # TODO: miEditedParcel
+            # TODO: miNewParcel
+            # TODO: btnDelete
+            if self._tipe_berkas in ["DIV", "SPL"]:
+                # TODO: miParentParcel
+                pass
+            else:
+                # TODO: miParentParcel
+                pass
+
+            # TODO: miEditedApartment
+            # TODO: miNewApartment
+        elif self._current_parcel_table == "PersilEdit":
+            # TODO: miEditedParcel
+            # TODO: miMerge
+            # TODO: miNewParcel
+            # TODO: btnDelete
+            if self._tipe_berkas in ["DIV", "SPL"]:
+                # TODO: miParentParcel
+                pass
+            else:
+                # TODO: miParentParcel
+                pass
+
+            if self._tipe_berkas in ["DEG", "NME", "DIV"]:
+                if self._ganti_desa == "0":
+                    self.btn_ganti_desa.show()
+                else:
+                    self.btn_ganti_desa.hide()
+            else:
+                self.btn_ganti_desa.hide()
+
+            # TODO: miEditedApartment
+            # TODO: miNewApartment
+        elif self._current_parcel_table == "PersilInduk":
+            # TODO: miEditedParcel
+            # TODO: miMerge
+            # TODO: miNewParcel
+            # TODO: btnDelete
+
+            if self._ganti_desa == "0":
+                self.btn_ganti_desa.show()
+            else:
+                self.btn_ganti_desa.hide()
+
+            # TODO: miEditedApartment
+            # TODO: miNewApartment
+        elif self._current_parcel_table == "ApaartemenBaru":
+            self.btn_ganti_desa.hide()
+            # TODO: miEditedParcel
+            # TODO: miMerge
+            # TODO: miNewParcel
+            # TODO: btnDelete
+            # TODO: miParentParel
+
+            # TODO: miEditedApartment
+            # TODO: miNewApartment
+        else:
+            self.btn_ganti_desa.hide()
+            # TODO: miEditedParcel
+            # TODO: miMerge
+            # TODO: miNewParcel
+            # TODO: btnDelete
+            # TODO: miParentParel
+
+            # TODO: miEditedApartment
+            # TODO: miNewApartment
+
+    def refresh_status(self):
+        jml_persil = 0
+        msg_status = ""
+        label = self.combo_lihat_data.currentText()
+        if label == "Persil Baru":
+            self._current_parcel_table = "PersilBaru"
+            jml_persil = self._new_parcel_number - len(self._new_parcels)
+            msg_status = "Jumlah Persil Baru"
+        elif label == "Persil Edit":
+            self._current_parcel_table = "PersilEdit"
+            if self._tipe_berkas == "DEG":
+                jml_persil = len(self._old_parcels)
+            else:
+                jml_persil = len(self._new_parcels)
+            msg_status = "Jumlah Persil Edit"
+        elif label == "Persil Induk":
+            self._current_parcel_table = "PersilInduk"
+            jml_persil = 1
+            msg_status = "Jumlah Persil Induk"
+        elif label == "Apartemen Baru":
+            self._current_parcel_table = "ApartemenBaru"
+            jml_persil = len(self._new_apartments)
+            msg_status = "Jumlah Apartemen"
+        elif label == "Apartemen Edit":
+            self._current_parcel_table = "ApartemenEdit"
+            jml_persil = len(self._new_apartments)
+            msg_status = "Jumlah Apartemen"
+
+        self.populate_tabel_persil()
+        jml_all = len(self._ds_parcel[self._current_parcel_table])
+        self.label_status_r.setText(f"{jml_all}/{jml_persil}")
+        self.label_status_r.setToolTip(f"{msg_status}/Jumlah seharusnya")
+
+    def populate_tabel_persil(self):
+        self.tabel_desain_persil.setRowCount(0)
+        data = self._ds_parcel[self._current_parcel_table]
+        if not data:
+            return
+        columns = [
+            col
+            for col in data[0].keys()
+            if col not in ["HEIGHT", "ORIENTATION", "BOUNDARY", "TEXT"]
+        ]
+        self.tabel_desain_persil.setColumnCount(len(columns))
+        self.tabel_desain_persil.setHorizontalHeaderLabels(columns)
+
+        for item in data:
+            pos = self.tabel_desain_persil.rowCount()
+            self.tabel_desain_persil.insertRow(pos)
+
+            for index, col in enumerate(columns):
+                self.tabel_desain_persil.setItem(
+                    pos, index, QtWidgets.QTableWidgetItem(str(item[col]))
+                )
 
     def get_wilayah_prior(self, kelurahan_id=None):
         if not kelurahan_id:
@@ -401,7 +525,6 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                     identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
                     objectid = hashlib.md5(identifier).hexdigest().upper()
 
-                    # TODO: Text handling
                     # TODO: freeze qgis layer in here to avoid editing
                     point = feature.geometry().pointOnSurface().asPoint()
                     teks = self.get_sdo_point(point)
@@ -415,7 +538,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                     data_row = None
                     nib = (
                         feature.attribute("label") if feature.attribute("label") else ""
-                    )  # TODO: Adjust to correct field naming
+                    )
                     height = (
                         float(feature.attribute("height"))
                         if feature.attribute("height")
@@ -425,7 +548,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                         float(feature.attribute("rotation"))
                         if feature.attribute("rotation")
                         else 0
-                    )  # TODO: Adjust to correct field naming
+                    )
                     luas_round = str(round(poli["luas"], 3))
                     if len(self._ds_parcel[DS_PERSIL_EDIT]) > 0:
                         filter_ds = [
