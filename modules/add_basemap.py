@@ -13,7 +13,6 @@ from .utils import logMessage, readSetting, loadXYZ
 # using utils
 from .utils import icon
 
-data_basemap = readSetting("basemaps")
 
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
@@ -32,7 +31,7 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
         # self.utils = Utilities
         self.setWindowIcon(icon("icon.png"))
         self.setupUi(self)
-
+        data_basemap = readSetting("basemaps")
         self.populateDaftarBasemap(data_basemap)
         self.buttonTambahLayer.clicked.connect(self.addToQGIS)
 
