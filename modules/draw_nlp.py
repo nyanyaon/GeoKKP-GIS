@@ -15,21 +15,16 @@ from .utils import (
     bk_2500,
     bk_1000,
     bk_500,
-    bk_250
-    )
+    bk_250,
+)
 from .maptools import MapTool
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/gambar_nlp.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/gambar_nlp.ui")
+)
 
 # constants
-skala = [
-    "1:10000",
-    "1:2500",
-    "1:1000",
-    "1:500",
-    "1:250"
-]
+skala = ["1:10000", "1:2500", "1:1000", "1:500", "1:250"]
 
 # constants for NLP
 x_origin = 32000
@@ -42,7 +37,7 @@ grid_250 = 125
 
 
 class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for NLP Dialog """
+    """Dialog for NLP Dialog"""
 
     closingPlugin = pyqtSignal()
 
@@ -85,7 +80,7 @@ class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             self.canvas.scene().removeItem(self.vm)
             self.canvas.scene().removeItem(self.rb)
-        except: # noqa
+        except:  # noqa
             pass
         self.vm = self.create_vertex_marker()
         self.point_tool = MapTool(self.canvas, self.vm)
@@ -96,23 +91,21 @@ class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
         self.canvas.setMapTool(self.point_tool)
 
     def update_titik(self, x, y):
-        self.ambil_titik.setChecked(False)  
+        self.ambil_titik.setChecked(False)
         self.point = QgsPointXY(x, y)
-        self.koordinat.setText(
-            str(round(x, 3)) + ',' + str(round(y, 3))
-            )
+        self.koordinat.setText(str(round(x, 3)) + "," + str(round(y, 3)))
         self.canvas.unsetMapTool(self.point_tool)
         self.deactivateMapTool()
         self.get_nlp_text()
 
-    def create_vertex_marker(self, type='CROSS'):
+    def create_vertex_marker(self, type="CROSS"):
         vm = QgsVertexMarker(self.canvas)
 
-        if type == 'BOX':
+        if type == "BOX":
             icon_type = QgsVertexMarker.ICON_BOX
-        elif type == 'CIRCLE':
+        elif type == "CIRCLE":
             icon_type = QgsVertexMarker.ICON_CIRCLE
-        elif type == 'CROSS':
+        elif type == "CROSS":
             icon_type = QgsVertexMarker.ICON_CROSS
         else:
             icon_type = QgsVertexMarker.ICON_X
@@ -143,7 +136,7 @@ class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
             xMax = x_origin + (k_10rb) * grid_10rb
             yMax = y_origin + (b_10rb) * grid_10rb
             return [xMin, yMin, xMax, yMax]
-        
+
         def rect2500():
             k_2500, b_2500 = bk_2500(x, y)
             ori_10rb_x, ori_10rb_y, p, q = rect10rb()
@@ -152,7 +145,7 @@ class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
             xMax = ori_10rb_x + (k_2500) * grid_2500
             yMax = ori_10rb_y + (b_2500) * grid_2500
             return [xMin, yMin, xMax, yMax]
-        
+
         def rect1000():
             k_1000, b_1000 = bk_1000(x, y)
             ori_2500_x, ori_2500_y, p, q = rect2500()
@@ -161,7 +154,7 @@ class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
             xMax = ori_2500_x + (k_1000) * grid_1000
             yMax = ori_2500_y + (b_1000) * grid_1000
             return [xMin, yMin, xMax, yMax]
-        
+
         def rect500():
             k_500, b_500 = bk_500(x, y)
             ori_1000_x, ori_1000_y, p, q = rect1000()

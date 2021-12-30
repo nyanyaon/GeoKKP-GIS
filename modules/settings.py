@@ -4,12 +4,13 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/settings.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/settings.ui")
+)
 
 
 class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for Zoom to Location """
+    """Dialog for Zoom to Location"""
 
     closingPlugin = pyqtSignal()
 

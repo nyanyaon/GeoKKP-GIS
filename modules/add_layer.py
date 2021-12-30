@@ -9,12 +9,13 @@ from qgis.utils import iface
 from .utils import logMessage, readSetting, add_layer, icon
 
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/addlayerv2.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/addlayerv2.ui")
+)
 
 
 class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for Add Layers from List """
+    """Dialog for Add Layers from List"""
 
     closingPlugin = pyqtSignal()
 
@@ -56,7 +57,9 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
                     attr_theme = str(value["Attributes"][0])
                 except IndexError:
                     attr_theme = None
-                child = QTreeWidgetItem([nama_layer, tipe_layer, style_path, attr_theme])
+                child = QTreeWidgetItem(
+                    [nama_layer, tipe_layer, style_path, attr_theme]
+                )
                 child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
                 child.setCheckState(0, Qt.Unchecked)
                 item.addChild(child)
@@ -65,11 +68,15 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def findLayer(self):
         textto_find = self.cariDaftarLayer.value()
-        items = self.daftarLayer.findItems(textto_find, Qt.MatchContains | Qt.MatchRecursive)
+        items = self.daftarLayer.findItems(
+            textto_find, Qt.MatchContains | Qt.MatchRecursive
+        )
         for item in items:
             item.setSelected(True)
             self.daftarLayer.setCurrentItem(item)
-            self.daftarLayer.scrollToItem(item, QtWidgets.QAbstractItemView.PositionAtTop)
+            self.daftarLayer.scrollToItem(
+                item, QtWidgets.QAbstractItemView.PositionAtTop
+            )
 
     def deleteSelection(self):
         root = self.daftarLayer.invisibleRootItem()
@@ -107,7 +114,7 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
                     layertype = item.text(1)
                     layersymbology = item.text(2)
                     if item.text(3):
-                        fields = json.loads(item.text(3).replace("'",'"'))
+                        fields = json.loads(item.text(3).replace("'", '"'))
                     else:
                         fields = None
                     print(item.text(0), item.text(1), item.text(2), fields)

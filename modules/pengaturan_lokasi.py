@@ -17,18 +17,18 @@ from .utils import (
     dialogBox,
     get_tm3_zone,
     set_project_crs_by_epsg,
-    set_symbology
+    set_symbology,
 )
 
-adm_district_file = os.path.join(
-    os.path.dirname(__file__), '../data/idn_adm_lv2.json')
+adm_district_file = os.path.join(os.path.dirname(__file__), "../data/idn_adm_lv2.json")
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/pengaturan_lokasi.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/pengaturan_lokasi.ui")
+)
 
 
 class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Kotak Dialog Pengaturan dan Pencarian Lokasi  """
+    """Kotak Dialog Pengaturan dan Pencarian Lokasi"""
 
     closingPlugin = pyqtSignal()
 
@@ -66,7 +66,7 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
         # print(self._currentcrs.description())
 
     def setPropinsi(self):
-        """ Isi kolom propinsi """
+        """Isi kolom propinsi"""
         self.cari_propinsi.clear()
         propinsi = []
         for key, value in self.list_kantor_dict.items():
@@ -76,12 +76,12 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
         self.cari_propinsi.addItems(propinsi)
         edit = QLineEdit(self)
         self.cari_propinsi.setLineEdit(edit)
-        self.cari_propinsi.setCurrentText('')
+        self.cari_propinsi.setCurrentText("")
         # completer = QCompleter(propinsi)
         # self.cari_propinsi.setCompleter(completer)
 
     def setKabupaten(self):
-        """ Isi kolom kabupaten """
+        """Isi kolom kabupaten"""
         self.cari_kabupaten.clear()
         kabupaten = []
         currentProvince = self.cari_propinsi.currentText()
@@ -96,7 +96,7 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
         self.cari_kabupaten.addItems(kabupaten)
         edit = QLineEdit(self)
         self.cari_kabupaten.setLineEdit(edit)
-        self.cari_kabupaten.setCurrentText('')
+        self.cari_kabupaten.setCurrentText("")
         # completer = QCompleter(kabupaten)
         # self.cari_kabupaten.setCompleter(completer)
 
@@ -119,7 +119,7 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
         layer.ResetReading()
 
     def plot_lokasi(self):
-        """ Eksekusi pencarian lokasi """
+        """Eksekusi pencarian lokasi"""
         currentKabupaten = self.cari_kabupaten.currentText()
         self.iface.mainWindow().blockSignals(True)
         layer = self.iface.addVectorLayer(adm_district_file, currentKabupaten, "ogr")
@@ -131,7 +131,7 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.mainWindow().blockSignals(False)
 
         layer.setSubsetString(f"WAK = '{currentKabupaten}'")
-        set_symbology(layer, 'administrasi.qml')
+        set_symbology(layer, "administrasi.qml")
         self.iface.actionZoomToLayer().trigger()
 
         # for feature in layer.getFeatures():
@@ -150,4 +150,3 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
             logMessage("Zona TM-3 tidak ditemukan!")
 
         self.accept()
-
