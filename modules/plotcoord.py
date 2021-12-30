@@ -1,11 +1,6 @@
 import os
 
-from qgis.core import (
-    Qgis,
-    QgsCoordinateTransform,
-    QgsGeometry,
-    QgsFeature,
-    QgsProject)
+from qgis.core import Qgis, QgsCoordinateTransform, QgsGeometry, QgsFeature, QgsProject
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtGui import QTextCursor, QTextCharFormat
 from qgis.PyQt.QtCore import pyqtSignal, Qt
@@ -17,14 +12,15 @@ from .utils import (
     validate_raw_coordinates,
     parse_raw_coordinate,
     display_message_bar,
-    logMessage
+    logMessage,
 )
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/plot_coordinate.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/plot_coordinate.ui")
+)
 
 
-class CoordErrorHighlight():
+class CoordErrorHighlight:
     def __init__(self, text_editor=None):
         self._text_editor = text_editor
         self._highlight = QTextCharFormat()
@@ -50,7 +46,7 @@ class CoordErrorHighlight():
 
 
 class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for Coordinate Plot """
+    """Dialog for Coordinate Plot"""
 
     closingPlugin = pyqtSignal()
 
@@ -99,27 +95,34 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
             error_highlight.set_errors(self._coordinate_validation.errors)
             display_message_bar(
                 parent=self.messageBar,
-                tag='Error',
-                message=f'{len(self._coordinate_validation.errors)} errors in coordinate list',
+                tag="Error",
+                message=f"{len(self._coordinate_validation.errors)} errors in coordinate list",
                 level=Qgis.Warning,
                 duration=0,
             )
-            error_message = '\t\n'.join(
-                (f'row: {error.row}, col: {error.col}, value: {error.error_value}'
-                    for error in self._coordinate_validation.errors)
+            error_message = "\t\n".join(
+                (
+                    f"row: {error.row}, col: {error.col}, value: {error.error_value}"
+                    for error in self._coordinate_validation.errors
+                )
             )
-            logMessage(f'Raw coordinate invalid, unexpected value on:\n{error_message}', Qgis.Critical)
+            logMessage(
+                f"Raw coordinate invalid, unexpected value on:\n{error_message}",
+                Qgis.Critical,
+            )
             return
 
         # transform coordinates
         source_crs = self._currentcrs
         canvas_crs = self.canvas.mapSettings().destinationCrs()
-        tr = QgsCoordinateTransform(source_crs, canvas_crs, self.project.instance().transformContext())
+        tr = QgsCoordinateTransform(
+            source_crs, canvas_crs, self.project.instance().transformContext()
+        )
 
         # extract coordinate pairs
         coords = parse_raw_coordinate(raw_coords)
 
-        layer = self.project.instance().mapLayersByName('Persil')[0]
+        layer = self.project.instance().mapLayersByName("Persil")[0]
         feat = QgsFeature()
         feat.setGeometry(QgsGeometry.fromPolygonXY([coords]))
         prov = layer.dataProvider()

@@ -15,21 +15,16 @@ from .utils import (
     bk_2500,
     bk_1000,
     bk_500,
-    bk_250
-    )
+    bk_250,
+)
 from .maptools import MapTool
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/gambar_nlp.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/gambar_nlp.ui")
+)
 
 # constants
-skala = [
-    "1:10000",
-    "1:2500",
-    "1:1000",
-    "1:500",
-    "1:250"
-]
+skala = ["1:10000", "1:2500", "1:1000", "1:500", "1:250"]
 
 # constants for NLP
 x_origin = 32000
@@ -42,7 +37,7 @@ grid_250 = 125
 
 
 class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for NLP Dialog """
+    """Dialog for NLP Dialog"""
 
     closingPlugin = pyqtSignal()
 
@@ -85,7 +80,7 @@ class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             self.canvas.scene().removeItem(self.vm)
             self.canvas.scene().removeItem(self.rb)
-        except: # noqa
+        except:  # noqa
             pass
         self.vm = self.create_vertex_marker()
         self.point_tool = MapTool(self.canvas, self.vm)
@@ -98,21 +93,19 @@ class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
     def update_titik(self, x, y):
         self.ambil_titik.setChecked(False)
         self.point = QgsPointXY(x, y)
-        self.koordinat.setText(
-            str(round(x, 3)) + ',' + str(round(y, 3))
-            )
+        self.koordinat.setText(str(round(x, 3)) + "," + str(round(y, 3)))
         self.canvas.unsetMapTool(self.point_tool)
         self.deactivateMapTool()
         self.get_nlp_text()
 
-    def create_vertex_marker(self, type='CROSS'):
+    def create_vertex_marker(self, type="CROSS"):
         vm = QgsVertexMarker(self.canvas)
 
-        if type == 'BOX':
+        if type == "BOX":
             icon_type = QgsVertexMarker.ICON_BOX
-        elif type == 'CIRCLE':
+        elif type == "CIRCLE":
             icon_type = QgsVertexMarker.ICON_CIRCLE
-        elif type == 'CROSS':
+        elif type == "CROSS":
             icon_type = QgsVertexMarker.ICON_CROSS
         else:
             icon_type = QgsVertexMarker.ICON_X
