@@ -160,15 +160,21 @@ class DimensionAngleTool(QgsMapTool):
                 # self.geomrb_long_arc.show()
 
             elif self.click_counter == 5:  # arc finalised
-                print("counter :", self.click_counter)
                 start_az = self.center_pt.azimuth(self.start_arc_pt)
                 end_az = self.center_pt.azimuth(self.end_arc_pt)
+                if start_az < 0:
+                    start_az = 360 + start_az
+                if end_az < 0:
+                    end_az = 360 + end_az
 
                 delta_az = abs(start_az - end_az)
-                print(start_az, end_az, delta_az)
 
-                small_angle = delta_az
-                large_angle = 360 - delta_az
+                if delta_az >= 180:
+                    large_angle = delta_az
+                    small_angle = 360 - delta_az
+                elif delta_az < 180:
+                    small_angle = delta_az
+                    large_angle = 360 - delta_az
 
                 if self.arc_chosen == "short":
                     angle = small_angle
