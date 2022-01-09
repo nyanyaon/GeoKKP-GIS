@@ -84,17 +84,17 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
 
     def _get_current_settings(self):
         kantor = readSetting("kantorterpilih")
-        provinsi = readSetting("provinsiterpilih")
-        kabupaten = readSetting("kabupatenterpilih")
-        kecamatan = readSetting("kecamatanterpilih")
-        kelurahan = readSetting("kelurahanterpilih")
+        # provinsi = readSetting("provinsiterpilih")
+        # kabupaten = readSetting("kabupatenterpilih")
+        # kecamatan = readSetting("kecamatanterpilih")
+        # kelurahan = readSetting("kelurahanterpilih")
 
         self.current_settings = {
             "kantor": kantor,
-            "provinsi": provinsi,
-            "kabupaten": kabupaten,
-            "kecamatan": kecamatan,
-            "kelurahan": kelurahan,
+            # "provinsi": provinsi,
+            # "kabupaten": kabupaten,
+            # "kecamatan": kecamatan,
+            # "kelurahan": kelurahan,
         }
         return self.current_settings
 
@@ -188,13 +188,13 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         self.cari_berkas_rutin()
 
     def mulai_berkas_rutin(self):
-        if self.current_berkas is not None:
-            QtWidgets.QMessageBox.critical(
-                None,
-                "Tutup berkas",
-                "Tutup berkas yang sedang dikerjakan terlebih dahulu",
-            )
-            return
+        # if self.current_berkas is not None:
+        #     QtWidgets.QMessageBox.critical(
+        #         None,
+        #         "Tutup berkas",
+        #         "Tutup berkas yang sedang dikerjakan terlebih dahulu",
+        #     )
+        #     return
 
         selected_row = self.table_rutin.selectedItems()
         no_berkas = selected_row[0].text()
@@ -334,7 +334,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             tipe_kantor_id=str(self.current_settings["kantor"]["tipeKantorId"]),
             tipe_berkas=self.current_berkas["tipeBerkas"],
             gambar_ukur_id=gambar_ukur_id,
-            kelurahan_id=self.current_settings["kelurahan"]["DESAID"],
+            wilayah_id=self.current_berkas["wilayahId"],
             tipe_sistem_koordinat="TM3",
             new_parcel_number=self.current_berkas["newParcelNumber"],
             new_apartment_number=self.current_berkas["newApartmentNumber"],
