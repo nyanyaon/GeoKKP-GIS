@@ -18,6 +18,7 @@ from ...utils import (
     logMessage,
 )
 from ...api import endpoints
+from ...memo import app_state
 
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../../../ui/workpanel/tab_lokasi.ui")
@@ -296,7 +297,18 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
         storeSetting("kabupatenterpilih", self.current_kabupaten)
         storeSetting("kecamatanterpilih", self.current_kecamatan)
         storeSetting("kelurahanterpilih", self.current_kelurahan)
+        self.get_pagawai()
         self.set_project_crs()
+
+    def get_pagawai(self):
+        kantor_id = self.current_kantor_id
+        username = app_state.get("username", None)
+        if not (username and kantor_id):
+            return
+        response = endpoints.get_user_entity_by_username(username.value, kantor_id)
+        response_json = json.loads(response.content)
+        print("get_user_entity_by_username", response_json)
+        app_state.set("pegawai", response_json)
 
     def _set_crs_by_local_data(self):
         print("using local data")

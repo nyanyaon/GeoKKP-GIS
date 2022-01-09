@@ -7,7 +7,7 @@ import urllib.parse
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
 
-from qgis.PyQt.QtCore import QVariant, QUrl  # noqa
+from qgis.PyQt.QtCore import QVariant, QFile  # noqa
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QPushButton, QMessageBox
 from qgis.core import (
@@ -27,6 +27,7 @@ from qgis.core import (
     QgsApplication,
     QgsAuthMethodConfig,
     QgsProcessingFeatureSourceDefinition,
+    QgsDxfExport,
 )
 from qgis.utils import iface
 from qgis.gui import QgsMapToolIdentifyFeature
@@ -491,6 +492,7 @@ def sdo_geokkp_to_layer(sdo, crs):
 
 
 def get_epsg_from_tm3_zone(zone, include_epsg_key=True):
+    zone = zone.replace(",", ".")
     splitted_zone = zone.split(".")
     major = int(splitted_zone[0])
     minor = int(splitted_zone[1]) if len(splitted_zone) == 2 else 1
@@ -924,3 +926,16 @@ def get_nlp_index(scale, x, y):
         )
 
     return f"{NLP_INDEX[int(col)]}{int(row + 1)}"
+
+
+def export_layer_to_dxf(layers, output_path, encoding=""):
+    dxf_export = QgsDxfExport()
+
+    settings = iface.mapCanvas().mapSettings()
+    # settings.setLayerStyleOverrides( QgsProject.instance().mapThemeCollection().mapThemeStyleOverrides( _yourmaptheme_ ) )
+    dxf_export.setMapSettings(settings)
+    dxf_export.addLayers([QgsDxfExport.DxfLayer(layer) for layer in layers])
+
+    dxfFile = QFile(output_path)
+    result = dxf_export.writeToFile(dxfFile, encoding)
+    return result

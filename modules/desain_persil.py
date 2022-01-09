@@ -1157,11 +1157,13 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
 
             if result == QtWidgets.QMessageBox.Yes:
                 selected_parcels = [str(p) for p in self._old_parcels]
-                user = app_state.set("user", {})
+                user = app_state.get("pegawai", {})
                 user_id = (
                     user.value["userId"]
-                    if user.value and "userId" in user.value.keys()
-                    else None
+                    if user.value
+                    and "userId" in user.value.keys()
+                    and user.value["userId"]
+                    else ""
                 )
                 current_kelurahan_id = self._current_kelurahan["DESAID"]
                 response = endpoints.ganti_desa(

@@ -59,12 +59,11 @@
          "Style Path": "simplepersil.qml",
 		 "Attributes": [
 			{
-				"NIB"			: "String",	 
-				"Jenis Hak"		: "String",
-				"Pemilik"		: "String",
-				"Status Batas"	: "String",
-				"Status Berkas"	: "String",
-				"Foto"			: "String"
+				"key"			: "String",	 
+				"type"		: "String",
+				"label"		: "String",
+				"height"	: "String",
+				"rotation"	: "String"
 			}
 		 
 		 ]

@@ -6,7 +6,7 @@ from .base import api
 ARCH = platform.processor()
 QGIS_VERSION = QgsExpressionContextUtils.globalScope().variable("qgis_version")
 DEFAULT_PROVIDER = "OracleMembershipProvider"
-DEFAULT_APP_NAME = "GeoKKP"
+DEFAULT_APP_NAME = "KKPWeb"
 DEFAULT_APP_VERSION = "4.3.0.0"
 
 
@@ -38,13 +38,15 @@ def get_entity_by_username(username, **kwargs):
 
 
 @api(endpoint="getUserEntityByUserName")
-def get_user_entity_by_username(username, kantor_id, only_valid=True, **kwargs):
+def get_user_entity_by_username(
+    username, kantor_id, only_valid=True, app_version="", processor_arch="", **kwargs
+):
     return {
         "username": username,
         "OnlyValid": only_valid,
         "kantorid": kantor_id,
-        "clientAppVersion": QGIS_VERSION,
-        "clientProcessorArch": ARCH,
+        "clientAppVersion": app_version,
+        "clientProcessorArch": processor_arch,
     }
 
 
@@ -55,6 +57,7 @@ def get_is_e_sertifikat(kantor_id):
 
 @api(endpoint="getPropinsi")
 def get_provinsi_by_kantor(kantor_id, tipe_kantor_id, **kwargs):
+    tipe_kantor_id = str(tipe_kantor_id) if tipe_kantor_id else ""
     return {"kantorId": kantor_id, "tipeKantorId": tipe_kantor_id}
 
 
@@ -290,3 +293,166 @@ def ganti_desa(
         "objectLama": object_lama,
         "userId": user_id,
     }
+
+
+@api(endpoint="getProcessInfo")
+def get_process_info(
+    nomor_berkas, tahun_berkas, kantor_id, wilayah_id, gu_id, **kwargs
+):
+    return {
+        "nomorBerkas": nomor_berkas,
+        "tahunBerkas": tahun_berkas,
+        "kantorId": kantor_id,
+        "wilayahId": wilayah_id,
+        "guId": gu_id,
+    }
+
+
+@api(endpoint="getLandUseData")
+def get_landuse_data(**kwargs):
+    return None
+
+
+@api(endpoint="getAlatUkur")
+def get_alat_ukur(**kwargs):
+    return None
+
+
+@api(endpoint="getMetodeUkur")
+def get_metode_ukur(**kwargs):
+    return None
+
+
+@api(endpoint="getParcelInfo")
+def get_parcel_info(persil_id, **kwargs):
+    return {"persilId": persil_id}
+
+
+@api(endpoint="updatePersil")
+def update_persil(dataset):
+    return {"dSet": dataset}
+
+
+@api(endpoint="getPBTForApbn")
+def get_pbt_for_apbn(
+    nomor_pbt="",
+    tahun_pbt="",
+    kantor_id="",
+    proyek="",
+    tipe_pbt="",
+    start=0,
+    limit=20,
+    count=-1,
+    **kwargs
+):
+    return {
+        "nomorPBT": nomor_pbt,
+        "tahunPBT": tahun_pbt,
+        "kantorId": kantor_id,
+        "proyek": proyek,
+        "tipePBT": tipe_pbt,
+        "start": start,
+        "limit": limit,
+        "count": count,
+    }
+
+
+@api(endpoint="createNewPetaNominatif")
+def create_new_peta_normatif(
+    petugas, kendali_id, berkas_id, wilayah_id, kantor_id, pegawai_id, **kwargs
+):
+    return {
+        "petugas": petugas,
+        "kendaliId": kendali_id,
+        "berkasId": berkas_id,
+        "wilayahId": wilayah_id,
+        "kantorId": kantor_id,
+        "pegawaiId": pegawai_id,
+    }
+
+
+@api(endpoint="createNewPBTForApbn")
+def create_new_pbt_for_apbn(
+    petugas, program_id, wilayah_id, kantor_id, tipe_pbt, **kwargs
+):
+    return {
+        "petugas": petugas,
+        "programId": program_id,
+        "wilayahId": wilayah_id,
+        "kantorId": kantor_id,
+        "tipePBT": tipe_pbt,
+    }
+
+
+@api(endpoint="startEditPBTForApbn")
+def start_edit_pbt_for_apbn(dokumen_pengukuran_id, username, **kwargs):
+    return {"dokumenPengukuranId": dokumen_pengukuran_id, "userName": username}
+
+
+@api(endpoint="getRincikanbyPbt")
+def get_rincikan_by_pbt(peta_bidang_id, **kwargs):
+    return {"petabidangid": peta_bidang_id}
+
+
+@api(endpoint="getLimitPersilPbt")
+def get_limit_persil_pbt(peta_bidang_id="", kantor_id="", **kwargs):
+    return {"petabidangId": peta_bidang_id, "kantorId": kantor_id}
+
+
+@api(endpoint="submitForPtslKtRedis")
+def submit_for_ptsl_kt_redis(
+    dokumen_pengukuran_id="",
+    program_id="",
+    kantor_id="",
+    wilayah_id="",
+    sistem_koordinat="",
+    keterangan="",
+    petugas="",
+    sts={},
+    gugus_id="",
+    gu_id="",
+    user_id="",
+    jumlah_persil="",
+    **kwargs
+):
+    return {
+        "dokumenPengukuranId": dokumen_pengukuran_id,
+        "programId": program_id,
+        "kantorId": kantor_id,
+        "wilayahId": wilayah_id,
+        "sistemKoordinat": sistem_koordinat,
+        "keterangan": keterangan,
+        "petugas": petugas,
+        "sts": sts,
+        "gugusId": gugus_id,
+        "guId": gu_id,
+        "userId": user_id,
+        "jumlahPersil": jumlah_persil,
+    }
+
+
+@api(endpoint="stopPBT")
+def stop_pbt(dokumen_pengukuran_id, **kwargs):
+    return {"dokumenPengukuranId": dokumen_pengukuran_id}
+
+
+@api(endpoint="uploadDxfPbtSkb")
+def upload_dxf_pbt_skb(
+    kantor_id="", mitra_kerja_id="", dok_ukur_id="", file="", **kwargs
+):
+    return {
+        "kantorId": kantor_id,
+        "mitrakerjaId": mitra_kerja_id,
+        "dokukurId": dok_ukur_id,
+        "theFile": file,
+    }
+
+
+@api(endpoint="cekMapping")
+def cek_mapping(persil_ids, **kwargs):
+    return persil_ids
+
+
+@api(endpoint="finnishPBT")
+def finish_pbt(dokumen_pengukuran_id, **kwargs):
+    return {"dokumenPengukuranId": dokumen_pengukuran_id}
