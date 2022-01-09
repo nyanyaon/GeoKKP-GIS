@@ -14,7 +14,6 @@ from .utils import logMessage, readSetting, loadXYZ
 from .utils import icon
 
 
-
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../ui/basemap.ui")
 )
