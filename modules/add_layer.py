@@ -8,7 +8,6 @@ from qgis.utils import iface
 
 from .utils import logMessage, readSetting, add_layer, icon
 
-data_layer = readSetting("layers")
 
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../ui/addlayerv2.ui")
@@ -29,6 +28,7 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
         self._currentcrs = None
         self.setupUi(self)
 
+        data_layer = readSetting("layers")
         try:
             self.populateDaftarLayer(data_layer)
         except Exception:
