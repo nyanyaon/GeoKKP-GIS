@@ -473,7 +473,7 @@ color:rgb(23, 145, 205)</string>
             <item>
              <widget class="QLabel" name="lblTermsOfService">
               <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Versi &lt;a href=&quot;https://github.com/danylaksono/GeoKKP-GIS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#009da5;&quot;&gt;1.0.0&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Versi &lt;a href=&quot;https://github.com/danylaksono/GeoKKP-GIS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#009da5;&quot;&gt;1.1.3&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
