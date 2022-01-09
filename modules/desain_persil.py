@@ -119,7 +119,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         tipe_kantor_id=None,
         tipe_berkas=None,
         gambar_ukur_id=None,
-        kelurahan_id=None,
+        wilayah_id=None,
         tipe_sistem_koordinat=None,
         new_parcel_number=None,
         new_apartment_number=None,
@@ -134,12 +134,12 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         self.btn_proses.setDisabled(True)
         self._parent = parent
         self._current_parcel_table = ""
+        self._provinsi_first_load = True
+        self._kabupaten_first_load = True
+        self._kecamatan_first_load = True
+        self._kelurahan_first_load = True
 
         self._current_kantor = {}
-        self._current_provinsi = {}
-        self._current_kabupaten = {}
-        self._current_kecamatan = {}
-        self._current_kelurahan = {}
         self._provinsi_by_kantor = {}
         self._kabupaten_by_kantor = {}
         self._kecamatan_by_kantor = {}
@@ -162,7 +162,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         self._tipe_kantor_id = tipe_kantor_id
         self._tipe_berkas = tipe_berkas
         self._gambar_ukur_id = gambar_ukur_id
-        self._kelurahan_id = kelurahan_id
+        self._wilayah_id = wilayah_id
         self._tipe_sistem_koordinat = tipe_sistem_koordinat
         self._new_parcel_number = int(new_parcel_number)
         self._new_apartment_number = int(new_apartment_number)
@@ -173,7 +173,6 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         self._ganti_desa = ganti_desa
 
         self._get_current_settings()
-        self._setup_workpanel()
 
         self.combo_lihat_data.currentTextChanged.connect(
             self._handle_lihat_data_changed
@@ -187,6 +186,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         self.btn_batal.clicked.connect(self._handle_batal)
         self.btn_ganti_desa.clicked.connect(self._handle_ganti_desa)
         self.check_nib.stateChanged.connect(self._handle_check_nib)
+        self._setup_workpanel()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -194,14 +194,10 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
 
     def _get_current_settings(self):
         self._current_kantor = readSetting("kantorterpilih")
-        self._current_provinsi = readSetting("provinsiterpilih")
-        self._current_kabupaten = readSetting("kabupatenterpilih")
-        self._current_kecamatan = readSetting("kecamatanterpilih")
-        self._current_kelurahan = readSetting("kelurahanterpilih")
-        self._provinsi_by_kantor = readSetting("provinsibykantor")
-        self._kabupaten_by_provinsi = readSetting("kabupatenbyprovinsi")
-        self._kecamatan_by_kabupaten = readSetting("kecamatanbykabupaten")
-        self._kelurahan_by_kecamatan = readSetting("kelurahanbykecamatan")
+        self._provinsi_by_kantor = readSetting("provinsibykantor", {})
+        self._kabupaten_by_provinsi = readSetting("kabupatenbyprovinsi", {})
+        self._kecamatan_by_kabupaten = readSetting("kecamatanbykabupaten", {})
+        self._kelurahan_by_kecamatan = readSetting("kelurahanbykecamatan", {})
 
     def _setup_workpanel(self):
         self._process_parcels = True
@@ -241,32 +237,9 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         if self._kantor_id is None and self._tipe_kantor_id is not None:
             return
 
-        self.get_wilayah_prior(self._kelurahan_id)
-
-        current_provinsi_id = self._current_provinsi["PROPINSIID"]
-        current_provinsi_index = 0
-        for index, provinsi in enumerate(self._provinsi_by_kantor[self._kantor_id]):
-            if provinsi["PROPINSIID"] == current_provinsi_id:
-                current_provinsi_index = index
+        self.get_wilayah_prior(self._wilayah_id)
 
         self.populate_provinsi(self._kantor_id, str(self._tipe_kantor_id))
-        self.populate_kabupaten(
-            self._kantor_id,
-            str(self._tipe_kantor_id),
-            self._current_provinsi["PROPINSIID"],
-        )
-        self.populate_kecamatan(
-            self._kantor_id,
-            str(self._tipe_kantor_id),
-            self._current_kabupaten["KABUPATENID"],
-        )
-        self.populate_kelurahan(
-            self._kantor_id,
-            str(self._tipe_kantor_id),
-            self._current_kecamatan["KECAMATANID"],
-        )
-
-        # TODO: ask is it okay to use currently selected propinsi instead of using wilayah prior?
 
         if self._process_parcels:
             self._autofill_persil_data()
@@ -385,7 +358,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
 
     def set_context_menu_visibility(self):
         if self._current_parcel_table == "PersilBaru":
-            self.combo_kelurahan.hide()
+            self.btn_ganti_desa.hide()
             # TODO: miEditedParcel
             # TODO: miNewParcel
             # TODO: btnDelete
@@ -515,6 +488,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
 
         response = endpoints.get_wilayah_prior(kelurahan_id)
         self._wilayah_prior = json.loads(response.content)
+        print("_wilayah_prior", self._wilayah_prior)
         return self._wilayah_prior
 
     def _autofill_persil_data(self):
@@ -821,9 +795,6 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
             combo[i].blockSignals(False)
 
     def populate_provinsi(self, kantor_id, tipe_kantor_id):
-        prev = readSetting("provinsiterpilih", {})
-        prev_id = prev["PROPINSIID"] if prev else None
-
         self.clear_combobox(4)
         if (
             kantor_id in self._provinsi_by_kantor.keys()
@@ -845,17 +816,17 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                 )
                 return
 
+        prior = [f for f in self._wilayah_prior if f["TIPEWILAYAHID"] == 1]
         current_index = 0
         for index, provinsi in enumerate(data_provinsi):
-            if provinsi["PROPINSIID"] == prev_id:
+            if provinsi["PROPINSIID"] == prior[0]["WILAYAHID"]:
                 current_index = index
-            self.combo_provinsi.addItem(provinsi["PROPNAMA"])
-        self.combo_provinsi.setCurrentIndex(current_index)
+            self.combo_provinsi.addItem(provinsi["PROPNAMA"], provinsi["PROPINSIID"])
+        if self._provinsi_first_load:
+            self.combo_provinsi.setCurrentIndex(current_index)
+            self._provinsi_first_load = False
 
     def populate_kabupaten(self, kantor_id, tipe_kantor_id, provinsi_id):
-        prev = readSetting("kabupatenterpilih", {})
-        prev_id = prev["KABUPATENID"] if prev else None
-
         self.clear_combobox(3)
         if (
             provinsi_id in self._kabupaten_by_provinsi.keys()
@@ -879,17 +850,19 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                 )
                 return
 
+        prior = [f for f in self._wilayah_prior if f["TIPEWILAYAHID"] in (2, 3, 4)]
         current_index = 0
         for index, kabupaten in enumerate(data_kabupaten):
-            if kabupaten["KABUPATENID"] == prev_id:
+            if kabupaten["KABUPATENID"] == prior[0]["WILAYAHID"]:
                 current_index = index
-            self.combo_kabupaten.addItem(kabupaten["KABUNAMA"])
-        self.combo_kabupaten.setCurrentIndex(current_index)
+            self.combo_kabupaten.addItem(
+                kabupaten["KABUNAMA"], kabupaten["KABUPATENID"]
+            )
+        if self._kabupaten_first_load:
+            self.combo_kabupaten.setCurrentIndex(current_index)
+            self._kabupaten_first_load = False
 
     def populate_kecamatan(self, kantor_id, tipe_kantor_id, kabupaten_id):
-        prev = readSetting("kecamatanterpilih", {})
-        prev_id = prev["KECAMATANID"] if prev else None
-
         self.clear_combobox(2)
         if (
             kabupaten_id in self._kecamatan_by_kabupaten.keys()
@@ -909,22 +882,25 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
             else:
                 QtWidgets.QMessageBox.warning(
                     None,
-                    "Data Kabupaten",
-                    "Tidak bisa membaca data kabupaten dari server",
+                    "Data Kecamatan",
+                    "Tidak bisa membaca data kecamatan dari server",
                 )
                 return
 
+        prior = [f for f in self._wilayah_prior if f["TIPEWILAYAHID"] == 5]
         current_index = 0
         for index, kecamatan in enumerate(data_kecamatan):
-            if kecamatan["KECAMATANID"] == prev_id:
+            if kecamatan["KECAMATANID"] == prior[0]["WILAYAHID"]:
                 current_index = index
-            self.combo_kecamatan.addItem(kecamatan["KECANAMA"])
-        self.combo_kecamatan.setCurrentIndex(current_index)
+            self.combo_kecamatan.addItem(
+                kecamatan["KECANAMA"], kecamatan["KECAMATANID"]
+            )
+
+        if self._kecamatan_first_load:
+            self.combo_kecamatan.setCurrentIndex(current_index)
+            self._kecamatan_first_load = False
 
     def populate_kelurahan(self, kantor_id, tipe_kantor_id, kecamatan_id):
-        prev = readSetting("kelurahanterpilih", {})
-        prev_id = prev["DESAID"] if prev else None
-
         self.clear_combobox(1)
         if (
             kecamatan_id in self._kelurahan_by_kecamatan.keys()
@@ -943,60 +919,54 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
             else:
                 QtWidgets.QMessageBox.warning(
                     None,
-                    "Data Kabupaten",
-                    "Tidak bisa membaca data kabupaten dari server",
+                    "Data Kelurahan",
+                    "Tidak bisa membaca data kelurahan dari server",
                 )
                 return
 
+        prior = [f for f in self._wilayah_prior if f["TIPEWILAYAHID"] in [6, 7]]
         current_index = 0
         for index, kelurahan in enumerate(data_kelurahan):
-            if kelurahan["DESAID"] == prev_id:
+            if kelurahan["DESAID"] == prior[0]["WILAYAHID"]:
                 current_index = index
-            self.combo_kelurahan.addItem(kelurahan["DESANAMA"])
-        self.combo_kelurahan.setCurrentIndex(current_index)
+            self.combo_kelurahan.addItem(kelurahan["DESANAMA"], kelurahan["DESAID"])
 
-    def provinsi_changed(self, index):
+        if self._kelurahan_first_load:
+            self.combo_kelurahan.setCurrentIndex(current_index)
+            self._kelurahan_first_load = False
+
+    def provinsi_changed(self):
         if self._kantor_id not in self._provinsi_by_kantor.keys():
             return
-        data_provinsi = self._provinsi_by_kantor[self._kantor_id]
-        self._current_provinsi = data_provinsi[index]
-
-        current_provinsi_id = self._current_provinsi["PROPINSIID"]
+        current_provinsi_id = self.combo_provinsi.currentData()
         self.populate_kabupaten(
             self._kantor_id, self._tipe_kantor_id, current_provinsi_id
         )
 
-    def kabupaten_changed(self, index):
-        current_provinsi_id = self._current_provinsi["PROPINSIID"]
+    def kabupaten_changed(self):
+        current_provinsi_id = self.combo_provinsi.currentData()
         if current_provinsi_id not in self._kabupaten_by_provinsi.keys():
             return
-        data_kabupaten = self._kabupaten_by_provinsi[current_provinsi_id]
-        self._current_kabupaten = data_kabupaten[index]
 
-        current_kabupaten_id = self._current_kabupaten["KABUPATENID"]
+        current_kabupaten_id = self.combo_kabupaten.currentData()
         self.populate_kecamatan(
             self._kantor_id, self._tipe_kantor_id, current_kabupaten_id
         )
 
     def kecamatan_changed(self, index):
-        current_kabupaten_id = self._current_kabupaten["KABUPATENID"]
+        current_kabupaten_id = self.combo_kabupaten.currentData()
         if current_kabupaten_id not in self._kecamatan_by_kabupaten.keys():
             return
-        data_kecamatan = self._kecamatan_by_kabupaten[current_kabupaten_id]
-        self._current_kecamatan = data_kecamatan[index]
 
-        current_kecamatan_id = self._current_kecamatan["KECAMATANID"]
+        current_kecamatan_id = self.combo_kecamatan.currentData()
         self.populate_kelurahan(
             self._kantor_id, self._tipe_kantor_id, current_kecamatan_id
         )
 
     def kelurahan_changed(self, index):
-        current_kecamatan_id = self._current_kecamatan["KECAMATANID"]
+        current_kecamatan_id = self.combo_kecamatan.currentData()
         if current_kecamatan_id not in self._kelurahan_by_kecamatan.keys():
             return
-        data_kelurahan = self._kelurahan_by_kecamatan[current_kecamatan_id]
-
-        self._current_kelurahan = data_kelurahan[index]
 
     def _handle_process(self):
         if (
@@ -1043,9 +1013,9 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                 "reset_302": False,
             }
             if len(self._wilayah_prior) > 2:
-                parcel_design["wilayah_id"] = self._current_kelurahan["DESAID"]
+                parcel_design["wilayah_id"] = self.combo_kelurahan.currentData()
             else:
-                parcel_design["wilayah_id"] = self._current_kabupaten["KABUPATENID"]
+                parcel_design["wilayah_id"] = self.combo_kabupaten.currentData()
 
             parcel_design["ds_parcel"] = self._ds_parcel
             parcel_design["old_parcel"] = self._old_parcels
@@ -1157,13 +1127,15 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
 
             if result == QtWidgets.QMessageBox.Yes:
                 selected_parcels = [str(p) for p in self._old_parcels]
-                user = app_state.set("user", {})
+                user = app_state.get("pegawai", {})
                 user_id = (
                     user.value["userId"]
-                    if user.value and "userId" in user.value.keys()
-                    else None
+                    if user.value
+                    and "userId" in user.value.keys()
+                    and user.value["userId"]
+                    else ""
                 )
-                current_kelurahan_id = self._current_kelurahan["DESAID"]
+                current_kelurahan_id = self.combo_kelurahan.currentData()
                 response = endpoints.ganti_desa(
                     self._nomor_berkas,
                     self._tahun_berkas,
@@ -1182,7 +1154,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                     QtWidgets.QMessageBox.critical(self, "Error", msg)
                 else:
                     parcels = [str(p) for p in self._old_parcels]
-                    kelurahan_id = self._current_kelurahan["DESAID"]
+                    kelurahan_id = self.combo_kelurahan.currentData()
                     table_name = self.combo_lihat_data.currentText().replace(" ", "")
 
                     msg = "Ganti desa berhasil dilakukan"

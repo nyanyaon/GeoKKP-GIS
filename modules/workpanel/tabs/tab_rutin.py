@@ -3,14 +3,12 @@ import json
 
 from qgis.PyQt import QtWidgets, uic
 from qgis.core import QgsProject
-from qgis.PyQt.QtGui import QDesktopServices
 
-from qgis.PyQt.QtCore import pyqtSignal, QUrl
+from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
 from ...utils import (
     readSetting,
-    storeSetting,
     get_project_crs,
     sdo_to_layer,
     get_layer_config,
@@ -19,6 +17,7 @@ from ...api import endpoints
 from ...memo import app_state
 from ...topology import quick_check_topology
 from ...desain_persil import DesainPersil
+from ...informasi_persil import InformasiPersil
 
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../../../ui/workpanel/tab_rutin.ui")
@@ -54,6 +53,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
 
         self.btn_rutin_cari.clicked.connect(self._handle_cari_berkas_rutin)
         self.btn_rutin_mulai.clicked.connect(self.mulai_berkas_rutin)
+        self.btn_rutin_informasi.clicked.connect(self._handle_informasi_berkas_rutin)
         self.btn_rutin_simpan.clicked.connect(self.simpan_berkas_rutin)
         self.btn_rutin_tutup.clicked.connect(self.tutup_berkas_rutin)
         self.btn_rutin_selesai.clicked.connect(self.selesai_berkas_rutin)
@@ -84,17 +84,17 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
 
     def _get_current_settings(self):
         kantor = readSetting("kantorterpilih")
-        provinsi = readSetting("provinsiterpilih")
-        kabupaten = readSetting("kabupatenterpilih")
-        kecamatan = readSetting("kecamatanterpilih")
-        kelurahan = readSetting("kelurahanterpilih")
+        # provinsi = readSetting("provinsiterpilih")
+        # kabupaten = readSetting("kabupatenterpilih")
+        # kecamatan = readSetting("kecamatanterpilih")
+        # kelurahan = readSetting("kelurahanterpilih")
 
         self.current_settings = {
             "kantor": kantor,
-            "provinsi": provinsi,
-            "kabupaten": kabupaten,
-            "kecamatan": kecamatan,
-            "kelurahan": kelurahan,
+            # "provinsi": provinsi,
+            # "kabupaten": kabupaten,
+            # "kecamatan": kecamatan,
+            # "kelurahan": kelurahan,
         }
         return self.current_settings
 
@@ -117,7 +117,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         )
         response_json = json.loads(response.content)
         print("cari", response_json)
-        self._setup_pagination(response_json)
+        self._setup_pagination(response_json["JUMLAHTOTAL"])
         self.populate_berkas_rutin(response_json["BERKASSPATIAL"])
 
     def populate_berkas_rutin(self, data):
@@ -138,7 +138,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
 
     def _setup_pagination(self, data):
         if self._num_item == -1:
-            self._num_item = data["JUMLAHTOTAL"][0]["COUNT(1)"]
+            self._num_item = data[0]["COUNT(1)"]
         print(self._num_item, self._start_item, self._item_per_page)
 
         if self._num_item > 0:
@@ -188,13 +188,13 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         self.cari_berkas_rutin()
 
     def mulai_berkas_rutin(self):
-        if self.current_berkas is not None:
-            QtWidgets.QMessageBox.critical(
-                None,
-                "Tutup berkas",
-                "Tutup berkas yang sedang dikerjakan terlebih dahulu",
-            )
-            return
+        # if self.current_berkas is not None:
+        #     QtWidgets.QMessageBox.critical(
+        #         None,
+        #         "Tutup berkas",
+        #         "Tutup berkas yang sedang dikerjakan terlebih dahulu",
+        #     )
+        #     return
 
         selected_row = self.table_rutin.selectedItems()
         no_berkas = selected_row[0].text()
@@ -282,9 +282,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         print(response_spatial_sdo_json)
 
         if not response_spatial_sdo_json["status"]:
-            QtWidgets.QMessageBox.critical(
-                None, "Errror", "Proses Unduh Geometri gagal"
-            )
+            QtWidgets.QMessageBox.critical(None, "Error", "Proses Unduh Geometri gagal")
             return
 
         epsg = get_project_crs()
@@ -336,7 +334,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             tipe_kantor_id=str(self.current_settings["kantor"]["tipeKantorId"]),
             tipe_berkas=self.current_berkas["tipeBerkas"],
             gambar_ukur_id=gambar_ukur_id,
-            kelurahan_id=self.current_settings["kelurahan"]["DESAID"],
+            wilayah_id=self.current_berkas["wilayahId"],
             tipe_sistem_koordinat="TM3",
             new_parcel_number=self.current_berkas["newParcelNumber"],
             new_apartment_number=self.current_berkas["newApartmentNumber"],
@@ -431,7 +429,13 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             gu_reg_id = str(self.current_berkas["gambarUkurs"][0])
 
         skb = "NonTM3" if self._sistem_koordinat not in ["TM3", "NonTM3"] else "TM3"
-        user_id = app_state.get("user_id", "")
+        user = app_state.get("pegawai", {})
+        print("user", user)
+        user_id = (
+            user.value["userId"]
+            if user.value and "userId" in user.value.keys() and user.value["userId"]
+            else ""
+        )
         print(self.current_berkas.keys())
         response = endpoints.submit_sdo(
             nomor_berkas=self.current_berkas["nomorBerkas"],
@@ -439,8 +443,8 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             kantor_id=current_settings["kantor"]["kantorID"],
             tipe_kantor_id=str(current_settings["kantor"]["tipeKantorId"]),
             wilayah_id=wilayah_id,
-            petugas_id=user_id.value,
-            user_id=user_id.value,
+            petugas_id=user_id,
+            user_id=user_id,
             gugus_ids=self.current_berkas["newGugusId"],
             gu_id=gu_reg_id,
             sistem_koordinat=skb,
@@ -519,6 +523,31 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             "Titik": [],  # Key, Type, PointOrientation, TextOrientation, Scale, height, Label, PointPosition, TextPosition
             "Dimensi": [],  # Key, Type, Line, InitialPoint, Label, Endpoint, Initialorientation, Labelorientation, Endorientation, Height, Label
         }
+
+    def _handle_informasi_berkas_rutin(self):
+        current_settings = self._get_current_settings()
+        if not current_settings["kantor"]:
+            return
+
+        gambar_ukur_id = (
+            self.current_berkas["gambarUkurs"][0]
+            if self.current_berkas["gambarUkurs"]
+            else ""
+        )
+
+        informasi_persil = InformasiPersil(
+            self.current_berkas["nomorBerkas"],
+            self.current_berkas["tahunBerkas"],
+            current_settings["kantor"]["kantorID"],
+            self.current_berkas["tipeBerkas"],
+            self._sistem_koordinat,
+            self.current_berkas["newParcelNumber"],
+            self.current_berkas["wilayahId"],
+            gambar_ukur_id,
+            self.current_berkas["newParcels"],
+            self.current_berkas["oldParcels"],
+        )
+        informasi_persil.show()
 
     def tutup_berkas_rutin(self):
         current_settings = self._get_current_settings()

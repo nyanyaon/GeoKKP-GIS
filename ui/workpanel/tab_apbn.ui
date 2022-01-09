@@ -22,7 +22,7 @@
         <number>1</number>
        </property>
        <item>
-        <widget class="QToolButton" name="toolButton_9">
+        <widget class="QToolButton" name="btn_buat">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -60,7 +60,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_10">
+        <widget class="QToolButton" name="btn_mulai">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -92,7 +92,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_11">
+        <widget class="QToolButton" name="btn_simpan">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -121,7 +121,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_12">
+        <widget class="QToolButton" name="btn_link">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -132,7 +132,7 @@
           <string>Masukkan Bidang ke Berkas</string>
          </property>
          <property name="text">
-          <string>Unggah</string>
+          <string>Link</string>
          </property>
          <property name="icon">
           <iconset>
@@ -150,7 +150,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_13">
+        <widget class="QToolButton" name="btn_layout">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -176,7 +176,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_14">
+        <widget class="QToolButton" name="btn_tutup">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -202,7 +202,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_15">
+        <widget class="QToolButton" name="btn_selesai">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -248,7 +248,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QgsFilterLineEdit" name="mLineEdit_7">
+              <widget class="QgsFilterLineEdit" name="input_nomor_pbt">
                <property name="showSearchIcon">
                 <bool>true</bool>
                </property>
@@ -269,7 +269,7 @@
               </widget>
              </item>
              <item>
-              <widget class="QgsFilterLineEdit" name="mLineEdit_8">
+              <widget class="QgsFilterLineEdit" name="input_tahun">
                <property name="showSearchIcon">
                 <bool>true</bool>
                </property>
@@ -305,7 +305,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QComboBox" name="kegiatanComboBox_2">
+            <widget class="QComboBox" name="combo_kegiatan">
              <property name="enabled">
               <bool>true</bool>
              </property>
@@ -321,7 +321,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QToolButton" name="toolButton_17">
+       <widget class="QToolButton" name="btn_cari">
         <property name="sizePolicy">
          <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
           <horstretch>0</horstretch>
@@ -354,19 +354,134 @@
       </widget>
      </item>
      <item>
-      <widget class="QListWidget" name="listWidget">
-       <property name="alternatingRowColors">
-        <bool>true</bool>
+      <widget class="QTableWidget" name="table_apbn">
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
        </property>
-       <property name="layoutMode">
-        <enum>QListView::SinglePass</enum>
-       </property>
-       <property name="selectionRectVisible">
-        <bool>false</bool>
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectRows</enum>
        </property>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <widget class="QPushButton" name="btn_first">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>&lt;&lt;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_prev">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>&lt;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="input_page">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="acceptDrops">
+        <bool>false</bool>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_next">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>&gt;</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btn_last">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>50</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>&gt;&gt;</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacer">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
    </item>
   </layout>
  </widget>

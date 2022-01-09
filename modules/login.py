@@ -113,6 +113,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
     def get_user(self, username):
         response = endpoints.get_user_by_username(username)
         response_json = json.loads(response.content)
+        print("get_user_by_username", response_json)
         app_state.set("user", response_json)
 
     def getKantorProfile(self, username):
