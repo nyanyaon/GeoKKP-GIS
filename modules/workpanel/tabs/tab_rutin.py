@@ -386,7 +386,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
 
         list_data = []
         for data in payload["ds_parcel"]["PersilInduk"]:
-            if data["OID"] is null:
+            if data["OID"] is None:
                 continue
 
             temp = {
