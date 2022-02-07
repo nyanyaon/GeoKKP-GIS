@@ -49,6 +49,8 @@ class Initialize:
             layer_json_file,
         )
         data = json.load(f)
+
+        print("initt", data)
         f.close()
         storeSetting("layers", data["layers"])
 

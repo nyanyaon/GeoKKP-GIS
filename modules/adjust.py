@@ -20,7 +20,7 @@ FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../ui/adjust.ui")
 )
 
-TARGET_LAYER = "(20100) Batas Persil"
+TARGET_LAYER = "(020100) Batas Persil"
 
 
 class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):

@@ -1,9 +1,10 @@
 import json
 import os
 from datetime import datetime
+from .models.dataset import Dataset
 
 from qgis.PyQt import QtWidgets, uic
-from qgis.PyQt.QtCore import pyqtSignal
+from qgis.PyQt.QtCore import pyqtSignal, Qt
 from qgis.utils import iface
 
 from .api import endpoints
@@ -51,14 +52,16 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
         self._old_parcels = old_parcels
 
         self._data_spasial = {}
-        self._data_spasial_parcels = {}
+        self._ds_parcels = {}
         self._landuse_data = {}
         self._alat_ukur = []
         self._metode_ukur = []
 
+        self._current_persil = None
+
         self._setup_workpanel()
 
-        self.table_daftar_persil.itemClicked.connect(self._handle_persil_selected)
+        self.table_daftar_persil.currentItemChanged.connect(self._handle_persil_selected)
         self.combo_penggunaan_umum.currentIndexChanged.connect(
             self._populate_penggunaan_khusus
         )
@@ -69,7 +72,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
         self.closingPlugin.emit()
         event.accept()
 
-    def _fetch_process_info(self):
+    def _populate_process_info(self):
         response = endpoints.get_process_info(
             self._nomor_berkas,
             self._tahun_berkas,
@@ -80,6 +83,71 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
         process_info = json.loads(response.content)
         print("process_info", process_info)
         self._data_spasial = process_info
+
+        flattened_ds = {}
+        for table, items in self._data_spasial.items():
+            if table not in flattened_ds:
+                flattened_ds[table] = {}
+            for item in items:
+                flattened_ds[table][item["ITEM"]] = item["VALUE"]
+
+        root = self.tree_info_berkas.invisibleRootItem()
+        child_count = root.childCount()
+        for i in range(child_count):
+            child = root.child(i)
+            grandchild_count = child.childCount()
+            for j in range(grandchild_count):
+                item = child.child(j)
+                property = item.text(0)
+                table_infoumum = flattened_ds.get("InfoUmum", {})
+
+                if property == "Nomor Berkas":
+                    item.setText(1, self._nomor_berkas)
+                elif property == "Tahun Berkas":
+                    item.setText(1, self._tahun_berkas)
+                elif property == "Kode Desa":
+                    value = table_infoumum.get("KODEDESA", "-")
+                    item.setText(1, value)
+                elif property == "Nama Desa":
+                    value = table_infoumum.get("NAMADESA", "-")
+                    item.setText(1, value)
+                elif property == "Nama Kecamatan":
+                    value = table_infoumum.get("NAMAKECA", "-")
+                    item.setText(1, value)
+                elif property == "Nama Kabupaten":
+                    value = table_infoumum.get("NAMAKABU", "-")
+                    item.setText(1, value)
+                elif property == "Nama Propinsi":
+                    value = table_infoumum.get("NAMAPROP", "-")
+                    item.setText(1, value)
+                elif property == "Jenis Prosedur":
+                    value = table_infoumum.get("PROSEDUR", "-")
+                    item.setText(1, value)
+                elif property == "Nama Pemohon":
+                    value = table_infoumum.get("PEMOHON", "-")
+                    item.setText(1, value)
+                elif property == "Alamat Pemohon":
+                    value = table_infoumum.get("ALAMAT", "-")
+                    item.setText(1, value)
+                elif property == "Nomor Gambar Ukur":
+                    value = table_infoumum.get("NOMORGU", "-")
+                    item.setText(1, value)
+                elif property == "Petugas Ukur":
+                    value = table_infoumum.get("NAMAPETUGASUKUR", "-")
+                    item.setText(1, value)
+                elif property == "Nip Petugas Ukur":
+                    value = table_infoumum.get("NIPPETUGASUKUR", "-")
+                    item.setText(1, value)
+                elif property == "Tgl. Mulai Pengukuran":
+                    value = table_infoumum.get("MULAI", "-")
+                    item.setText(1, value)
+                elif property == "Tgl. Selesai Pengukuran":
+                    value = table_infoumum.get("SELESAI", "-")
+                    item.setText(1, value)
+                elif property == "Sistem Koordinat":
+                    item.setText(1, self._sistem_koordinat)
+                elif property == "Jumlah Persil Yang Akan Dibuat":
+                    item.setText(1, self._jumlah_persil_baru)
 
     def _fetch_landuse_data(self):
         landuse_data = readSetting("landusedata", {})
@@ -113,16 +181,14 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
 
     def _fetch_persil(self, persil_ids):
         response = endpoints.get_parcels(persil_ids)
-        response_json = json.loads(response.content)
+        response_json = Dataset(response.content)
         print("data spasial persil", response_json)
-        self._data_spasial_parcels = response_json
+        self._ds_parcels = response_json
         return response_json
 
     def _setup_workpanel(self):
-        self._fetch_process_info()
-
+        self._populate_process_info()
         self._populate_penggunaan_umum()
-        self._populate_penggunaan_khusus()
         self._populate_alat_ukur()
         self._populate_metode_ukur()
         self._populate_table_persil()
@@ -139,6 +205,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
         )
         for tipe in tipe_land_generik:
             self.combo_penggunaan_umum.addItem(tipe["KETERANGAN"])
+        self.combo_penggunaan_umum.setCurrentIndex(-1)
 
     def _populate_penggunaan_khusus(self, landuse_id=None):
         self.combo_penggunaan_khusus.clear()
@@ -164,6 +231,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
 
         for alat in self._alat_ukur:
             self.combo_alat_ukur.addItem(alat["ALATUKUR"])
+        self.combo_alat_ukur.setCurrentIndex(-1)
 
     def _populate_metode_ukur(self):
         self.combo_metode_ukur.clear()
@@ -172,6 +240,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
 
         for metode in self._metode_ukur:
             self.combo_metode_ukur.addItem(metode["METODUKUR"])
+        self.combo_metode_ukur.setCurrentIndex(-1)
 
     def _populate_table_persil(self):
         self.table_daftar_persil.setRowCount(0)
@@ -189,51 +258,32 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
         if not n_parcels:
             return
 
-        parcels = self._fetch_persil(parcels)
-        new_parcels = parcels["PERSILBARU"]
-        if not new_parcels:
-            return
-
-        columns = [
-            col
-            for index, col in enumerate(new_parcels[0].keys())
-            # if index not in [0, 4, 5]
-        ]
-        self.table_daftar_persil.setColumnCount(len(columns))
-        self.table_daftar_persil.setHorizontalHeaderLabels(columns)
-
-        for item in new_parcels:
-            pos = self.table_daftar_persil.rowCount()
-            self.table_daftar_persil.insertRow(pos)
-
-            for index, col in enumerate(columns):
-                self.table_daftar_persil.setItem(
-                    pos, index, QtWidgets.QTableWidgetItem(str(item[col]))
-                )
-
-        self.table_daftar_persil.setColumnHidden(0, True)
-        self.table_daftar_persil.setColumnHidden(4, True)
-        self.table_daftar_persil.setColumnHidden(5, True)
+        ds_persil = self._fetch_persil(parcels)
+        ds_persil.render_to_qtable_widget(
+            table_name="PERSILBARU",
+            table_widget=self.table_daftar_persil,
+            hidden_index=[0, 4, 5]
+        )
+        self.table_daftar_persil.selectRow(0)
+        selected = self.table_daftar_persil.selectedItems()
+        self._handle_persil_selected(selected)
 
     def _handle_persil_selected(self, selected):
-        print("triggered")
         if (
             not selected
-            or "PERSILBARU" not in self._data_spasial_parcels
-            or not self._data_spasial_parcels["PERSILBARU"]
+            or "PERSILBARU" not in self._ds_parcels
+            or not self._ds_parcels["PERSILBARU"]
         ):
             return
 
         self.table_daftar_persil.setColumnHidden(0, False)
         selected_row = self.table_daftar_persil.selectedItems()
-        current_persil = selected_row[0].text()
+        self._current_persil = selected_row[0].text()
         self.table_daftar_persil.setColumnHidden(0, True)
-        response = endpoints.get_parcel_info(current_persil)
-        response_json = json.loads(response.content)
-        print("parcel info", response_json)
 
-        if "PERSILBARU" not in response_json:
-            return
+        response = endpoints.get_parcel_info(self._current_persil)
+        response_json = Dataset(response.content)
+        print("parcel info", response_json)
 
         self.input_nama_jalan.setText(response_json["PERSILBARU"][0]["NAMAJALAN"])
         self.input_nomor.setText(response_json["PERSILBARU"][0]["NOMORBANGUNAN"])
@@ -248,7 +298,6 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
         landuse_id = response_json["PERSILBARU"][0]["GUNATANAHKHUSUSID"]
         print("landuse_id", landuse_id)
         if landuse_id:
-            # self.combo_penggunaan_umum
             guna_tanah_umum_id = response_json["PERSILBARU"][0]["GUNATANAHUMUMID"]
             print("guna_tanah_umum_id", guna_tanah_umum_id)
             for index, row in enumerate(self._landuse_data["TIPELANDGENERIK"]):
@@ -271,7 +320,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
 
         selected_persil = [
             row
-            for row in self._data_spasial_parcels["PERSILBARU"]
+            for row in self._ds_parcels["PERSILBARU"]
             if row["PERSILID"] == selected_persil_id
         ]
         if not selected_persil:
@@ -281,7 +330,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
         if selected_persil[0]["NOMOR"]:
             nomor = str(selected_persil[0]["NOMOR"])
         if nomor and len(nomor) == 14:
-            nomor = nomor[5:14]
+            nomor = nomor[9:14]
 
         user = app_state.get("pegawai", {})
         user_id = (
@@ -323,12 +372,12 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
             }
         )
 
-        gunatanah_khusus = self.combo_penggunaan_khusus.currentData()
+        gunatanah_khusus = self.combo_penggunaan_khusus.currentData() or {}
         data["GUNATANAH"].append(
             {
                 "PENGGUNAANTANAHID": "",
                 "PERSILID": selected_persil[0]["PERSILID"],
-                "GUNATANAHKHUSUSID": gunatanah_khusus["landuse_id"],
+                "GUNATANAHKHUSUSID": gunatanah_khusus.get("landuse_id", ""),
                 "USERUPDATE": user_id,
                 "LASTUPDATE": now,
             }
@@ -337,7 +386,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
         response = endpoints.update_persil(data)
         print(response.content)
         response_str = response.content.decode("UTF-8")
-        if response_str.split(":")[-1] == "OK":
+        if response_str.split(":")[0] == "OK":
             QtWidgets.QMessageBox.information(self, "Sukses", "Persil telah di simpan")
         else:
             QtWidgets.QMessageBox.critical(self, "Error", response_str)

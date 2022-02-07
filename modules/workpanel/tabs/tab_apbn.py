@@ -319,7 +319,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
             return
 
         epsg = get_project_crs()
-        layer_config = get_layer_config(20100)
+        layer_config = get_layer_config("020100")
 
         if response_spatial_sdo_json["geoKkpPolygons"]:
             layer = sdo_to_layer(

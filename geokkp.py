@@ -1002,17 +1002,17 @@ class GeoKKP:
             dialogBox(e)
 
     def toggle_titik_persil(self):
-        # check whether batas persil layer (20100) is loaded
+        # check whether batas persil layer (020100) is loaded
         persil_layer = None
         all_layers = QgsProject.instance().mapLayers().values()
         for layer in all_layers:
-            if layer.name() == "(20100) Batas Persil":
+            if layer.name() == "(020100) Batas Persil":
                 persil_layer = layer
                 break
         if not persil_layer:
             self.iface.messageBar().pushMessage(
                 "Peringatan",
-                "Tambahkan layer Batas Persil (20100) sebelum menggunakan Tool ini.",
+                "Tambahkan layer Batas Persil (020100) sebelum menggunakan Tool ini.",
                 level=Qgis.Warning,
             )
             return

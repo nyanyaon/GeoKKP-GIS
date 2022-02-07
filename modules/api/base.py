@@ -19,7 +19,6 @@ class API:
 
     @staticmethod
     def build_api_payload(payload):
-        print("api payload", payload)
         return json.dumps(payload).encode("utf8")
 
     def request(
@@ -33,6 +32,7 @@ class API:
     ):
         request_url = self._build_url(endpoint)
         request_body = self.build_api_payload(body)
+        print("api", request_url, request_body)
         (response, content) = self._client.request(
             url=request_url,
             method=method,
