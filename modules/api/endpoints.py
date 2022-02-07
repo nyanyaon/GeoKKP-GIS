@@ -50,6 +50,13 @@ def get_user_entity_by_username(
     }
 
 
+@api(endpoint="getPetugasUkur")
+def get_petugas_ukur(kantor_id, **kwargs):
+    return {
+        "kantorId": kantor_id
+    }
+
+
 @api(endpoint="isESertipikat")
 def get_is_e_sertifikat(kantor_id):
     return {"kantorId": str(kantor_id)}
@@ -215,8 +222,18 @@ def get_parcel_not_linked_to_302(berkas_id, pengukuran_ulang=True, **kwargs):
     return {"berkasId": berkas_id, "pengukuranUlang": pengukuran_ulang}
 
 
+@api(endpoint="getParcelNotLinkedTo302A")
+def get_parcel_not_linked_to_302a(berkas_id, **kwargs):
+    return {"berkasId": berkas_id}
+
+
 @api(endpoint="get302NotLinkedToParcel")
 def get_302_not_linked_to_parcel(berkas_id, **kwargs):
+    return {"berkasId": berkas_id}
+
+
+@api(endpoint="get302ANotLinkedToParcel")
+def get_302a_not_linked_to_parcel(berkas_id, **kwargs):
     return {"berkasId": berkas_id}
 
 
@@ -225,8 +242,66 @@ def get_parcel_linked_to_302(berkas_id, **kwargs):
     return {"berkasId": berkas_id}
 
 
+@api(endpoint="getParcelLinkedTo302A")
+def get_parcel_linked_to_302a(berkas_id, **kwargs):
+    return {"berkasId": berkas_id}
+
+
+@api(endpoint="removeParcelFromDI302")
+def remove_parcel_from_di302(di302, **kwargs):
+    return {
+        "di302": di302
+    }
+
+
+@api(endpoint="removeParcelFromDI302A")
+def remove_parcel_from_di302a(di302a, **kwargs):
+    return {
+        "di302A": di302a
+    }
+
+
+@api(endpoint="updateDI302")
+def update_di302(di302, id_persil, nib, luas_persil, **kwargs):
+    return {
+        "di302": di302,
+        "idPersil": id_persil,
+        "nib": nib,
+        "luasPersil": luas_persil
+    }
+
+
+@api(endpoint="updateDI302A")
+def update_di302a(di302a, id_persil, nib, luas_persil, **kwargs):
+    return {
+        "di302A": di302a,
+        "idPersil": id_persil,
+        "nib": nib,
+        "luasPersil": luas_persil
+    }
+
+
+@api(endpoint="unlinkAllParcelsToDI302")
+def unlink_all_parcels_to_di302(berkas_id, **kwargs):
+    return {
+        "berkasId": berkas_id
+    }
+
+
+@api(endpoint="unlinkAllParcelsToDI302A")
+def unlink_all_parcels_to_di302a(berkas_id, **kwargs):
+    return {
+        "berkasId": berkas_id
+    }
+
+
 @api(endpoint="autoLinkParcelToDI302")
 def autolink_parcel_to_302(berkas_id, **kwargs):
+    return {"berkasId": berkas_id}
+
+
+@api(endpoint="autoLinkParcelToDI302A")
+def autolink_parcel_to_302a(berkas_id, **kwargs):
     return {"berkasId": berkas_id}
 
 

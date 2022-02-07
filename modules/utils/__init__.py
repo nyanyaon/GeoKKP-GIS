@@ -43,7 +43,7 @@ Variabel global dan modul global untuk digunakan di plugin GeoKKP-GIS
 TODO: Pindah variabel & konstanta global ke modul terpisah
 """
 
-layer_json_file = os.path.join(os.path.dirname(__file__), "../config/layers.json")
+layer_json_file = os.path.join(os.path.dirname(__file__), "../../config/layers.json")
 
 epsg4326 = QgsCoordinateReferenceSystem("EPSG:4326")
 
@@ -312,7 +312,7 @@ def save_with_description(layer, outputfile):
 
 def iconPath(name):
     # logMessage(os.path.join(os.path.dirname(__file__), "images", name))
-    return os.path.join(os.path.dirname(__file__), "..", "images", name)
+    return os.path.join(os.path.dirname(__file__), "..", "..", "images", name)
 
 
 def icon(name):
@@ -475,7 +475,7 @@ def sdo_geokkp_to_layer(sdo, crs):
         if sdo["geoKkpPolygons"]["boundary"]:
             fields = parse_sdo_fields(sdo["geoKkpPolygons"]["boundary"][0])
             features = sdo_to_feature(fields, sdo["geoKkpPolygons"]["boundary"])
-            layer_config = get_layer_config(20100)
+            layer_config = get_layer_config("020100")
             layer = add_layer(
                 layer_config["Nama Layer"],
                 layer_config["Tipe Layer"],

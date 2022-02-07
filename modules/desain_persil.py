@@ -1,15 +1,22 @@
 import os
 import json
 import hashlib
-import shapely
-import shapely.wkt
 
 from qgis.PyQt import QtWidgets, uic
 
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-from .utils import get_nlp, get_nlp_index, readSetting, storeSetting
+from .utils import (
+    get_nlp,
+    get_nlp_index,
+    readSetting,
+    storeSetting
+)
+from .utils.geometry import (
+    get_sdo_point,
+    get_sdo_polygon
+)
 from .api import endpoints
 from .memo import app_state
 
@@ -329,7 +336,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         max_x = 0
         max_y = 0
         for layer in self._parent.current_layers:
-            if not layer.name().startswith("(20100)"):
+            if not layer.name().startswith("(020100)"):
                 continue
             extent = layer.extent()
             min_x = min(min_x, extent.xMinimum())
@@ -493,7 +500,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
 
     def _autofill_persil_data(self):
         for layer in self._parent.current_layers:
-            if layer.name().startswith("(20100)"):
+            if layer.name().startswith("(020100)"):
                 features = layer.getFeatures()
                 for feature in features:
                     identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
@@ -501,8 +508,8 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
 
                     # TODO: freeze qgis layer in here to avoid editing
                     point = feature.geometry().pointOnSurface().asPoint()
-                    teks = self.get_sdo_point(point)
-                    poli = self.get_sdo_polygon(feature)
+                    teks = get_sdo_point(point)
+                    poli = get_sdo_polygon(feature)
 
                     sheet_number = get_nlp("250", point.x(), point.y())
                     box_number = get_nlp_index("250", point.x(), point.y())
@@ -614,15 +621,15 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
 
     def _autofill_apartemen_data(self):
         for layer in self._parent.current_layers:
-            if layer.name().startswith("(20100)"):
+            if layer.name().startswith("(020100)"):
                 features = layer.getFeatures()
                 for feature in features:
                     identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
                     objectid = hashlib.md5(identifier).hexdigest().upper()
 
                     point = feature.geometry().pointOnSurface().asPoint()
-                    teks = self.get_sdo_point(point)
-                    poli = self.get_sdo_polygon(feature)
+                    teks = get_sdo_point(point)
+                    poli = get_sdo_polygon(feature)
                     if not poli["batas"]:
                         continue
                     data_row = None
@@ -1043,6 +1050,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         if self._new_parcels or self._old_parcels:
             for row in self._ds_parcel[DS_PERSIL_EDIT]:
                 if not row["BOUNDARY"]:
+                    print(self._ds_parcel)
                     valid = False
                     msg = "Ada Persil Edit yang tidak memiliki geometri!"
                     break
@@ -1206,70 +1214,6 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                 self.btn_validasi.setDisabled(False)
                 self.btn_proses.setDisabled(True)
                 self.btn_ganti_desa.setDisabled(False)
-
-    def get_sdo_point(self, point, srid=24091960):
-        parcel_geom = {}
-        parcel_geom["ElemArrayOfInts"] = None
-        parcel_geom["OrdinatesArrayOfDoubles"] = None
-        parcel_geom["Dimensionality"] = 0
-        parcel_geom["LRS"] = 0
-        parcel_geom["GeometryType"] = 0
-        parcel_geom["SdoElemInfo"] = [1, 1, 1]
-        parcel_geom["SdoOrdinates"] = [point.x(), point.y()]
-        parcel_geom["SdoGtype"] = 2001
-        parcel_geom["SdoSRID"] = srid
-        parcel_geom["SdoSRIDAsInt"] = srid
-        parcel_geom["SdoPoint"] = None
-        return parcel_geom
-
-    def get_sdo_polygon(self, feature, srid=24091960):
-        polygon_info = {"id": "", "batas": "", "luas": ""}
-
-        polygon_info["batas"], polygon_info["luas"] = self.build_sdo_from_polygon(
-            feature, srid
-        )
-        return polygon_info
-
-    def build_sdo_from_polygon(self, feature, srid):
-        geom_wkt = feature.geometry().asWkt()
-        geom_shapely = shapely.wkt.loads(geom_wkt)
-        geom_shapely_ccw = shapely.geometry.polygon.orient(geom_shapely, 1.0)
-
-        luas = geom_shapely_ccw.area
-        exterior = geom_shapely_ccw.exterior
-        interiors = geom_shapely_ccw.interiors
-
-        parcel_geom = {}
-        parcel_geom["ElemArrayOfInts"] = None
-        parcel_geom["OrdinatesArrayOfDoubles"] = None
-        parcel_geom["Dimensionality"] = 0
-        parcel_geom["LRS"] = 0
-        parcel_geom["GeometryType"] = 0
-        parcel_geom["SdoElemInfo"] = [1, 1003, 1]  # start from index 1
-        prev_end = len(exterior.coords) * 2
-        for interior in interiors:
-            curr_start = prev_end + 1
-            parcel_geom["SdoElemInfo"].append(
-                curr_start
-            )  # continue after exterior position
-            parcel_geom["SdoElemInfo"].append(2003)
-            parcel_geom["SdoElemInfo"].append(1)
-            prev_end += len(interior.coords) * 2
-
-        parcel_geom["SdoOrdinates"] = []
-        parcel_geom["SdoGtype"] = 2003
-
-        for coord in exterior.coords:
-            parcel_geom["SdoOrdinates"] += coord
-
-        for interior in interiors:
-            for coord in interior.coords:
-                parcel_geom["SdoOrdinates"] += coord
-
-        parcel_geom["SdoSRID"] = srid
-        parcel_geom["SdoSRIDAsInt"] = srid
-
-        return parcel_geom, luas
 
     def _handle_check_nib(self, checked):
         edit_null_count = len(
