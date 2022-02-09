@@ -531,3 +531,15 @@ def cek_mapping(persil_ids, **kwargs):
 @api(endpoint="finnishPBT")
 def finish_pbt(dokumen_pengukuran_id, **kwargs):
     return {"dokumenPengukuranId": dokumen_pengukuran_id}
+
+
+@api(endpoint="UnduhPersilSdo")
+def unduh_persil_sdo(wilayah_id, str_nib, srs_name, start, limit, count, **kwargs):
+    return {
+        "wilayahId": wilayah_id,
+        "strNib": str_nib,
+        "srsName": srs_name,
+        "start": start,
+        "limit": limit,
+        "count": count
+    }
