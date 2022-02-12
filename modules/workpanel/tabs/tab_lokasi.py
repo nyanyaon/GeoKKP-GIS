@@ -63,6 +63,7 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
         self.populate_kantor()
 
     def populate_kantor(self):
+        self.combo_kantor.clear()
         prev = readSetting("kantorterpilih", {})
         prev_id = prev["kantorID"] if prev else None
 
