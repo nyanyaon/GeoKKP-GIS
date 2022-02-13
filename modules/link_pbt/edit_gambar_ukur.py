@@ -293,15 +293,15 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
                 self.dtp_mulai.clear()
             else:
                 mulai_pengukuran = selected_row[2].text()
-                q_mulai_pengukuran = QDate().fromString(mulai_pengukuran, "dd/mm/YYYY")
+                q_mulai_pengukuran = QDate().fromString(mulai_pengukuran, "dd/MM/yyyy")
                 self.dtp_mulai.setDate(q_mulai_pengukuran)
 
             if not selected_row[3].text():
                 self.dtp_selesai.clear()
             else:
                 selesai_pengukuran = selected_row[3].text()
-                q_selesai_pengukuran = QDate().fromString(selesai_pengukuran, "dd/mm/YYYY")
-                self.dtp_mulai.setDate(q_selesai_pengukuran)
+                q_selesai_pengukuran = QDate().fromString(selesai_pengukuran, "dd/MM/yyyy")
+                self.dtp_selesai.setDate(q_selesai_pengukuran)
 
     def _dgv_tetangga_selection_changed(self):
         self.dgv_tetangga.setColumnHidden(0, False)
@@ -319,7 +319,9 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
 
     def keyPressEvent(self, event):
         if self.dgv_petugas_ukur.hasFocus() and event.key() == Qt.Key_Delete:
-            selected_row = self._gset_petugas_ukur["PETUGASUKUR"].get_selected_qtable_widget()
+            self.dgv_petugas_ukur.setColumnHidden(0, False)
+            selected_row = self.dgv_petugas_ukur.selectedItems()
+            self.dgv_petugas_ukur.setColumnHidden(0, True)
             if not selected_row:
                 event.accept()
                 return
@@ -334,7 +336,9 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
                 )
 
         elif self.dgv_tetangga.hasFocus() and event.key() == Qt.Key_Delete:
-            selected_row = self._gset_tetangga["TETANGGA"].get_selected_qtable_widget()
+            self.dgv_tetangga.setColumnHidden(0, False)
+            selected_row = self.dgv_tetangga.selectedItems()
+            self.dgv_tetangga.setColumnHidden(0, True)
             if not selected_row:
                 event.accept()
                 return
@@ -351,7 +355,9 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
         event.accept()
 
     def _btn_update_petugas_ukur_click(self):
-        selected_row = self._gset_petugas_ukur["PETUGASUKUR"].get_selected_qtable_widget()
+        self.dgv_petugas_ukur.setColumnHidden(0, False)
+        selected_row = self.dgv_petugas_ukur.selectedItems()
+        self.dgv_petugas_ukur.setColumnHidden(0, True)
         if not selected_row:
             QtWidgets.QMessageBox.warning(self, "GeoKKPWeb", "Pilih seorang petugas ukur dari grid")
             return
@@ -366,6 +372,7 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
             mulai_pengukuran,
             selesai_pengukuran
         )
+        print(response.content)
         self._gset_petugas_ukur = Dataset(response.content)
         self._gset_petugas_ukur.render_to_qtable_widget(
             table_name="PETUGASUKUR",
@@ -373,7 +380,9 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
         )
 
     def _btn_update_tetangga_click(self):
-        selected_row = self._gset_tetangga["TETANGGA"].get_selected_qtable_widget()
+        self.dgv_tetangga.setColumnHidden(0, False)
+        selected_row = self.dgv_tetangga.selectedItems()
+        self.dgv_tetangga.setColumnHidden(0, True)
         if not selected_row:
             return
 
