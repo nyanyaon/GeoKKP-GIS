@@ -170,12 +170,12 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         response_json = Dataset(response.content)
 
         print("cari", response_json)
-        self._setup_pagination(response_json["JUMLAHTOTAL"])
+        self._setup_pagination(response_json)
         response_json.render_to_qtable_widget("BERKASSPATIAL", self.table_rutin, [0, 4])
 
     def _setup_pagination(self, data):
         if self._count == -1:
-            self._count = data[0]["COUNT(1)"]
+            self._count = data["JUMLAHTOTAL"].rows[0]["COUNT(1)"]
 
         if self._count > 0:
             if self._start + self._limit >= self._count:

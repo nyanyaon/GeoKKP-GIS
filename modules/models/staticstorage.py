@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 import json
 from ..api import endpoints
+from ..memo import app_state
 
 
 @dataclass

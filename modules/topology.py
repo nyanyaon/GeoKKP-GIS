@@ -111,6 +111,7 @@ class Topology:
             self._project.removeEntry(SCOPE, key_layer2)
             self._project.removeEntry(SCOPE, key_test_name)
             self._project.removeEntry(SCOPE, KEY_TEST_COUNT)
+            iface.projectRead.emit()
 
     def _execute(self, action_name):
         if not self._ready:

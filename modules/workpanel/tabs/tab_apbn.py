@@ -11,6 +11,7 @@ from qgis.utils import iface
 from ...api import endpoints
 from ...utils import (
     export_layer_to_dxf,
+    storeSetting,
     readSetting,
     get_project_crs,
     sdo_to_layer,
@@ -21,6 +22,10 @@ from ...create_pbt import CreatePBT
 from ...memo import app_state
 from ...topology import quick_check_topology
 from ...desain_pbt import DesainPBT
+from ...link_pbt import LinkPBT
+from ...link_pbt.input_berkas_pbt import InputBerkasPBT
+from ...link_pbt.info_pbt import InfoPBT
+from ...link_pbt.edit_gambar_ukur import EditGambarUkur
 
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../../../ui/workpanel/tab_apbn.ui")
@@ -52,12 +57,11 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
 
         self._text_nomor = ""
         self._text_tahun = ""
-        self._text_kantor_id = ""
+        self._kantor_id = ""
         self._text_kegiatan = ""
 
         self.setupUi(self)
         self._set_initial_toolbar_state()
-        self.setup_workpanel()
 
         self.btn_buat.clicked.connect(self._handle_buat)
         self.btn_mulai.clicked.connect(self._handle_mulai)
@@ -69,6 +73,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         self.btn_prev.clicked.connect(self._handle_prev_page)
         self.btn_tutup.clicked.connect(self._handle_tutup)
         self.btn_selesai.clicked.connect(self._handle_selesai)
+        self.btn_link.clicked.connect(self._link_berkas)
         self.table_apbn.itemSelectionChanged.connect(self._handle_apbn_select)
 
     def closeEvent(self, event):
@@ -77,9 +82,31 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         event.accept()
 
     def setup_workpanel(self):
-        current_kantor = readSetting("kantorterpilih", {})
-        if current_kantor and "kantorID" in current_kantor:
-            self._text_kantor_id = current_kantor["kantorID"]
+        kantor = readSetting("kantorterpilih", {})
+
+        if not kantor:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Pilih lokasi kantor lebih dahulu"
+            )
+            return
+
+        self._kantor_id = kantor["kantorID"]
+        self._populate_program()
+
+    def _populate_program(self):
+        kantor_id = self._kantor_id
+        self.combo_kegiatan.clear()
+        self.combo_kegiatan.addItem("*", "")
+
+        program = readSetting("listprogram", {})
+        if not program or kantor_id not in program:
+            response = endpoints.get_program_by_kantor(kantor_id)
+            response_json = json.loads(response.content)
+            program[kantor_id] = response_json["PROGRAM"]
+            storeSetting("listprogram", program)
+
+        for item in program[kantor_id]:
+            self.combo_kegiatan.addItem(item["NAMA"], item["PROGRAMID"])
 
     def _handle_cari(self):
         self._start = 0
@@ -100,7 +127,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         response = endpoints.get_pbt_for_apbn(
             nomor_pbt,
             tahun,
-            self._text_kantor_id,
+            self._kantor_id,
             kegiatan,
             "PBT",
             self._start,
@@ -109,7 +136,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         )
         response_json = json.loads(response.content)
         print("cari", response_json)
-        self._setup_pagination(response_json["JUMLAHTOTAL"])
+        self._setup_pagination(response_json)
         self._populate_berkas_apbn(response_json["PBTAPBN"])
 
     def _set_initial_toolbar_state(self):
@@ -125,7 +152,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
             return
 
         if self._count == -1:
-            self._count = data[0]["COUNT(1)"]
+            self._count = data["JUMLAHTOTAL"][0]["COUNT(1)"]
         print(self._count, self._start, self._limit)
 
         if self._count > 0:
@@ -321,6 +348,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         epsg = get_project_crs()
         layer_config = get_layer_config("020100")
 
+        print(layer_config)
         if response_spatial_sdo_json["geoKkpPolygons"]:
             layer = sdo_to_layer(
                 response_spatial_sdo_json["geoKkpPolygons"],
@@ -341,12 +369,16 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
 
     def _handle_simpan(self):
         topo_error_message = []
+        # TODO: remove the usage of current layer
         for layer in self._current_layers:
-            valid, num = quick_check_topology(layer)
-            print(valid, num)
-            if not valid:
-                message = f"Ada {num} topology error di layer {layer.name()}"
-                topo_error_message.append(message)
+            try:
+                valid, num = quick_check_topology(layer)
+                print(valid, num)
+                if not valid:
+                    message = f"Ada {num} topology error di layer {layer.name()}"
+                    topo_error_message.append(message)
+            except RuntimeError:
+                continue
 
         if topo_error_message:
             QtWidgets.QMessageBox.warning(
@@ -375,7 +407,8 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
             self._pbt["newParcels"] = payload["submittedParcel"]
             self._pbt["gugusId"] = payload["gugusId"]
 
-            if not self._pbt["mitraKerjaid"]:
+            # TODO: check this part
+            if "mitraKerjaid" in self._pbt and self._pbt["mitraKerjaid"]:
                 self.btn_link.setDisabled(True)
 
                 file_name = f"pbt_{payload['nomor']}_{payload['tahun']}.dxf"
@@ -386,7 +419,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
                         byte = f.read()
                         base64data = base64.b64encode(byte)
                         response = endpoints.upload_dxf_pbt_skb(
-                            self._text_kantor_id,
+                            self._kantor_id,
                             self._pbt["mitraKerjaId"],
                             payload["dokumenPengukuranId"],
                             base64data,
@@ -396,6 +429,19 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         else:
             if payload["autoClosed"]:
                 self._handle_tutup()
+
+    def _link_berkas(self):
+        if not self._current_document_pengukuran_id:
+            return
+
+        link_pbt = LinkPBT()
+        l = InputBerkasPBT(self._current_document_pengukuran_id, self._pbt)
+        i = InfoPBT(self._current_document_pengukuran_id, self._pbt)
+        e = EditGambarUkur(self._current_document_pengukuran_id, self._pbt)
+        link_pbt.tabWidget.addTab(l, "Input Berkas")
+        link_pbt.tabWidget.addTab(i, "Update Persil")
+        link_pbt.tabWidget.addTab(e, "Edit Gambar Ukur")
+        link_pbt.show()
 
     def _handle_tutup(self):
         response = endpoints.stop_pbt(self._current_document_pengukuran_id)
