@@ -49,11 +49,18 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
         self._kantor_id = ""
         self._tipe_kantor_id = ""
 
+        self.toolbar_inbox.setEnabled(True)
         self.cmb_propinsi.currentIndexChanged.connect(self._cmb_propinsi_selected_index_changed)
         self.cmb_kabupaten.currentIndexChanged.connect(self._cmb_kabupaten_selected_index_changed)
         self.cmb_kecamatan.currentIndexChanged.connect(self._cmb_kecamatan_selected_index_changed)
         self.btn_cari.clicked.connect(self._btn_cari_click)
-        self.toolbar_inbox.clicked.connect(self._handle_download_hasil_query)
+        self.btn_start_process.clicked.connect(self._handle_download_hasil_query)
+        self.btn_first.clicked.connect(self._btn_first_click)
+        self.btn_prev.clicked.connect(self._btn_prev_click)
+        self.btn_next.clicked.connect(self._btn_next_click)
+        self.btn_last.clicked.connect(self._btn_last_click)
+        self.btn_next_record.clicked.connect(self._btn_next_record_click)
+        self.chb_per_kabupaten.stateChanged.connect(self._chb_per_kabupaten_state_changed)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -208,8 +215,8 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
                 else:
                     page = f"{self._start + 1} - {self._start + self._limit} dari {self._count}"
                     self.txt_paging.setText(page)
-                    self.btn_next.setDisabled(True)
-                    self.btn_next_record.setDisabled(True)
+                    self.btn_next.setDisabled(False)
+                    self.btn_next_record.setDisabled(False)
             else:
                 self.txt_paging.setText("0")
                 self.btn_next.setDisabled(True)
@@ -262,22 +269,22 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
             QtWidgets.QMessageBox.critical(
                 self, "GeoKKP", "Silakan melakukan query terlebih dahulu"
             )
+        else :
+            self.toolbar_inbox.setDisabled(True)
+            self.btn_cari.setDisabled(True)
+            self.chb_per_kabupaten.setDisabled(True)
+            self.cmb_coordinate_system.setDisabled(True)
+            self.cmb_kecamatan.setDisabled(True)
+            self.cmb_desa.setDisabled(True)
 
-        self.toolbar_inbox.setDisabled(True)
-        self.btn_cari.setDisabled(True)
-        self.chb_per_kabupaten.setDisabled(True)
-        self.cmb_coordinate_system.setDisabled(True)
-        self.cmb_kecamatan.setDisabled(True)
-        self.cmb_desa.setDisabled(True)
+            self._draw(self._upr)
 
-        self._draw(self._upr)
-
-        self.toolbar_inbox.setDisabled(False)
-        self.btn_cari.setDisabled(False)
-        self.chb_per_kabupaten.setDisabled(False)
-        self.cmb_coordinate_system.setDisabled(False)
-        self.cmb_kecamatan.setDisabled(False)
-        self.cmb_desa.setDisabled(False)
+            self.toolbar_inbox.setDisabled(False)
+            self.btn_cari.setDisabled(False)
+            self.chb_per_kabupaten.setDisabled(False)
+            self.cmb_coordinate_system.setDisabled(False)
+            self.cmb_kecamatan.setDisabled(False)
+            self.cmb_desa.setDisabled(False)
 
     def _draw(self, upr):
         # print(upr)
@@ -300,3 +307,60 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
                 )
                 # NOTE: will deprecate it in the future
                 # self.current_layers.append(layer)
+
+    def _btn_first_click(self):
+        self._start = 0
+        self.btn_prev.setEnabled(False)
+        self.btn_next.setEnabled(True)
+        self.btn_next_record.setEnabled(True)
+        self._refresh_grid()
+
+    def _btn_prev_click(self):
+        self._start -= self._limit
+        if (self._start <= 0):
+            self.btn_prev.setEnabled(False)
+        self.btn_next.setEnabled(True)
+        self.btn_next_record.setEnabled(True)
+        self._refresh_grid()
+
+    def _btn_next_click(self):
+        self._start += self._limit
+        if (self._start + self._limit >= self._count):
+            self.btn_next.setEnabled(False)
+            self.btn_next_record.setEnabled(False)
+        self.btn_prev.setEnabled(True)
+        self._refresh_grid()
+
+    def _btn_last_click(self):
+        self._start = self._count // self._limit * self._limit
+        print(self._start)
+        if (self._start >= self._count):
+            self._start -= self._limit
+            self.btn_prev.setEnabled(False)
+        else :
+            self.btn_prev.setEnabled(True)
+        self.btn_next.setEnabled(False)
+        self.btn_next_record.setEnabled(False)
+        self._refresh_grid()
+
+    def _btn_next_record_click(self):
+        self.toolbar_inbox.setEnabled(False)
+        self._start += self._limit
+        if (self._start + self._limit >= self._count):
+            self.btn_next.setEnabled(False)
+            self.btn_next_record.setEnabled(False)
+        self.btn_prev.setEnabled(True)
+        self._refresh_grid()
+        self.toolbar_inbox.setEnabled(True)
+
+    def _chb_per_kabupaten_state_changed(self):
+        if (self.chb_per_kabupaten.isChecked()):
+            self.cmb_desa.setVisible(False)
+            self.cmb_kecamatan.setVisible(False)
+            self.lbl_wilayah.setVisible(False)
+            self.lbl_wilayah_induk.setVisible(False)
+        else :
+            self.cmb_desa.setVisible(True)
+            self.cmb_kecamatan.setVisible(True)
+            self.lbl_wilayah.setVisible(True)
+            self.lbl_wilayah_induk.setVisible(True)
