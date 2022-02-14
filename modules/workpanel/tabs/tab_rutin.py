@@ -24,6 +24,7 @@ from ...desain_persil import DesainPersil
 from ...informasi_persil import InformasiPersil
 from ...link_di302 import LinkDI302
 from ...link_di302a import LinkDI302A
+from ...input_denah import InputDenah
 
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../../../ui/workpanel/tab_rutin.ui")
@@ -169,12 +170,12 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         response_json = Dataset(response.content)
 
         print("cari", response_json)
-        self._setup_pagination(response_json["JUMLAHTOTAL"])
+        self._setup_pagination(response_json)
         response_json.render_to_qtable_widget("BERKASSPATIAL", self.table_rutin, [0, 4])
 
     def _setup_pagination(self, data):
         if self._count == -1:
-            self._count = data[0]["COUNT(1)"]
+            self._count = data["JUMLAHTOTAL"].rows[0]["COUNT(1)"]
 
         if self._count > 0:
             if self._start + self._limit >= self._count:
@@ -336,8 +337,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
                     # TODO: refactor to static storage
                     self._sistem_koordinat = "TM3"
                 else:
-                    # TODO: Add input gambar denah
-                    pass
+                    self.input_gambar_denah()
             else:
                 QtWidgets.QMessageBox.warning(
                     None, "Perhatian", "Lakukan registrasi blanko terlebih dahulu"
@@ -381,9 +381,10 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
 
     def simpan_berkas_rutin(self):
         if self._tipe_berkas == "DAG":
-            # TODO: Add input gambar denah and handle topology logic as layer
+            self.input_gambar_denah()
             return
 
+        # TODO: handle topology logic as layer
         topo_error_message = []
         for layer in self.current_layers:
             valid, num = quick_check_topology(layer)
@@ -713,6 +714,29 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             ucl = LinkDI302A(self._berkas_id)
         ucl.show()
 
+    def input_gambar_denah(self):
+        fgd = InputDenah(
+            self._nomor_berkas,
+            self._tahun_berkas,
+            self._berkas_id,
+            self._kantor_id,
+            self._tipe_berkas,
+            self._wilayah_id,
+            self._new_parcel_number,
+            self._new_apartment_number,
+            self._new_parcels,
+            self._old_parcels,
+            self._new_apartments,
+            self._old_apartments,
+            self._ganti_desa
+        )
+        fgd.done.connect(self._handle_input_gambar_denah)
+        fgd.show()
+
+    def _handle_input_gambar_denah(self, success):
+        if success:
+            self.btn_rutin_simpan.setDisabled(False)
+
     def tutup_berkas_rutin(self):
         response_tutup_berkas = endpoints.stop_berkas(
             nomor_berkas=self._nomor_berkas,
@@ -749,4 +773,24 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             )
 
     def selesai_berkas_rutin(self):
-        pass
+        if self._tipe_berkas != "DAG" and self._parcel_ready_to_map:
+            if self._old_apartments and self._del_apartments:
+                parcels = [str(p) for p in self._parcel_ready_to_map]
+                force_mapping = True
+                response = endpoints.cek_mapping(parcels)
+                already_mapped = bool(response.content)
+                if not already_mapped:
+                    if force_mapping:
+                        result = QtWidgets.QMessageBox.question(
+                            None,
+                            "Selesai Berkas",
+                            "Persil belum dipetakan\nApakah akan menyelesaikan berkas?",
+                        )
+                        if result != QtWidgets.QMessageBox.Yes:
+                            return
+                    else:
+                        QtWidgets.QMessageBox.critical(
+                            None,
+                            "Selesai Berkas",
+                            "Persil belum dipetakan\nUntuk menyelesaikan berkas lakukan proses Map Placing terlebih dahulu",
+                        )

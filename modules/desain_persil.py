@@ -266,7 +266,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                     "KKP Web",
                     "Koordinat diluar area penggambaran!",
                 )
-            return
+            self.quit()
 
         if (
             len(self._ds_parcel[DS_PERSIL_EDIT]) > 0
