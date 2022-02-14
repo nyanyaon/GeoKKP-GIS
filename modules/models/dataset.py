@@ -76,9 +76,7 @@ class DataTable:
             table_widget.insertRow(pos)
 
             for index, col in enumerate(columns):
-                table_widget.setItem(
-                    pos, index, QTableWidgetItem(str(row[col]))
-                )
+                table_widget.setItem(pos, index, QTableWidgetItem(str(row[col])))
 
         for index in hidden_index:
             table_widget.setColumnHidden(index, True)
@@ -142,7 +140,7 @@ class Dataset(dict):
         if isinstance(data, str):
             data = json.loads(data)
         if isinstance(data, bytes):
-            data = json.loads(data.decode('utf-8'))
+            data = json.loads(data.decode("utf-8"))
 
         self.from_dict(data, merge_dfn)
 
@@ -154,7 +152,9 @@ class Dataset(dict):
             if not isinstance(rows, list):
                 raise ValueError("Not a table")
 
-            table = self[table_name] if table_name in self else self.add_table(table_name)
+            table = (
+                self[table_name] if table_name in self else self.add_table(table_name)
+            )
 
             if not rows:
                 continue

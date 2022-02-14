@@ -63,13 +63,10 @@ class StaticStorage:
 
     def get_program(self):
         if not self.ds_program_invent:
-            response = endpoints.get_program_invent_by_kantor(self.kkp_user.kantor.kantorID)
+            response = endpoints.get_program_invent_by_kantor(
+                self.kkp_user.kantor.kantorID
+            )
             self.ds_program_invent = json.loads(response.content)
             if not self.ds_program_invent:
-                self.ds_program_invent = {
-                    "PROGRAM": [{
-                        "PROGRAMID": "",
-                        "NAMA": ""
-                    }]
-                }
+                self.ds_program_invent = {"PROGRAM": [{"PROGRAMID": "", "NAMA": ""}]}
         return self.ds_program_invent

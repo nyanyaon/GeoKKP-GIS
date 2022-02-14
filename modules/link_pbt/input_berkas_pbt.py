@@ -50,7 +50,9 @@ class InputBerkasPBT(QtWidgets.QWidget, FORM_CLASS):
         self.btn_prev.clicked.connect(self._btn_prev_click)
         self.btn_cari.clicked.connect(self._btn_cari_click)
         self.btn_link.clicked.connect(self._btn_link_click)
-        self.dgv_new_parcels.itemSelectionChanged.connect(self._dgv_new_parcels_selection_changed)
+        self.dgv_new_parcels.itemSelectionChanged.connect(
+            self._dgv_new_parcels_selection_changed
+        )
         self.dgv_inbox.itemSelectionChanged.connect(self._dgv_inbox_selection_changed)
 
     def closeEvent(self, event):
@@ -70,9 +72,7 @@ class InputBerkasPBT(QtWidgets.QWidget, FORM_CLASS):
         response = endpoints.get_unlinked_pbt_berkas(self._dokumen_pengukuran_id)
         self._ds = Dataset(response.content)
         self._ds.render_to_qtable_widget(
-            table_name="PERSIL",
-            table_widget=self.dgv_new_parcels,
-            hidden_index=[0, 4]
+            table_name="PERSIL", table_widget=self.dgv_new_parcels, hidden_index=[0, 4]
         )
 
     def _btn_cari_click(self):
@@ -93,7 +93,7 @@ class InputBerkasPBT(QtWidgets.QWidget, FORM_CLASS):
             self._pbt["programId"],
             self._start,
             self._limit,
-            self._count
+            self._count,
         )
         self._dset = Dataset(response.content)
 
@@ -120,7 +120,7 @@ class InputBerkasPBT(QtWidgets.QWidget, FORM_CLASS):
             self._dset.render_to_qtable_widget(
                 table_name="BERKASAPBN",
                 table_widget=self.dgv_inbox,
-                hidden_index=[0, 7]
+                hidden_index=[0, 7],
             )
 
     def _btn_first_click(self):
@@ -202,7 +202,7 @@ class InputBerkasPBT(QtWidgets.QWidget, FORM_CLASS):
                 self._current_berkas,
                 self._dokumen_pengukuran_id,
                 self._kantor_id,
-                pegawai["userId"]
+                pegawai["userId"],
             )
             response_text = response.content.decode("utf-8")
 
@@ -222,4 +222,8 @@ class InputBerkasPBT(QtWidgets.QWidget, FORM_CLASS):
                 self._dset["BERKASAPBN"].reload_qtable_widget(self.dgv_inbox)
 
         else:
-            QtWidgets.QMessageBox.critical(self, "Error", "Silahkan memilih sebuah persil dan berkas untuk dipasangkan")
+            QtWidgets.QMessageBox.critical(
+                self,
+                "Error",
+                "Silahkan memilih sebuah persil dan berkas untuk dipasangkan",
+            )

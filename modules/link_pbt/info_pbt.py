@@ -36,7 +36,9 @@ class InfoPBT(QtWidgets.QWidget, FORM_CLASS):
         self._ds_land_use = {}
         self._ds = {}
 
-        self.dgv_new_parcels.itemSelectionChanged.connect(self._dgv_new_parcels_selection_changed)
+        self.dgv_new_parcels.itemSelectionChanged.connect(
+            self._dgv_new_parcels_selection_changed
+        )
         self.cmb_umum.currentIndexChanged.connect(self._cmb_umum_selection_changed)
         self.btn_update.clicked.connect(self._btn_update_click)
 
@@ -71,7 +73,7 @@ class InfoPBT(QtWidgets.QWidget, FORM_CLASS):
         self._ds.render_to_qtable_widget(
             table_name="PERSIL",
             table_widget=self.dgv_new_parcels,
-            hidden_index=[0, 3, 4, 5, 7]
+            hidden_index=[0, 3, 4, 5, 7],
         )
         self.dgv_new_parcels.blockSignals(False)
 
@@ -105,8 +107,7 @@ class InfoPBT(QtWidgets.QWidget, FORM_CLASS):
             pp = Dataset(response_pp.content)
             if "InfoUmum" in pp:
                 pp.render_to_qtable_widget(
-                    table_name="InfoUmum",
-                    table_widget=self.ppt_persil
+                    table_name="InfoUmum", table_widget=self.ppt_persil
                 )
             else:
                 self.ppt_persil.setRowCount(0)
@@ -141,7 +142,9 @@ class InfoPBT(QtWidgets.QWidget, FORM_CLASS):
 
         print(nama_jalan, penggunaan)
         if len(nama_jalan) < 5 or penggunaan < 0:
-            QtWidgets.QMessageBox.warning(self, "Perhatian", "Alamat dan penggunaan harus diisi!")
+            QtWidgets.QMessageBox.warning(
+                self, "Perhatian", "Alamat dan penggunaan harus diisi!"
+            )
             return
 
         now = datetime.now().isoformat()
@@ -206,10 +209,6 @@ class InfoPBT(QtWidgets.QWidget, FORM_CLASS):
         response = endpoints.update_persil(d_set.to_json())
         response_text = response.content.decode("utf-8")
         if response_text.split(":")[0] == "OK":
-            QtWidgets.QMessageBox.information(
-                None, "GeoKKP", "Persil telah disimpan"
-            )
+            QtWidgets.QMessageBox.information(None, "GeoKKP", "Persil telah disimpan")
         else:
-            QtWidgets.QMessageBox.critical(
-                None, "GeoKKP", response_text
-            )
+            QtWidgets.QMessageBox.critical(None, "GeoKKP", response_text)

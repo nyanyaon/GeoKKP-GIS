@@ -14,10 +14,7 @@ from .utils import (
     get_nlp_index,
     get_epsg_from_tm3_zone,
 )
-from .utils.geometry import (
-    get_sdo_point,
-    get_sdo_polygon
-)
+from .utils.geometry import get_sdo_point, get_sdo_polygon
 from .api import endpoints
 from .memo import app_state
 

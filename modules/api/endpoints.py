@@ -52,9 +52,7 @@ def get_user_entity_by_username(
 
 @api(endpoint="getPetugasUkur")
 def get_petugas_ukur(kantor_id, **kwargs):
-    return {
-        "kantorId": kantor_id
-    }
+    return {"kantorId": kantor_id}
 
 
 @api(endpoint="isESertipikat")
@@ -249,16 +247,12 @@ def get_parcel_linked_to_302a(berkas_id, **kwargs):
 
 @api(endpoint="removeParcelFromDI302")
 def remove_parcel_from_di302(di302, **kwargs):
-    return {
-        "di302": di302
-    }
+    return {"di302": di302}
 
 
 @api(endpoint="removeParcelFromDI302A")
 def remove_parcel_from_di302a(di302a, **kwargs):
-    return {
-        "di302A": di302a
-    }
+    return {"di302A": di302a}
 
 
 @api(endpoint="updateDI302")
@@ -267,7 +261,7 @@ def update_di302(di302, id_persil, nib, luas_persil, **kwargs):
         "di302": di302,
         "idPersil": id_persil,
         "nib": nib,
-        "luasPersil": luas_persil
+        "luasPersil": luas_persil,
     }
 
 
@@ -277,22 +271,18 @@ def update_di302a(di302a, id_persil, nib, luas_persil, **kwargs):
         "di302A": di302a,
         "idPersil": id_persil,
         "nib": nib,
-        "luasPersil": luas_persil
+        "luasPersil": luas_persil,
     }
 
 
 @api(endpoint="unlinkAllParcelsToDI302")
 def unlink_all_parcels_to_di302(berkas_id, **kwargs):
-    return {
-        "berkasId": berkas_id
-    }
+    return {"berkasId": berkas_id}
 
 
 @api(endpoint="unlinkAllParcelsToDI302A")
 def unlink_all_parcels_to_di302a(berkas_id, **kwargs):
-    return {
-        "berkasId": berkas_id
-    }
+    return {"berkasId": berkas_id}
 
 
 @api(endpoint="autoLinkParcelToDI302")
@@ -426,7 +416,7 @@ def get_pbt_for_apbn(
         "kantorId": kantor_id,
         "proyek": proyek,
         "tipePBT": tipe_pbt,
-        "start": start, 
+        "start": start,
         "limit": limit,
         "count": count,
     }
@@ -541,10 +531,12 @@ def unduh_persil_sdo(wilayah_id, str_nib, srs_name, start, limit, count, **kwarg
         "srsName": srs_name,
         "start": start,
         "limit": limit,
-        "count": count
+        "count": count,
     }
+
+
 @api(endpoint="parcelWindowSdo")
-def parcel_window_sdo(minX, minY, maxX, maxY, srsName,**kwargs):
+def parcel_window_sdo(minX, minY, maxX, maxY, srsName, **kwargs):
     return {
         "minX": minX,
         "minY": minY,
@@ -552,16 +544,17 @@ def parcel_window_sdo(minX, minY, maxX, maxY, srsName,**kwargs):
         "maxY": maxY,
         "srsName": srsName,
     }
-    
+
+
 @api(endpoint="getUnlinkedPBTBerkas")
 def get_unlinked_pbt_berkas(dokumen_pengukuran_id, **kwargs):
-    return {
-        "dokumenPengukuranId": dokumen_pengukuran_id
-    }
+    return {"dokumenPengukuranId": dokumen_pengukuran_id}
 
 
 @api(endpoint="getBerkasForApbn")
-def get_berkas_for_apbn(nomor_berkas, tahun_berkas, kantor_id, program_id, start, limit, count, **kwargs):
+def get_berkas_for_apbn(
+    nomor_berkas, tahun_berkas, kantor_id, program_id, start, limit, count, **kwargs
+):
     return {
         "nomorBerkas": nomor_berkas,
         "tahunBerkas": tahun_berkas,
@@ -569,12 +562,21 @@ def get_berkas_for_apbn(nomor_berkas, tahun_berkas, kantor_id, program_id, start
         "programId": program_id,
         "start": start,
         "limit": limit,
-        "count": count
+        "count": count,
     }
 
 
 @api(endpoint="entryPersilKeBerkasApbn")
-def entry_persil_ke_berkas_apbn(persil_id, nomor_induk_bidang, luas_bidang, berkas_id, dokumen_pengukuran_id, kantor_id, petugas, **kwargs):
+def entry_persil_ke_berkas_apbn(
+    persil_id,
+    nomor_induk_bidang,
+    luas_bidang,
+    berkas_id,
+    dokumen_pengukuran_id,
+    kantor_id,
+    petugas,
+    **kwargs
+):
     return {
         "persilId": persil_id,
         "nomorIndukBidang": nomor_induk_bidang,
@@ -582,51 +584,49 @@ def entry_persil_ke_berkas_apbn(persil_id, nomor_induk_bidang, luas_bidang, berk
         "berkasId": berkas_id,
         "dokumenPengukuranId": dokumen_pengukuran_id,
         "kantorId": kantor_id,
-        "petugas": petugas
+        "petugas": petugas,
     }
 
 
 @api(endpoint="getParcelInPBT")
 def get_parcel_in_pbt(dokumen_pengukuran_id, **kwargs):
-    return {
-        "dokumenPengukuranId": dokumen_pengukuran_id
-    }
+    return {"dokumenPengukuranId": dokumen_pengukuran_id}
 
 
 @api(endpoint="getParcelPropertyForApbn")
 def get_parcel_property_for_apbn(persil_id, **kwargs):
-    return {
-        "persilId": persil_id
-    }
+    return {"persilId": persil_id}
 
 
 @api(endpoint="getBerkasApbnByPBTId")
-def get_berkas_apbn_by_pbt_id(nomor_berkas, tahun_berkas, dokumen_pengukuran_id, start, limit, count, **kwargs):
+def get_berkas_apbn_by_pbt_id(
+    nomor_berkas, tahun_berkas, dokumen_pengukuran_id, start, limit, count, **kwargs
+):
     return {
         "nomorBerkas": nomor_berkas,
         "tahunBerkas": tahun_berkas,
         "dokumenPengukuranId": dokumen_pengukuran_id,
         "start": start,
         "limit": limit,
-        "count": count
+        "count": count,
     }
 
 
 @api(endpoint="getGambarUkurApbnByBerkas")
 def get_gambar_ukur_apbn_by_berkas(berkas_id, **kwargs):
-    return {
-        "berkasId": berkas_id
-    }
+    return {"berkasId": berkas_id}
 
 
 @api(endpoint="addPetugasUkurGU")
-def add_petugas_ukur_gu(gambar_ukur_id, pegawai_id, tgl_mulai, tgl_selesai, user_id, **kwargs):
+def add_petugas_ukur_gu(
+    gambar_ukur_id, pegawai_id, tgl_mulai, tgl_selesai, user_id, **kwargs
+):
     return {
         "gambarUkurId": gambar_ukur_id,
         "pegawaiId": pegawai_id,
         "tglMulai": tgl_mulai,
         "tglSelesai": tgl_selesai,
-        "userId": user_id
+        "userId": user_id,
     }
 
 
@@ -636,28 +636,24 @@ def add_tetangga_gu(gambar_ukur_id, arah, nama_tetangga, user_id, **kwargs):
         "gambarUkurId": gambar_ukur_id,
         "arah": arah,
         "namaTetangga": nama_tetangga,
-        "userId": user_id
+        "userId": user_id,
     }
 
 
 @api(endpoint="deleteGUPetugasUkur")
 def delete_gu_petugas_ukur(petugas_ukur_id, gambar_ukur_id, **kwargs):
-    return {
-        "petugasUkurId": petugas_ukur_id,
-        "gambarUkurId": gambar_ukur_id
-    }
+    return {"petugasUkurId": petugas_ukur_id, "gambarUkurId": gambar_ukur_id}
 
 
 @api(endpoint="deleteTetangga")
 def delete_tetangga(tetangga_id, gambar_ukur_id, **kwargs):
-    return {
-        "tetanggaId": tetangga_id,
-        "gambarUkurId": gambar_ukur_id
-    }
+    return {"tetanggaId": tetangga_id, "gambarUkurId": gambar_ukur_id}
 
 
 @api(endpoint="updateTetangga")
-def update_tetangga(tetangga_id, arah_tetangga, nama_tetangga, gambar_ukur_id, **kwargs):
+def update_tetangga(
+    tetangga_id, arah_tetangga, nama_tetangga, gambar_ukur_id, **kwargs
+):
     return {
         "tetanggaId": tetangga_id,
         "arahTetangga": arah_tetangga,
@@ -667,7 +663,14 @@ def update_tetangga(tetangga_id, arah_tetangga, nama_tetangga, gambar_ukur_id, *
 
 
 @api(endpoint="updatePetugasGU")
-def update_petugas_ukur_gu(petugas_ukur_lama_id, gambar_ukur_id, petugas_ukur_baru_id, tgl_mulai, tgl_selesai, **kwargs):
+def update_petugas_ukur_gu(
+    petugas_ukur_lama_id,
+    gambar_ukur_id,
+    petugas_ukur_baru_id,
+    tgl_mulai,
+    tgl_selesai,
+    **kwargs
+):
     return {
         "petugasUkuraLamaId": petugas_ukur_lama_id,
         "gambarUkurId": gambar_ukur_id,

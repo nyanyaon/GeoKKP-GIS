@@ -61,7 +61,9 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
 
         self._setup_workpanel()
 
-        self.table_daftar_persil.currentItemChanged.connect(self._handle_persil_selected)
+        self.table_daftar_persil.currentItemChanged.connect(
+            self._handle_persil_selected
+        )
         self.combo_penggunaan_umum.currentIndexChanged.connect(
             self._populate_penggunaan_khusus
         )
@@ -262,7 +264,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
         ds_persil.render_to_qtable_widget(
             table_name="PERSILBARU",
             table_widget=self.table_daftar_persil,
-            hidden_index=[0, 4, 5]
+            hidden_index=[0, 4, 5],
         )
         self.table_daftar_persil.selectRow(0)
         selected = self.table_daftar_persil.selectedItems()
@@ -292,7 +294,9 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
             response_json["PERSILBARU"].rows[0]["ALAMATTAMBAHAN"]
         )
         self.input_peta.setText(response_json["PERSILBARU"].rows[0]["PETA"])
-        self.input_nomor_peta_lokal.setText(response_json["PERSILBARU"].rows[0]["NOPETA"])
+        self.input_nomor_peta_lokal.setText(
+            response_json["PERSILBARU"].rows[0]["NOPETA"]
+        )
         self.input_nomor_lembar.setText(response_json["PERSILBARU"].rows[0]["LEMBAR"])
         self.input_nomor_kotak.setText(response_json["PERSILBARU"].rows[0]["KOTAK"])
 
