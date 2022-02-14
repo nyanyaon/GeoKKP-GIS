@@ -55,11 +55,17 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
         self.btn_last.clicked.connect(self._btn_last_click)
         self.btn_prev.clicked.connect(self._btn_prev_click)
         self.btn_next.clicked.connect(self._btn_next_click)
-        self.dgv_petugas_ukur.itemSelectionChanged.connect(self._dgv_petugas_ukur_selection_changed)
-        self.dgv_tetangga.itemSelectionChanged.connect(self._dgv_tetangga_selection_changed)
+        self.dgv_petugas_ukur.itemSelectionChanged.connect(
+            self._dgv_petugas_ukur_selection_changed
+        )
+        self.dgv_tetangga.itemSelectionChanged.connect(
+            self._dgv_tetangga_selection_changed
+        )
         self.btn_add_petugas_ukur.clicked.connect(self._btn_add_petugas_ukur_click)
         self.btn_add_tetangga.clicked.connect(self._btn_add_tetangga_click)
-        self.btn_update_petugas_ukur.clicked.connect(self._btn_update_petugas_ukur_click)
+        self.btn_update_petugas_ukur.clicked.connect(
+            self._btn_update_petugas_ukur_click
+        )
         self.btn_update_tetangga.clicked.connect(self._btn_update_tetangga_click)
 
     def closeEvent(self, event):
@@ -112,7 +118,7 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
             self._dokumen_pengukuran_id,
             self._start,
             self._limit,
-            self._count
+            self._count,
         )
 
         self._d_set = Dataset(response.content)
@@ -144,7 +150,7 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
             self._d_set.render_to_qtable_widget(
                 table_name="BERKASAPBN",
                 table_widget=self.dgv_berkas,
-                hidden_index=[3, 0]
+                hidden_index=[3, 0],
             )
 
     def _dgv_berkas_selection_changed(self):
@@ -169,18 +175,20 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
                 self.btn_update_tetangga.setDisabled(False)
 
             if g_set["GAMBARUKUR"].rows:
-                self._gambar_ukur_id = g_set["GAMBARUKUR"].rows[0]["DOKUMENPENGUKURANID"]
+                self._gambar_ukur_id = g_set["GAMBARUKUR"].rows[0][
+                    "DOKUMENPENGUKURANID"
+                ]
                 g_set.render_to_qtable_widget(
                     table_name="PETUGASUKUR",
                     table_widget=self.dgv_petugas_ukur,
-                    hidden_index=[0]
+                    hidden_index=[0],
                 )
 
                 if "TETANGGA" in g_set and g_set["TETANGGA"].rows:
                     g_set.render_to_qtable_widget(
                         table_name="TETANGGA",
                         table_widget=self.dgv_tetangga,
-                        hidden_index=[0]
+                        hidden_index=[0],
                     )
 
                 nomor_gu = f"{g_set['GAMBARUKUR'].rows[0]['NOMOR']}/{g_set['GAMBARUKUR'].rows[0]['TAHUN']}"
@@ -246,13 +254,12 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
             self.cmb_petugas_ukur.currentData(),
             mulai_pengukuran,
             selesai_pengukuran,
-            pegawai["userId"]
+            pegawai["userId"],
         )
         print(response.content)
         self._gset_petugas_ukur = Dataset(response.content)
         self._gset_petugas_ukur.render_to_qtable_widget(
-            table_name="PETUGASUKUR",
-            table_widget=self.dgv_petugas_ukur
+            table_name="PETUGASUKUR", table_widget=self.dgv_petugas_ukur
         )
 
     def _btn_add_tetangga_click(self):
@@ -265,12 +272,11 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
             self._gambar_ukur_id,
             self.cmb_mata_angin.currentText(),
             self.txt_tetangga.text(),
-            pegawai["userId"]
+            pegawai["userId"],
         )
         self._gset_tetangga = Dataset(response.content)
         self._gset_tetangga.render_to_qtable_widget(
-            table_name="TETANGGA",
-            table_widget=self.dgv_tetangga
+            table_name="TETANGGA", table_widget=self.dgv_tetangga
         )
 
     def _dgv_petugas_ukur_selection_changed(self):
@@ -286,8 +292,8 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
         else:
             self.btn_update_petugas_ukur.setDisabled(False)
             now = datetime.now().strftime("%d/%m/%Y")
-            mulai_pengukuran = (now)
-            selesai_pengukuran = (now)
+            mulai_pengukuran = now
+            selesai_pengukuran = now
 
             if not selected_row[2].text():
                 self.dtp_mulai.clear()
@@ -300,7 +306,9 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
                 self.dtp_selesai.clear()
             else:
                 selesai_pengukuran = selected_row[3].text()
-                q_selesai_pengukuran = QDate().fromString(selesai_pengukuran, "dd/MM/yyyy")
+                q_selesai_pengukuran = QDate().fromString(
+                    selesai_pengukuran, "dd/MM/yyyy"
+                )
                 self.dtp_selesai.setDate(q_selesai_pengukuran)
 
     def _dgv_tetangga_selection_changed(self):
@@ -326,13 +334,16 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
                 event.accept()
                 return
 
-            result = QtWidgets.QMessageBox.question(self, "GeoKKPWeb", "Anda akan menghapus petugas ukur?")
+            result = QtWidgets.QMessageBox.question(
+                self, "GeoKKPWeb", "Anda akan menghapus petugas ukur?"
+            )
             if result == QtWidgets.QMessageBox.Yes:
-                response = endpoints.delete_gu_petugas_ukur(selected_row[0].text(), self._gambar_ukur_id)
+                response = endpoints.delete_gu_petugas_ukur(
+                    selected_row[0].text(), self._gambar_ukur_id
+                )
                 self._gset_petugas_ukur = Dataset(response.content)
                 self._gset_petugas_ukur.render_to_qtable_widget(
-                    table_name="PETUGASUKUR",
-                    table_widget=self.dgv_petugas_ukur
+                    table_name="PETUGASUKUR", table_widget=self.dgv_petugas_ukur
                 )
 
         elif self.dgv_tetangga.hasFocus() and event.key() == Qt.Key_Delete:
@@ -343,13 +354,16 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
                 event.accept()
                 return
 
-            result = QtWidgets.QMessageBox.question(self, "GeoKKPWeb", "Anda akan menghapus nama tetangga?")
+            result = QtWidgets.QMessageBox.question(
+                self, "GeoKKPWeb", "Anda akan menghapus nama tetangga?"
+            )
             if result == QtWidgets.QMessageBox.Yes:
-                response = endpoints.delete_tetangga(selected_row[0].text(), self._gambar_ukur_id)
+                response = endpoints.delete_tetangga(
+                    selected_row[0].text(), self._gambar_ukur_id
+                )
                 self._gset_tetangga = Dataset(response.content)
                 self._gset_tetangga.render_to_qtable_widget(
-                    table_name="TETANGGA",
-                    table_widget=self.dgv_tetangga
+                    table_name="TETANGGA", table_widget=self.dgv_tetangga
                 )
 
         event.accept()
@@ -359,7 +373,9 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
         selected_row = self.dgv_petugas_ukur.selectedItems()
         self.dgv_petugas_ukur.setColumnHidden(0, True)
         if not selected_row:
-            QtWidgets.QMessageBox.warning(self, "GeoKKPWeb", "Pilih seorang petugas ukur dari grid")
+            QtWidgets.QMessageBox.warning(
+                self, "GeoKKPWeb", "Pilih seorang petugas ukur dari grid"
+            )
             return
 
         mulai_pengukuran = self.dtp_mulai.date().toString("dd/MM/yyyy")
@@ -370,13 +386,12 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
             self._gambar_ukur_id,
             self.cmb_petugas_ukur.currentData(),
             mulai_pengukuran,
-            selesai_pengukuran
+            selesai_pengukuran,
         )
         print(response.content)
         self._gset_petugas_ukur = Dataset(response.content)
         self._gset_petugas_ukur.render_to_qtable_widget(
-            table_name="PETUGASUKUR",
-            table_widget=self.dgv_petugas_ukur
+            table_name="PETUGASUKUR", table_widget=self.dgv_petugas_ukur
         )
 
     def _btn_update_tetangga_click(self):
@@ -390,13 +405,12 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
             selected_row[0].text(),
             self.cmb_mata_angin.currentText(),
             self.txt_tetangga.text(),
-            self._gambar_ukur_id
+            self._gambar_ukur_id,
         )
 
         self._gset_tetangga = Dataset(response.content)
         self._gset_tetangga.render_to_qtable_widget(
-            table_name="TETANGGA",
-            table_widget=self.dgv_tetangga
+            table_name="TETANGGA", table_widget=self.dgv_tetangga
         )
 
     def _btn_cari_click(self):

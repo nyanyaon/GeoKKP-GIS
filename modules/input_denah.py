@@ -23,7 +23,23 @@ class InputDenah(QtWidgets.QDialog, FORM_CLASS):
     closingPlugin = pyqtSignal()
     done = pyqtSignal()
 
-    def __init__(self, nomor_berkas, tahun_berkas, berkas_id, kantor_id, tipe_berkas, desa_id, new_parcel_number, new_apartment_number, new_parcels, old_parcels, new_apartments, old_apartments, ganti_desa, parent=iface.mainWindow()):
+    def __init__(
+        self,
+        nomor_berkas,
+        tahun_berkas,
+        berkas_id,
+        kantor_id,
+        tipe_berkas,
+        desa_id,
+        new_parcel_number,
+        new_apartment_number,
+        new_parcels,
+        old_parcels,
+        new_apartments,
+        old_apartments,
+        ganti_desa,
+        parent=iface.mainWindow(),
+    ):
         super(InputDenah, self).__init__(parent)
         self.setupUi(self)
 

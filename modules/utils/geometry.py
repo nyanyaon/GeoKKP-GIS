@@ -21,9 +21,7 @@ def get_sdo_point(point, srid=24091960):
 def get_sdo_polygon(feature, srid=24091960):
     polygon_info = {"id": "", "batas": "", "luas": ""}
 
-    polygon_info["batas"], polygon_info["luas"] = build_sdo_from_polygon(
-        feature, srid
-    )
+    polygon_info["batas"], polygon_info["luas"] = build_sdo_from_polygon(feature, srid)
     return polygon_info
 
 

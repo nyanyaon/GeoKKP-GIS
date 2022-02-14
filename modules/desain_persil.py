@@ -7,16 +7,8 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-from .utils import (
-    get_nlp,
-    get_nlp_index,
-    readSetting,
-    storeSetting
-)
-from .utils.geometry import (
-    get_sdo_point,
-    get_sdo_polygon
-)
+from .utils import get_nlp, get_nlp_index, readSetting, storeSetting
+from .utils.geometry import get_sdo_point, get_sdo_polygon
 from .api import endpoints
 from .memo import app_state
 

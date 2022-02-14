@@ -13,7 +13,7 @@ from ...utils import (
     get_project_crs,
     sdo_to_layer,
     get_layer_config,
-    add_layer
+    add_layer,
 )
 from ...models.dataset import Dataset
 
@@ -179,9 +179,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
 
         if self._count > 0:
             if self._start + self._limit >= self._count:
-                page = (
-                    f"{self._start + 1} - {self._count} dari {self._count}"
-                )
+                page = f"{self._start + 1} - {self._count} dari {self._count}"
                 self.btn_next.setDisabled(True)
                 self.btn_last.setDisabled(True)
             else:
@@ -252,16 +250,16 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             lanjut_blanko = True
             is_e_sertifikat = readSetting("isESertifikat")
             response = endpoints.get_is_e_sertifikat(self._kantor_id)
-            print('e_cert', is_e_sertifikat)
-            print('e_cert2', response.content)
-            print('tipe_kantor', self._tipe_kantor_id)
+            print("e_cert", is_e_sertifikat)
+            print("e_cert2", response.content)
+            print("tipe_kantor", self._tipe_kantor_id)
 
             if not is_e_sertifikat and self._tipe_kantor_id not in ["1", "2"]:
                 response_blanko = endpoints.get_blanko_by_berkas_id(
                     berkas_id=bs["berkasId"]
                 )
                 response_blanko_json = json.loads(response_blanko.content)
-                print('blanko', response_blanko_json)
+                print("blanko", response_blanko_json)
                 if len(response_blanko_json["BLANKO"]) > 0:
                     lanjut_blanko = True
                 else:
@@ -310,9 +308,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
                         self._load_berkas_spasial([gugus_id], False)
                 else:
                     if self._old_gugus_ids:
-                        gugus_ids = [
-                            str(id) for id in self._old_gugus_ids
-                        ]
+                        gugus_ids = [str(id) for id in self._old_gugus_ids]
                         self._load_berkas_spasial(gugus_ids, True)
                     else:
                         layer_config = get_layer_config("020100")
@@ -320,7 +316,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
                             layer_config["Nama Layer"],
                             layer_config["Tipe Layer"],
                             layer_config["Style Path"],
-                            layer_config["Attributes"][0]
+                            layer_config["Attributes"][0],
                         )
 
                 self._set_button(True)
@@ -401,11 +397,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
 
         self._create_dataset_integration()
 
-        g_ukur_id = (
-            str(self._gambar_ukurs[0])
-            if self._gambar_ukurs
-            else ""
-        )
+        g_ukur_id = str(self._gambar_ukurs[0]) if self._gambar_ukurs else ""
         pd = DesainPersil(
             parent=self,
             nomor_berkas=self._nomor_berkas,
@@ -688,11 +680,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         dimensi.add_column("Label")
 
     def _handle_informasi_berkas_rutin(self):
-        gambar_ukur_id = (
-            self._gambar_ukurs[0]
-            if self._gambar_ukurs
-            else ""
-        )
+        gambar_ukur_id = self._gambar_ukurs[0] if self._gambar_ukurs else ""
 
         informasi_persil = InformasiPersil(
             self._nomor_berkas,
@@ -710,7 +698,12 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
 
     def _handle_update_di302(self):
         ucl = LinkDI302(self._berkas_id, self._kode_sppop)
-        if self._kode_sppop in ["SPOPP-3.13", "SPOPP-3.12.1", "SPOPP-2.03", "SPOPP-3.17.3"]:
+        if self._kode_sppop in [
+            "SPOPP-3.13",
+            "SPOPP-3.12.1",
+            "SPOPP-2.03",
+            "SPOPP-3.17.3",
+        ]:
             ucl = LinkDI302A(self._berkas_id)
         ucl.show()
 
@@ -728,7 +721,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             self._old_parcels,
             self._new_apartments,
             self._old_apartments,
-            self._ganti_desa
+            self._ganti_desa,
         )
         fgd.done.connect(self._handle_input_gambar_denah)
         fgd.show()

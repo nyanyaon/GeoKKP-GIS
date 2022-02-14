@@ -36,7 +36,22 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
         self.setupUi(self)
 
         self.srid_code = [
-            23830, 23831, 23832, 23833, 23834, 23835, 23836, 23837, 23838, 23839, 23840, 23841, 23842, 23843, 23844, 23845
+            23830,
+            23831,
+            23832,
+            23833,
+            23834,
+            23835,
+            23836,
+            23837,
+            23838,
+            23839,
+            23840,
+            23841,
+            23842,
+            23843,
+            23844,
+            23845,
         ]
         self._upr = {}
 
@@ -54,9 +69,15 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
         self._tipe_kantor_id = ""
 
         self.toolbar_inbox.setEnabled(True)
-        self.cmb_propinsi.currentIndexChanged.connect(self._cmb_propinsi_selected_index_changed)
-        self.cmb_kabupaten.currentIndexChanged.connect(self._cmb_kabupaten_selected_index_changed)
-        self.cmb_kecamatan.currentIndexChanged.connect(self._cmb_kecamatan_selected_index_changed)
+        self.cmb_propinsi.currentIndexChanged.connect(
+            self._cmb_propinsi_selected_index_changed
+        )
+        self.cmb_kabupaten.currentIndexChanged.connect(
+            self._cmb_kabupaten_selected_index_changed
+        )
+        self.cmb_kecamatan.currentIndexChanged.connect(
+            self._cmb_kecamatan_selected_index_changed
+        )
         self.btn_cari.clicked.connect(self._btn_cari_click)
         self.btn_start_process.clicked.connect(self._handle_download_hasil_query)
         self.btn_first.clicked.connect(self._btn_first_click)
@@ -65,7 +86,9 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
         self.btn_last.clicked.connect(self._btn_last_click)
         self.btn_next_record.clicked.connect(self._btn_next_record_click)
         self.btn_download_all.clicked.connect(self.DownloadAll)
-        self.chb_per_kabupaten.stateChanged.connect(self._chb_per_kabupaten_state_changed)
+        self.chb_per_kabupaten.stateChanged.connect(
+            self._chb_per_kabupaten_state_changed
+        )
         self.btn_download_rectangle.clicked.connect(self.DownloadRadius)
 
     def closeEvent(self, event):
@@ -118,7 +141,9 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
         self._set_cmb_desa()
 
     def _set_cmb_propinsi(self):
-        response = endpoints.get_provinsi_by_kantor(self._kantor_id, self._tipe_kantor_id)
+        response = endpoints.get_provinsi_by_kantor(
+            self._kantor_id, self._tipe_kantor_id
+        )
         prop_dataset = json.loads(response.content)
 
         self.cmb_propinsi.clear()
@@ -127,16 +152,20 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
 
     def _set_cmb_kabupaten(self):
         selected_prov = self.cmb_propinsi.currentData()
-        response = endpoints.get_kabupaten_by_kantor(self._kantor_id, self._tipe_kantor_id, selected_prov)
+        response = endpoints.get_kabupaten_by_kantor(
+            self._kantor_id, self._tipe_kantor_id, selected_prov
+        )
         kabu_dataset = json.loads(response.content)
-      
+
         self.cmb_kabupaten.clear()
         for kab in kabu_dataset["KABUPATEN"]:
             self.cmb_kabupaten.addItem(kab["KABUNAMA"], kab["KABUPATENID"])
 
     def _set_cmb_kecamatan(self):
         selected_kab = self.cmb_kabupaten.currentData()
-        response = endpoints.get_kecamatan_by_kantor(self._kantor_id, self._tipe_kantor_id, selected_kab)
+        response = endpoints.get_kecamatan_by_kantor(
+            self._kantor_id, self._tipe_kantor_id, selected_kab
+        )
         keca_dataset = json.loads(response.content)
 
         self.cmb_kecamatan.clear()
@@ -145,7 +174,9 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
 
     def _set_cmb_desa(self):
         selected_kec = self.cmb_kecamatan.currentData()
-        response = endpoints.get_desa_by_kantor(self._kantor_id, self._tipe_kantor_id, selected_kec)
+        response = endpoints.get_desa_by_kantor(
+            self._kantor_id, self._tipe_kantor_id, selected_kec
+        )
         desa_dataset = json.loads(response.content)
 
         self.cmb_desa.clear()
@@ -199,15 +230,18 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
             crs = self.cmb_coordinate_system.currentText()
             zone = crs.replace("TM3-", "")
             srs_name = get_epsg_from_tm3_zone(zone, include_epsg_key=False)
-            response = endpoints.unduh_persil_sdo(wilayah_id, self._txt_nomor, srs_name, str(
-                self._start), str(self._limit), str(self._count))
+            response = endpoints.unduh_persil_sdo(
+                wilayah_id,
+                self._txt_nomor,
+                srs_name,
+                str(self._start),
+                str(self._limit),
+                str(self._count),
+            )
             self._upr = json.loads(response.content)
-            
-   
+
             if not self._upr["status"]:
-                QtWidgets.QMessageBox.warning(
-                    None, "GeoKKP", self._upr["message"]
-                )
+                QtWidgets.QMessageBox.warning(None, "GeoKKP", self._upr["message"])
                 return
 
             if self._count == -1:
@@ -259,16 +293,10 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
                 d_row["Rotation"] = p["rotation"]
                 d_row["RowNums"] = p["rowNums"]
 
-            dataset.render_to_qtable_widget(
-                "PERSIL",
-                self.dgv_persil,
-                [0, 1, 5, 6, 8]
-            )
+            dataset.render_to_qtable_widget("PERSIL", self.dgv_persil, [0, 1, 5, 6, 8])
 
         except Exception as e:
-            QtWidgets.QMessageBox.critical(
-                self, "GeoKKP", str(e)
-            )
+            QtWidgets.QMessageBox.critical(self, "GeoKKP", str(e))
             return
 
     def _handle_download_hasil_query(self):
@@ -276,7 +304,7 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
             QtWidgets.QMessageBox.critical(
                 self, "GeoKKP", "Silakan melakukan query terlebih dahulu"
             )
-        else :
+        else:
             self.toolbar_inbox.setDisabled(True)
             self.btn_cari.setDisabled(True)
             self.chb_per_kabupaten.setDisabled(True)
@@ -324,7 +352,7 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
 
     def _btn_prev_click(self):
         self._start -= self._limit
-        if (self._start <= 0):
+        if self._start <= 0:
             self.btn_prev.setEnabled(False)
         self.btn_next.setEnabled(True)
         self.btn_next_record.setEnabled(True)
@@ -332,7 +360,7 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
 
     def _btn_next_click(self):
         self._start += self._limit
-        if (self._start + self._limit >= self._count):
+        if self._start + self._limit >= self._count:
             self.btn_next.setEnabled(False)
             self.btn_next_record.setEnabled(False)
         self.btn_prev.setEnabled(True)
@@ -341,10 +369,10 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
     def _btn_last_click(self):
         self._start = self._count // self._limit * self._limit
         print(self._start)
-        if (self._start >= self._count):
+        if self._start >= self._count:
             self._start -= self._limit
             self.btn_prev.setEnabled(False)
-        else :
+        else:
             self.btn_prev.setEnabled(True)
         self.btn_next.setEnabled(False)
         self.btn_next_record.setEnabled(False)
@@ -353,7 +381,7 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
     def _btn_next_record_click(self):
         self.toolbar_inbox.setEnabled(False)
         self._start += self._limit
-        if (self._start + self._limit >= self._count):
+        if self._start + self._limit >= self._count:
             self.btn_next.setEnabled(False)
             self.btn_next_record.setEnabled(False)
         self.btn_prev.setEnabled(True)
@@ -361,12 +389,12 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
         self.toolbar_inbox.setEnabled(True)
 
     def _chb_per_kabupaten_state_changed(self):
-        if (self.chb_per_kabupaten.isChecked()):
+        if self.chb_per_kabupaten.isChecked():
             self.cmb_desa.setVisible(False)
             self.cmb_kecamatan.setVisible(False)
             self.lbl_wilayah.setVisible(False)
             self.lbl_wilayah_induk.setVisible(False)
-        else :
+        else:
             self.cmb_desa.setVisible(True)
             self.cmb_kecamatan.setVisible(True)
             self.lbl_wilayah.setVisible(True)
@@ -395,29 +423,51 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
             self._count = -1
             self._start = 0
 
-            response = endpoints.unduh_persil_sdo(self._wilayah_id,"",self._srid_code,str(self._start),"20",str(self._count))
+            response = endpoints.unduh_persil_sdo(
+                self._wilayah_id,
+                "",
+                self._srid_code,
+                str(self._start),
+                "20",
+                str(self._count),
+            )
             upr = json.loads(response.content)
 
             self._count = int(upr["total"])
 
-            response = endpoints.unduh_persil_sdo(self._wilayah_id,"",self._srid_code,str(self._start),str(self._count),str(self._count))
+            response = endpoints.unduh_persil_sdo(
+                self._wilayah_id,
+                "",
+                self._srid_code,
+                str(self._start),
+                str(self._count),
+                str(self._count),
+            )
             upr = json.loads(response.content)
-            self.UpdateStatus(upr, "Mengunduh " + str(self._start + 1) + " - " + str(self._count+self._start) +" dari " + str(self._count) + " persil")
+            self.UpdateStatus(
+                upr,
+                "Mengunduh "
+                + str(self._start + 1)
+                + " - "
+                + str(self._count + self._start)
+                + " dari "
+                + str(self._count)
+                + " persil",
+            )
 
             upr = None
 
-            self.UpdateStatus(upr,"Mengunduh Selesai")
+            self.UpdateStatus(upr, "Mengunduh Selesai")
 
         except Exception as e:
             print(e)
 
-
-    def UpdateStatus(self,_upr,value):
+    def UpdateStatus(self, _upr, value):
         print(_upr)
-        if(value.startswith("Mengunduh")):
-            if(_upr != None):
+        if value.startswith("Mengunduh"):
+            if _upr != None:
                 self._draw(_upr)
-            if(value != "Mengunduh Selesai"):
+            if value != "Mengunduh Selesai":
                 print(value)
                 self.toolbar_inbox.setEnabled(False)
                 self.btn_cari.setEnabled(False)

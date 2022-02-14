@@ -6,7 +6,6 @@ import re
 from urllib import response
 
 
-
 from qgis.PyQt import QtWidgets, uic
 from qgis.core import QgsProject
 from qgis.PyQt.QtGui import QDesktopServices
@@ -33,32 +32,53 @@ FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../ui/download_persil_sekitarnya.ui")
 )
 
+
 class DownloadPersilSekitar(QtWidgets.QDialog, FORM_CLASS):
     """Dialog for Peta Bidang"""
 
     closingPlugin = pyqtSignal()
 
-    def __init__(self,parent=iface.mainWindow()):
+    def __init__(self, parent=iface.mainWindow()):
         super(DownloadPersilSekitar, self).__init__(parent)
         self.iface = iface
         self.canvas = iface.mapCanvas()
         self.setupUi(self)
 
         self.srid_code = [
-            23830, 23831, 23832, 23833, 23834, 23835, 23836, 23837, 23838, 23839, 23840, 23841, 23842, 23843, 23844, 23845
+            23830,
+            23831,
+            23832,
+            23833,
+            23834,
+            23835,
+            23836,
+            23837,
+            23838,
+            23839,
+            23840,
+            23841,
+            23842,
+            23843,
+            23844,
+            23845,
         ]
 
         self.list_vm = []
 
-        self.cmb_propinsi.currentIndexChanged.connect(self._cmb_propinsi_selected_index_changed)
-        self.cmb_kabupaten.currentIndexChanged.connect(self._cmb_kabupaten_selected_index_changed)
-        self.cmb_kecamatan.currentIndexChanged.connect(self._cmb_kecamatan_selected_index_changed)
+        self.cmb_propinsi.currentIndexChanged.connect(
+            self._cmb_propinsi_selected_index_changed
+        )
+        self.cmb_kabupaten.currentIndexChanged.connect(
+            self._cmb_kabupaten_selected_index_changed
+        )
+        self.cmb_kecamatan.currentIndexChanged.connect(
+            self._cmb_kecamatan_selected_index_changed
+        )
         self.nud_radius.setText("100")
         self.btn_titik_tengah.clicked.connect(self.btnDownload_Click)
 
         self.setup_workpanel()
 
-    
     def setup_workpanel(self):
         kantor = readSetting("kantorterpilih", {})
         if not kantor:
@@ -102,7 +122,9 @@ class DownloadPersilSekitar(QtWidgets.QDialog, FORM_CLASS):
         self._set_cmb_desa()
 
     def _set_cmb_propinsi(self):
-        response = endpoints.get_provinsi_by_kantor(self._kantor_id, self._tipe_kantor_id)
+        response = endpoints.get_provinsi_by_kantor(
+            self._kantor_id, self._tipe_kantor_id
+        )
         prop_dataset = json.loads(response.content)
 
         self.cmb_propinsi.clear()
@@ -111,16 +133,20 @@ class DownloadPersilSekitar(QtWidgets.QDialog, FORM_CLASS):
 
     def _set_cmb_kabupaten(self):
         selected_prov = self.cmb_propinsi.currentData()
-        response = endpoints.get_kabupaten_by_kantor(self._kantor_id, self._tipe_kantor_id, selected_prov)
+        response = endpoints.get_kabupaten_by_kantor(
+            self._kantor_id, self._tipe_kantor_id, selected_prov
+        )
         kabu_dataset = json.loads(response.content)
-      
+
         self.cmb_kabupaten.clear()
         for kab in kabu_dataset["KABUPATEN"]:
             self.cmb_kabupaten.addItem(kab["KABUNAMA"], kab["KABUPATENID"])
 
     def _set_cmb_kecamatan(self):
         selected_kab = self.cmb_kabupaten.currentData()
-        response = endpoints.get_kecamatan_by_kantor(self._kantor_id, self._tipe_kantor_id, selected_kab)
+        response = endpoints.get_kecamatan_by_kantor(
+            self._kantor_id, self._tipe_kantor_id, selected_kab
+        )
         keca_dataset = json.loads(response.content)
 
         self.cmb_kecamatan.clear()
@@ -129,7 +155,9 @@ class DownloadPersilSekitar(QtWidgets.QDialog, FORM_CLASS):
 
     def _set_cmb_desa(self):
         selected_kec = self.cmb_kecamatan.currentData()
-        response = endpoints.get_desa_by_kantor(self._kantor_id, self._tipe_kantor_id, selected_kec)
+        response = endpoints.get_desa_by_kantor(
+            self._kantor_id, self._tipe_kantor_id, selected_kec
+        )
         desa_dataset = json.loads(response.content)
 
         self.cmb_desa.clear()
@@ -146,7 +174,7 @@ class DownloadPersilSekitar(QtWidgets.QDialog, FORM_CLASS):
     def btnDownload_Click(self):
         self.active = False
         QgsMapTool.__init__(self, self.canvas)
-      
+
         self.vm_1 = self.create_vertex_marker()
         self.point_tool_1 = MapTool(self.canvas, self.vm_1)
         self.point_tool_1.map_clicked.connect(self.update_titik_1)
@@ -154,10 +182,10 @@ class DownloadPersilSekitar(QtWidgets.QDialog, FORM_CLASS):
         self.canvas.setMapTool(self.point_tool_1)
 
     def update_titik_1(self, x, y):
-        print(x,y)
+        print(x, y)
         layers = self.canvas.layers()
         w = self.canvas.mapUnitsPerPixel() * 3
-        rect = QgsRectangle(x-w, y-w, x+w, y+w)
+        rect = QgsRectangle(x - w, y - w, x + w, y + w)
         for layer in layers:
             if layer.type() == QgsMapLayer.RasterLayer:
                 continue
@@ -166,7 +194,3 @@ class DownloadPersilSekitar(QtWidgets.QDialog, FORM_CLASS):
         self.canvas.scene().removeItem(self.vm_1)
         self.point_tool_1.deactivate()
         self.canvas.unsetMapTool(self.point_tool_1)
-
-
-
-

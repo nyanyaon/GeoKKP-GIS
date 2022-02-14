@@ -45,17 +45,13 @@ class LinkDI302A(QtWidgets.QDialog, FORM_CLASS):
         persil_response = endpoints.get_parcel_not_linked_to_302a(self._berkas_id)
         persil_dataset = Dataset(persil_response.content)
         persil_dataset.render_to_qtable_widget(
-            table_name="PERSIL",
-            table_widget=self.table_persil,
-            hidden_index=[0]
+            table_name="PERSIL", table_widget=self.table_persil, hidden_index=[0]
         )
 
         di302_response = endpoints.get_302a_not_linked_to_parcel(self._berkas_id)
         di302_dataset = Dataset(di302_response.content)
         di302_dataset.render_to_qtable_widget(
-            table_name="DI302A",
-            table_widget=self.table_di302,
-            hidden_index=[0]
+            table_name="DI302A", table_widget=self.table_di302, hidden_index=[0]
         )
 
         parcel_linked_response = endpoints.get_parcel_linked_to_302a(self._berkas_id)
@@ -63,7 +59,7 @@ class LinkDI302A(QtWidgets.QDialog, FORM_CLASS):
         parcel_linked_dataset.render_to_qtable_widget(
             table_name="PERSIL",
             table_widget=self.table_persil_di302,
-            hidden_index=[0, 1]
+            hidden_index=[0, 1],
         )
 
     def _handle_link(self):
@@ -81,7 +77,9 @@ class LinkDI302A(QtWidgets.QDialog, FORM_CLASS):
             luas_persil = selected_persil[2].text()
             id302a = selected_di302a[0].text()
 
-            response = endpoints.update_di302a(id302a, id_persil, nomor_persil, luas_persil)
+            response = endpoints.update_di302a(
+                id302a, id_persil, nomor_persil, luas_persil
+            )
             response_str = response.content.decode("utf-8")
             if response_str != "OK":
                 QtWidgets.QMessageBox.critical(self, "GeoKKP Web", response_str)
@@ -89,7 +87,10 @@ class LinkDI302A(QtWidgets.QDialog, FORM_CLASS):
                 self._load_resource()
         else:
             QtWidgets.QMessageBox.warning(
-                self, "GeoKKP Web", "Pilih Sebuah Baris Pada Grid 'Persil Belum Terkait Dengan DI302' dan 'DI302 Belum Terkait Dengan Persil'")
+                self,
+                "GeoKKP Web",
+                "Pilih Sebuah Baris Pada Grid 'Persil Belum Terkait Dengan DI302' dan 'DI302 Belum Terkait Dengan Persil'",
+            )
 
     def _handle_unlink(self):
         self.table_persil_di302.setColumnHidden(0, False)
