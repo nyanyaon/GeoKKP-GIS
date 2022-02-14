@@ -555,7 +555,8 @@ def add_layer(layername, type, symbol=None, fields=None, crs=None, parent=None):
             field = QgsField(key, field_type)
             field_list.append(field)
     if symbol:
-        symbolurl = os.path.join(os.path.dirname(__file__), "../styles/" + symbol)
+        symbolurl = os.path.join(os.path.dirname(__file__), "../../styles/" + symbol)
+        print(symbolurl)
         layer.loadNamedStyle(symbolurl)
 
     layer_dataprovider.addAttributes(field_list)

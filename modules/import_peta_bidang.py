@@ -444,6 +444,12 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
 
     def _autofill_persildata(self):
         for layer in self._current_layers:
+            # TODO: remove the usage of current layer
+            try:
+                layer.id()
+            except RuntimeError:
+                continue
+
             if not layer.name().startswith("(020100)"):
                 continue
 
@@ -481,10 +487,12 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                     luas_round = str(round(poli["luas"], 3))
 
                     sheet_number = get_nlp("250", point.x(), point.y())
+                    print("1 >>", sheet_number, point.x(), point.y())
                     box_number = ""
                     if len(sheet_number) == 15:
                         sheet_number = sheet_number[0:11]
                         box_number = get_nlp_index("1000", point.x(), point.y())
+                    print("2 >>", sheet_number, box_number)
 
                     if row:
                         row[DS_PERSIL_EDIT_COLUMNS[0]] = objectid
@@ -520,6 +528,12 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
 
     def _hapus_persil_terdaftar(self):
         for layer in self._current_layers:
+            # TODO: remove the usage of current layer
+            try:
+                layer.id()
+            except RuntimeError:
+                continue
+
             if not layer.name().startswith("(020100)"):
                 continue
 
@@ -837,6 +851,11 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                 result_oid_map[row["oid"]] = row["nib"]
 
             for layer in self._current_layers:
+                # TODO: remove the usage of current layer
+                try:
+                    layer.id()
+                except RuntimeError:
+                    continue
                 field_index = layer.fields().indexOf("label")
                 print("field_index", field_index)
                 features = layer.getFeatures()

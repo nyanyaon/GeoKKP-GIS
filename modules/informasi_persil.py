@@ -272,7 +272,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
         if (
             not selected
             or "PERSILBARU" not in self._ds_parcels
-            or not self._ds_parcels["PERSILBARU"]
+            or not self._ds_parcels["PERSILBARU"].rows
         ):
             return
 
@@ -285,20 +285,21 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
         response_json = Dataset(response.content)
         print("parcel info", response_json)
 
-        self.input_nama_jalan.setText(response_json["PERSILBARU"][0]["NAMAJALAN"])
-        self.input_nomor.setText(response_json["PERSILBARU"][0]["NOMORBANGUNAN"])
+        self.input_nama_jalan.setText(response_json["PERSILBARU"].rows[0]["NAMAJALAN"])
+        self.input_nomor.setText(response_json["PERSILBARU"].rows[0]["NOMORBANGUNAN"])
+        self.input_kode_pos.setText(response_json["PERSILBARU"].rows[0]["KODEPOS"])
         self.input_alamat_tambahan.setText(
-            response_json["PERSILBARU"][0]["ALAMATTAMBAHAN"]
+            response_json["PERSILBARU"].rows[0]["ALAMATTAMBAHAN"]
         )
-        self.input_peta.setText(response_json["PERSILBARU"][0]["PETA"])
-        self.input_nomor_peta_lokal.setText(response_json["PERSILBARU"][0]["NOPETA"])
-        self.input_nomor_lembar.setText(response_json["PERSILBARU"][0]["LEMBAR"])
-        self.input_nomor_kotak.setText(response_json["PERSILBARU"][0]["KOTAK"])
+        self.input_peta.setText(response_json["PERSILBARU"].rows[0]["PETA"])
+        self.input_nomor_peta_lokal.setText(response_json["PERSILBARU"].rows[0]["NOPETA"])
+        self.input_nomor_lembar.setText(response_json["PERSILBARU"].rows[0]["LEMBAR"])
+        self.input_nomor_kotak.setText(response_json["PERSILBARU"].rows[0]["KOTAK"])
 
-        landuse_id = response_json["PERSILBARU"][0]["GUNATANAHKHUSUSID"]
+        landuse_id = response_json["PERSILBARU"].rows[0]["GUNATANAHKHUSUSID"]
         print("landuse_id", landuse_id)
         if landuse_id:
-            guna_tanah_umum_id = response_json["PERSILBARU"][0]["GUNATANAHUMUMID"]
+            guna_tanah_umum_id = response_json["PERSILBARU"].rows[0]["GUNATANAHUMUMID"]
             print("guna_tanah_umum_id", guna_tanah_umum_id)
             for index, row in enumerate(self._landuse_data["TIPELANDGENERIK"]):
                 if row["TIPEUSECODE"] == guna_tanah_umum_id:
@@ -320,7 +321,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
 
         selected_persil = [
             row
-            for row in self._ds_parcels["PERSILBARU"]
+            for row in self._ds_parcels["PERSILBARU"].rows
             if row["PERSILID"] == selected_persil_id
         ]
         if not selected_persil:
