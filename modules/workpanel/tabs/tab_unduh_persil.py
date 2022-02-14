@@ -1,3 +1,6 @@
+from asyncio.windows_events import NULL
+from contextlib import nullcontext
+import imp
 import os
 import json
 import re
@@ -12,6 +15,7 @@ from qgis.core import QgsRectangle
 from ...api import endpoints
 from ...utils import readSetting, get_epsg_from_tm3_zone, get_layer_config, sdo_to_layer
 from ...models.dataset import Dataset
+from ...download_persil_sekitarnya import DownloadPersilSekitar
 
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../../../ui/workpanel/tab_unduh_persil.ui")
@@ -60,7 +64,9 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
         self.btn_next.clicked.connect(self._btn_next_click)
         self.btn_last.clicked.connect(self._btn_last_click)
         self.btn_next_record.clicked.connect(self._btn_next_record_click)
+        self.btn_download_all.clicked.connect(self.DownloadAll)
         self.chb_per_kabupaten.stateChanged.connect(self._chb_per_kabupaten_state_changed)
+        self.btn_download_rectangle.clicked.connect(self.DownloadRadius)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -123,7 +129,7 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
         selected_prov = self.cmb_propinsi.currentData()
         response = endpoints.get_kabupaten_by_kantor(self._kantor_id, self._tipe_kantor_id, selected_prov)
         kabu_dataset = json.loads(response.content)
-
+      
         self.cmb_kabupaten.clear()
         for kab in kabu_dataset["KABUPATEN"]:
             self.cmb_kabupaten.addItem(kab["KABUNAMA"], kab["KABUPATENID"])
@@ -196,7 +202,8 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
             response = endpoints.unduh_persil_sdo(wilayah_id, self._txt_nomor, srs_name, str(
                 self._start), str(self._limit), str(self._count))
             self._upr = json.loads(response.content)
-
+            
+   
             if not self._upr["status"]:
                 QtWidgets.QMessageBox.warning(
                     None, "GeoKKP", self._upr["message"]
@@ -364,3 +371,75 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
             self.cmb_kecamatan.setVisible(True)
             self.lbl_wilayah.setVisible(True)
             self.lbl_wilayah_induk.setVisible(True)
+
+    def DownloadAll(self):
+
+        try:
+
+            self.toolbar_inbox.setEnabled(False)
+            self.btn_cari.setEnabled(False)
+            self.chb_per_kabupaten.setEnabled(False)
+            self.cmb_coordinate_system.setEnabled(False)
+            self.cmb_kecamatan.setEnabled(False)
+            self.cmb_desa.setEnabled(False)
+
+            if self.chb_per_kabupaten.isChecked():
+                self._wilayah_id = self.cmb_kabupaten.currentData()
+            else:
+                self._wilayah_id = self.cmb_desa.currentData()
+
+            crs = self.cmb_coordinate_system.currentText()
+            zone = crs.replace("TM3-", "")
+            self._srid_code = get_epsg_from_tm3_zone(zone, include_epsg_key=False)
+
+            self._count = -1
+            self._start = 0
+
+            response = endpoints.unduh_persil_sdo(self._wilayah_id,"",self._srid_code,str(self._start),"20",str(self._count))
+            upr = json.loads(response.content)
+
+            self._count = int(upr["total"])
+
+            response = endpoints.unduh_persil_sdo(self._wilayah_id,"",self._srid_code,str(self._start),str(self._count),str(self._count))
+            upr = json.loads(response.content)
+            self.UpdateStatus(upr, "Mengunduh " + str(self._start + 1) + " - " + str(self._count+self._start) +" dari " + str(self._count) + " persil")
+
+            upr = None
+
+            self.UpdateStatus(upr,"Mengunduh Selesai")
+
+        except Exception as e:
+            print(e)
+
+
+    def UpdateStatus(self,_upr,value):
+        print(_upr)
+        if(value.startswith("Mengunduh")):
+            if(_upr != None):
+                self._draw(_upr)
+            if(value != "Mengunduh Selesai"):
+                print(value)
+                self.toolbar_inbox.setEnabled(False)
+                self.btn_cari.setEnabled(False)
+                self.chb_per_kabupaten.setEnabled(False)
+                self.cmb_coordinate_system.setEnabled(False)
+                self.cmb_kecamatan.setEnabled(False)
+                self.cmb_desa.setEnabled(False)
+            else:
+                self.toolbar_inbox.setEnabled(True)
+                self.btn_cari.setEnabled(True)
+                self.chb_per_kabupaten.setEnabled(True)
+                self.cmb_coordinate_system.setEnabled(True)
+                self.cmb_kecamatan.setEnabled(True)
+                self.cmb_desa.setEnabled(True)
+        else:
+            self.toolbar_inbox.setEnabled(True)
+            self.btn_cari.setEnabled(True)
+            self.chb_per_kabupaten.setEnabled(True)
+            self.cmb_coordinate_system.setEnabled(True)
+            self.cmb_kecamatan.setEnabled(True)
+            self.cmb_desa.setEnabled(True)
+
+    def DownloadRadius(self):
+        downloadPersil = DownloadPersilSekitar()
+        downloadPersil.show()

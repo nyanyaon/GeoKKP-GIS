@@ -426,7 +426,7 @@ def get_pbt_for_apbn(
         "kantorId": kantor_id,
         "proyek": proyek,
         "tipePBT": tipe_pbt,
-        "start": start,
+        "start": start, 
         "limit": limit,
         "count": count,
     }
@@ -543,8 +543,16 @@ def unduh_persil_sdo(wilayah_id, str_nib, srs_name, start, limit, count, **kwarg
         "limit": limit,
         "count": count
     }
-
-
+@api(endpoint="parcelWindowSdo")
+def parcel_window_sdo(minX, minY, maxX, maxY, srsName,**kwargs):
+    return {
+        "minX": minX,
+        "minY": minY,
+        "maxX": maxX,
+        "maxY": maxY,
+        "srsName": srsName,
+    }
+    
 @api(endpoint="getUnlinkedPBTBerkas")
 def get_unlinked_pbt_berkas(dokumen_pengukuran_id, **kwargs):
     return {
