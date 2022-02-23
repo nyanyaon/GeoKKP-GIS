@@ -678,3 +678,21 @@ def update_petugas_ukur_gu(
         "tglMulai": tgl_mulai,
         "tglSelesai": tgl_selesai,
     }
+
+@api(endpoint="getSuratUkur")
+def get_surat_ukur(
+    wilayah_id, tipe_su, nomor_su, tahun_su, start, limit, count, **kwargs
+):
+    return {
+        "wilayahId": wilayah_id,
+        "tipeSU": tipe_su,
+        "nomorSU": nomor_su,
+        "tahunSU": tahun_su,
+        "start": start,
+        "limit": limit,
+        "count": count,
+    }
+
+@api(endpoint="startImportDokumenPengukuran")
+def start_import_dokumen_pengukuran(surat_ukur_id,**kwargs):
+    return{"suratUkurId": surat_ukur_id}
