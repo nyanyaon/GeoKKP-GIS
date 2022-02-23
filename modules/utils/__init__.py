@@ -21,6 +21,7 @@ from qgis.core import (
     QgsVectorLayer,
     QgsField,
     QgsPointXY,
+    QgsPoint,
     QgsRectangle,
     QgsGeometry,
     QgsFeature,
@@ -105,7 +106,7 @@ SDO_GTYPE_MAP = {
     "09": "MultiSolid",
 }
 
-SDO_FIELD_EXCLUDE = ["text", "boundary"]
+SDO_FIELD_EXCLUDE = ["text", "boundary", "line"]
 
 
 # constants for processing snap parameter (auto-adjust)
@@ -408,24 +409,26 @@ def parse_sdo_geometry(elem_info, ordinates):
     start_index = elem_info[0] - 1
     gtype, dim = parse_sdo_geometry_type(elem_info[1])
 
-    result = []
+    result_qgspointxy = []
+    result_qgspoint = []
     start = start_index
     while True:
         end = start + min(2, dim)
-        result.append(QgsPointXY(*ordinates[start:end]))
+        result_qgspointxy.append(QgsPointXY(*ordinates[start:end]))
+        result_qgspoint.append(QgsPoint(QgsPointXY(*ordinates[start:end])))
         start += dim
         if start >= len(ordinates):
             break
 
     if gtype == GPOINT:
-        return QgsGeometry.fromPointXY(result[0])
+        return QgsGeometry.fromPointXY(result_qgspointxy[0])
     elif gtype == GLINESTRING:
-        return QgsGeometry.fromPolyline(result)
+        return QgsGeometry.fromPolyline(result_qgspoint)
     elif gtype == GPOLYGON:
-        return QgsGeometry.fromPolygonXY([result])
+        return QgsGeometry.fromPolygonXY([result_qgspointxy])
 
 
-def sdo_to_feature(sdo, fields, coords_field="boundary"):
+def sdo_to_feature(sdo, fields, coords_field):
     attrs = [sdo[f] for f in fields]
     geometry = parse_sdo_geometry(
         sdo[coords_field]["sdoElemInfo"], sdo[coords_field]["sdoOrdinates"]
@@ -442,7 +445,7 @@ def sdo_to_layer(sdo, name, crs=None, symbol=None, coords_field="boundary"):
     if not isinstance(sdo, list):
         sdo = [sdo]
 
-    gtype, dim = parse_sdo_geometry_type(sdo[0]["boundary"]["sdoGtype"])
+    gtype, dim = parse_sdo_geometry_type(sdo[0][coords_field]["sdoGtype"])
     fields = parse_sdo_fields(sdo[0])
     layer = add_layer(name, gtype, symbol=symbol, fields=fields, crs=crs)
     provider = layer.dataProvider()
@@ -457,6 +460,8 @@ def sdo_to_layer(sdo, name, crs=None, symbol=None, coords_field="boundary"):
     layer.commitChanges()
 
     return layer
+
+    # TODO: refactoring for automatic define feature type, and layer type.
 
 
 def get_layer_config(kode):
