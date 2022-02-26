@@ -17,164 +17,181 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout">
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout_19">
-       <property name="spacing">
-        <number>1</number>
-       </property>
-       <item>
-        <widget class="QToolButton" name="toolButton_30">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string>Mulai</string>
-         </property>
-         <property name="statusTip">
-          <string/>
-         </property>
-         <property name="text">
-          <string>Mulai</string>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../../images/panel_icons/start.png</normaloff>../../images/panel_icons/start.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>35</width>
-           <height>35</height>
-          </size>
-         </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextUnderIcon</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="toolButton_31">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string>Simpan PBT</string>
-         </property>
-         <property name="text">
-          <string>Simpan</string>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../../images/panel_icons/save.png</normaloff>../../images/panel_icons/save.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>35</width>
-           <height>35</height>
-          </size>
-         </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextUnderIcon</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="toolButton_32">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string>Masukkan Bidang ke Berkas</string>
-         </property>
-         <property name="text">
-          <string>Informasi</string>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../../images/panel_icons/info.png</normaloff>../../images/panel_icons/info.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>35</width>
-           <height>35</height>
-          </size>
-         </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextUnderIcon</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="toolButton_33">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string>Buat Layout</string>
-         </property>
-         <property name="text">
-          <string>Layout</string>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../../images/panel_icons/print.png</normaloff>../../images/panel_icons/print.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>35</width>
-           <height>35</height>
-          </size>
-         </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextUnderIcon</enum>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QToolButton" name="toolButton_34">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="toolTip">
-          <string>Tutup Berkas</string>
-         </property>
-         <property name="text">
-          <string>Tutup</string>
-         </property>
-         <property name="icon">
-          <iconset>
-           <normaloff>../../images/panel_icons/close.png</normaloff>../../images/panel_icons/close.png</iconset>
-         </property>
-         <property name="iconSize">
-          <size>
-           <width>35</width>
-           <height>35</height>
-          </size>
-         </property>
-         <property name="toolButtonStyle">
-          <enum>Qt::ToolButtonTextUnderIcon</enum>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item>
       <layout class="QVBoxLayout" name="verticalLayout_7">
        <item>
-        <widget class="QCheckBox" name="checkBox_2">
+        <widget class="QWidget" name="toolbar_inbox" native="true">
+         <property name="whatsThis">
+          <string>toobar_inbox</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <property name="spacing">
+           <number>1</number>
+          </property>
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item>
+           <widget class="QToolButton" name="btn_start_process">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Mulai</string>
+            </property>
+            <property name="statusTip">
+             <string/>
+            </property>
+            <property name="text">
+             <string>Mulai</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>../../images/panel_icons/start.png</normaloff>../../images/panel_icons/start.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>35</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonTextUnderIcon</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="btn_save_data">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Simpan PBT</string>
+            </property>
+            <property name="text">
+             <string>Simpan</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>../../images/panel_icons/save.png</normaloff>../../images/panel_icons/save.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>35</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonTextUnderIcon</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="btn_info_process">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Masukkan Bidang ke Berkas</string>
+            </property>
+            <property name="text">
+             <string>Informasi</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>../../images/panel_icons/info.png</normaloff>../../images/panel_icons/info.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>35</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonTextUnderIcon</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="btn_create_layout">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Buat Layout</string>
+            </property>
+            <property name="text">
+             <string>Layout</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>../../images/panel_icons/print.png</normaloff>../../images/panel_icons/print.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>35</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonTextUnderIcon</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QToolButton" name="btn_finish_process">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="toolTip">
+             <string>Tutup Berkas</string>
+            </property>
+            <property name="text">
+             <string>Tutup</string>
+            </property>
+            <property name="icon">
+             <iconset>
+              <normaloff>../../images/panel_icons/close.png</normaloff>../../images/panel_icons/close.png</iconset>
+            </property>
+            <property name="iconSize">
+             <size>
+              <width>35</width>
+              <height>35</height>
+             </size>
+            </property>
+            <property name="toolButtonStyle">
+             <enum>Qt::ToolButtonTextUnderIcon</enum>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="chb_per_kabupaten">
          <property name="text">
           <string>Penyimpanan Bidang Tanah untuk HGU/HPL</string>
          </property>
@@ -190,7 +207,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QComboBox" name="combo_provinsi_4"/>
+          <widget class="QComboBox" name="cmb_propinsi"/>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_25">
@@ -200,27 +217,27 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QComboBox" name="combo_kabupaten_3"/>
+          <widget class="QComboBox" name="cmb_kabupaten"/>
          </item>
          <item row="2" column="0">
-          <widget class="QLabel" name="label_26">
+          <widget class="QLabel" name="lbl_wilayah_induk">
            <property name="text">
             <string>Kecamatan</string>
            </property>
           </widget>
          </item>
          <item row="2" column="1">
-          <widget class="QComboBox" name="combo_kecamatan_3"/>
+          <widget class="QComboBox" name="cmb_kecamatan"/>
          </item>
          <item row="3" column="0">
-          <widget class="QLabel" name="label_27">
+          <widget class="QLabel" name="lbl_wilayah">
            <property name="text">
             <string>Desa/Kelurahan</string>
            </property>
           </widget>
          </item>
          <item row="3" column="1">
-          <widget class="QComboBox" name="combo_kelurahan_3"/>
+          <widget class="QComboBox" name="cmb_desa"/>
          </item>
          <item row="4" column="0">
           <widget class="QLabel" name="tipeDokumenLabel">
@@ -230,7 +247,7 @@
           </widget>
          </item>
          <item row="4" column="1">
-          <widget class="QComboBox" name="tipeDokumenComboBox"/>
+          <widget class="QComboBox" name="cmb_tipe_dokumen"/>
          </item>
          <item row="5" column="0">
           <widget class="QLabel" name="nomorLabel">
@@ -240,7 +257,7 @@
           </widget>
          </item>
          <item row="5" column="1">
-          <widget class="QLineEdit" name="nomorLineEdit"/>
+          <widget class="QLineEdit" name="txt_nomor"/>
          </item>
         </layout>
        </item>
@@ -272,7 +289,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QLineEdit" name="lineEdit_3"/>
+            <widget class="QLineEdit" name="txt_tahun"/>
            </item>
            <item>
             <spacer name="horizontalSpacer_11">
@@ -288,7 +305,7 @@
             </spacer>
            </item>
            <item>
-            <widget class="QToolButton" name="toolButton_36">
+            <widget class="QToolButton" name="btn_cari">
              <property name="sizePolicy">
               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Minimum">
                <horstretch>0</horstretch>
@@ -316,17 +333,125 @@
           </layout>
          </item>
          <item>
-          <widget class="QListWidget" name="listWidget_3">
-           <property name="alternatingRowColors">
-            <bool>true</bool>
+          <widget class="QTableWidget" name="dgv_surat_ukur">
+           <property name="editTriggers">
+            <set>QAbstractItemView::NoEditTriggers</set>
            </property>
-           <property name="layoutMode">
-            <enum>QListView::SinglePass</enum>
+           <property name="selectionMode">
+            <enum>QAbstractItemView::SingleSelection</enum>
            </property>
-           <property name="selectionRectVisible">
-            <bool>false</bool>
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
            </property>
           </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QPushButton" name="btn_first">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>&lt;&lt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_prev">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>&lt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLineEdit" name="txt_paging">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="acceptDrops">
+              <bool>false</bool>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_next">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="btn_last">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>50</width>
+               <height>16777215</height>
+              </size>
+             </property>
+             <property name="text">
+              <string>&gt;&gt;</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
         </layout>
        </item>

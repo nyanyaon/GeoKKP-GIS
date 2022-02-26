@@ -65,6 +65,7 @@ from .modules.workpanel import Workpanel
 from .modules.initialization import Initialize
 from .modules.featuresearch import FeatureSearchDialog
 from .modules.add_layer import AddLayerDialog
+from .modules.convert_layer import ConvertLayerDialog
 from .modules.add_basemap import AddBasemapDialog
 from .modules.gotoxy import GotoXYDialog
 from .modules.settings import SettingsDialog
@@ -165,6 +166,7 @@ class GeoKKP:
         # Set widgets
         self.workpanel = Workpanel()
         self.addlayeraction = AddLayerDialog()
+        self.convertlayeraction = ConvertLayerDialog()
         self.addbasemapaction = AddBasemapDialog()
         self.gotoxyaction = GotoXYDialog()
         self.setting_action = SettingsDialog()
@@ -335,6 +337,15 @@ class GeoKKP:
             iconPath("buatlayer.png"),
             text=self.tr(u"Layer Baru"),
             callback=self.add_layers,
+            parent=self.iface.mainWindow().menuBar(),
+        )
+        # -------------------------------------------
+
+        # ======== Menu: Buat Layer ========
+        self.add_action(
+            iconPath("buatlayer.png"),
+            text=self.tr(u"Ubah Layer"),
+            callback=self.convert_layers,
             parent=self.iface.mainWindow().menuBar(),
         )
         # -------------------------------------------
@@ -1072,6 +1083,11 @@ class GeoKKP:
         if self.addlayeraction is None:
             self.addlayeraction = AddLayerDialog()
         self.addlayeraction.show()
+
+    def convert_layers(self):
+        if self.convertlayeraction is None:
+            self.convertlayeraction = ConvertLayerDialog()
+        self.convertlayeraction.show()
 
     def add_basemap(self):
         if self.addbasemapaction is None:
