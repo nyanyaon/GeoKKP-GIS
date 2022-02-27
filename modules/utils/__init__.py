@@ -945,3 +945,14 @@ def export_layer_to_dxf(layers, output_path, encoding=""):
     dxfFile = QFile(output_path)
     result = dxf_export.writeToFile(dxfFile, encoding)
     return result
+
+
+def select_layer_by_regex(regex):
+    layers = iface.mapCanvas().layers()
+
+    results = []
+    for layer in layers:
+        if re.match(regex, layer.name()):
+            results.append(layer)
+
+    return results

@@ -679,6 +679,7 @@ def update_petugas_ukur_gu(
         "tglSelesai": tgl_selesai,
     }
 
+
 @api(endpoint="getSuratUkur")
 def get_surat_ukur(
     wilayah_id, tipe_su, nomor_su, tahun_su, start, limit, count, **kwargs
@@ -693,6 +694,54 @@ def get_surat_ukur(
         "count": count,
     }
 
+
 @api(endpoint="startImportDokumenPengukuran")
-def start_import_dokumen_pengukuran(surat_ukur_id,**kwargs):
+def start_import_dokumen_pengukuran(surat_ukur_id, **kwargs):
     return{"suratUkurId": surat_ukur_id}
+
+
+@api(endpoint="getDetailMapInfoByPersilId")
+def get_detail_map_info_by_persil_id(persil_id, **kwargs):
+    return {
+        "persilId": persil_id
+    }
+
+
+@api(endpoint="getDetailMapInfo")
+def get_detail_map_info(wilayah_id, nomor_bidang, **kwargs):
+    return {
+        "wilayahId": wilayah_id,
+        "nomorBidang": nomor_bidang
+    }
+
+
+@api(endpoint="getDetailMapInfo2")
+def get_detail_map_info_2(wilayah_id, tipe_su, nomor_su, tahun_su, **kwargs):
+    return {
+        "wilayahId": wilayah_id,
+        "tipeSu": tipe_su,
+        "nomorSu": nomor_su,
+        "tahunSu": tahun_su
+    }
+
+
+@api(endpoint="getDetailMapInfo1")
+def get_detail_map_info_1(wilayah_id, tipe_hak, nomor_hak, **kwargs):
+    return {
+        "wilayahId": wilayah_id,
+        "tipaHak": tipe_hak,
+        "nomorHak": nomor_hak
+    }
+
+
+@api(endpoint="updateGeometriPersilSdo")
+def update_geometri_persil_sdo(pp, **kwargs):
+    return pp
+
+
+@api(endpoint="createPersilMapSdo")
+def create_persil_map_sdo(wilayah_id, pp, **kwargs):
+    return {
+        "wilayahId": wilayah_id,
+        "pp": pp
+    }

@@ -950,7 +950,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
         if len(layer_raw) != 2:
             return None, None
 
-        code_raw, object_raw = layer_name
+        code_raw, object_raw = layer_raw
 
         try:
             code = code_raw.replace("(", "")[-1]
