@@ -80,7 +80,7 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>Simpan PBT</string>
+             <string>Simpan Surat Ukur</string>
             </property>
             <property name="text">
              <string>Simpan</string>
@@ -109,7 +109,7 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>Masukkan Bidang ke Berkas</string>
+             <string>Informasi</string>
             </property>
             <property name="text">
              <string>Informasi</string>
