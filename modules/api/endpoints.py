@@ -680,6 +680,41 @@ def update_petugas_ukur_gu(
     }
 
 
+@api(endpoint="getGambarDenah")
+def getGambarDenah(wilayahId, kantorId, nomorGD, tahunGD, start, limit, count, **kwargs):
+    return {
+        "wilayahId": wilayahId,
+        "kantorId": kantorId,
+        "nomorGD": nomorGD,
+        "tahunGD": tahunGD,
+        "start": start,
+        "limit": limit,
+        "count": count,
+    }
+
+
+@api(endpoint="startBerkasSpasialByDokumenPengukuranId")
+def startBerkasSpasialByDokumenPengukuranId(dokumenPengukuranId, kantorId, userName, **kwargs):
+    return {
+        "dokumenPengukuranId": dokumenPengukuranId,
+        "kantorId": kantorId,
+        "userName": userName,
+        "versi": DEFAULT_APP_VERSION,
+    }
+
+
+@api(endpoint="getBerkasHMSRS")
+def getBerkasHMSRS(nomorBerkas, tahunBerkas, kantorId, start, limit, count, **kwargs):
+    return {
+        "nomorBerkas": nomorBerkas,
+        "tahunBerkas": tahunBerkas,
+        "kantorId": kantorId,
+        "start": start,
+        "limit": limit,
+        "count": count,
+    }
+
+
 @api(endpoint="getSuratUkur")
 def get_surat_ukur(
     wilayah_id, tipe_su, nomor_su, tahun_su, start, limit, count, **kwargs
