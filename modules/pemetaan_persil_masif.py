@@ -219,34 +219,34 @@ class UploadPersilMasif(QtWidgets.QDialog, FORM_CLASS):
         for mp in self._bs_multi_persil:
             wilayah = self.cmb_desa.currentData()
             pp = {
-                "area": round(mp["luas"], 3),
-                "boundary": mp["batas"],
-                "text": mp["text"],
-                "height": mp["height"],
-                "rotation": mp["rotation"],
-                "kantorId": self._kantor_id,
-                "userUpdate": pegawai["userId"],
-                "wilayahId": wilayah["DESAID"]
+                "Area": round(mp["luas"], 3),
+                "Boundary": mp["batas"],
+                "Text": mp["text"],
+                "Height": mp["height"],
+                "Rotation": mp["rotation"],
+                "KantorId": self._kantor_id,
+                "UserUpdate": pegawai["userId"],
+                "WilayahId": wilayah["DESAID"]
             }
 
             result = ""
             if mp["nib"] != "-":
-                pp["label"] = mp["nib"]
+                pp["Label"] = mp["nib"]
                 response = endpoints.update_geometry_persil_by_nib_sdo(pp)
                 result = response.content.decode("utf-8")
-                pp["keterangan"] = "LinkNib"
+                mp["keterangan"] = "LinkNib"
 
             if result != "OK" and mp["hak"]:
-                pp["label"] = mp["hak"]
+                pp["Label"] = mp["hak"]
                 response = endpoints.update_geometry_persil_by_hak_sdo(pp)
                 result = response.content.decode("utf-8")
-                pp["keterangan"] = "LinkHak"
+                mp["keterangan"] = "LinkHak"
 
             if result != "OK" and mp["su"]:
-                pp["label"] = mp["su"]
+                pp["Label"] = mp["su"]
                 response = endpoints.update_geometry_persil_by_su_sdo(pp)
                 result = response.content.decode("utf-8")
-                pp["keterangan"] = "LinkSu"
+                mp["keterangan"] = "LinkSu"
 
             print(result)
 
@@ -258,15 +258,17 @@ class UploadPersilMasif(QtWidgets.QDialog, FORM_CLASS):
                 ]
                 success.append(coord)
             else:
+                mp["keterangan"] = result
                 error_set.add(result)
 
         if success:
             add_bintang(success)
-        else:
-            QtWidgets.QMessageBox.warning(
-                None, "Perhatian", "\n".join(error_set)
-            )
-            return
+        # else:
+        #     QtWidgets.QMessageBox.warning(
+        #         None, "Perhatian", "\n".join(error_set)
+        #     )
+        #     return
+        self._render_to_table(self._bs_multi_persil)
 
     def _btn_select_click(self):
         # check topo
@@ -327,7 +329,7 @@ class UploadPersilMasif(QtWidgets.QDialog, FORM_CLASS):
                 height = (
                     float(feature.attribute("height"))
                     if feature.attribute("height")
-                    else 0
+                    else 1
                 )
                 orientation = (
                     float(feature.attribute("rotation"))
@@ -355,13 +357,13 @@ class UploadPersilMasif(QtWidgets.QDialog, FORM_CLASS):
                     }
                     parcel_list.append(found_it)
 
-                if layer_id.startswith("(080201)"):
+                if layer_id.startswith("_080201_"):
                     str_pattern = r"^(?!00000)[0-9]{5}$"
                     if txt:
                         if not re.match(str_pattern, txt):
                             found_it["keterangan"] = "salah nib"
                         found_it["nib"] = txt
-                elif layer_id.startswith("(080202)"):
+                elif layer_id.startswith("_080202_"):
                     str_pattern = r"^(SU|GS|SUS|PLL|GT)[.](?!00000)[0-9]{5}[/](19|20)[0-9]{2}$"
                     if txt:
                         if not re.match(str_pattern, txt):
@@ -378,7 +380,9 @@ class UploadPersilMasif(QtWidgets.QDialog, FORM_CLASS):
 
         self._bs_multi_persil = parcel_list
         self.tssl_status.setText(f"Jumlah Bidang: {jumlah_bidang}")
+        self._render_to_table(parcel_list)
 
+    def _render_to_table(self, parcel_list):
         # render to table
         dataset = Dataset()
         table = dataset.add_table("persil")
