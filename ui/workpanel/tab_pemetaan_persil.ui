@@ -22,7 +22,7 @@
         <number>1</number>
        </property>
        <item>
-        <widget class="QToolButton" name="toolButton_25">
+        <widget class="QToolButton" name="toolbar_pick">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -60,7 +60,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_26">
+        <widget class="QToolButton" name="toolbar_import_bidang">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -92,7 +92,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_27">
+        <widget class="QToolButton" name="toolbar_new_bidang">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -121,7 +121,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_28">
+        <widget class="QToolButton" name="toolbar_import_masif">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -154,7 +154,7 @@
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_17">
        <item>
-        <widget class="QCheckBox" name="checkBox">
+        <widget class="QCheckBox" name="chb_per_kabupaten">
          <property name="text">
           <string>Untuk HGU/HPL</string>
          </property>
@@ -186,7 +186,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QComboBox" name="comboBox">
+          <widget class="QComboBox" name="cmb_coordinate_system">
            <property name="minimumSize">
             <size>
              <width>100</width>
@@ -209,7 +209,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QComboBox" name="combo_provinsi_2"/>
+        <widget class="QComboBox" name="cmb_propinsi"/>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_18">
@@ -219,27 +219,27 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QComboBox" name="combo_kabupaten_2"/>
+        <widget class="QComboBox" name="cmb_kabupaten"/>
        </item>
        <item row="2" column="0">
-        <widget class="QLabel" name="label_19">
+        <widget class="QLabel" name="lbl_wilayah_induk">
          <property name="text">
           <string>Kecamatan</string>
          </property>
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QComboBox" name="combo_kecamatan_2"/>
+        <widget class="QComboBox" name="cmb_kecamatan"/>
        </item>
        <item row="3" column="0">
-        <widget class="QLabel" name="label_20">
+        <widget class="QLabel" name="lbl_wilayah">
          <property name="text">
           <string>Desa/Kelurahan</string>
          </property>
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QComboBox" name="combo_kelurahan_2"/>
+        <widget class="QComboBox" name="cmb_desa"/>
        </item>
       </layout>
      </item>
@@ -263,7 +263,7 @@
             </widget>
            </item>
            <item row="0" column="1">
-            <widget class="QComboBox" name="combo_provinsi_3"/>
+            <widget class="QComboBox" name="cmb_nib"/>
            </item>
            <item row="1" column="0">
             <widget class="QLabel" name="label_22">
@@ -273,7 +273,7 @@
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLineEdit" name="lineEdit"/>
+            <widget class="QLineEdit" name="txt_luas"/>
            </item>
            <item row="2" column="0">
             <widget class="QLabel" name="alamatLabel">
@@ -283,7 +283,7 @@
             </widget>
            </item>
            <item row="2" column="1">
-            <widget class="QLineEdit" name="alamatLineEdit"/>
+            <widget class="QLineEdit" name="txt_alamat"/>
            </item>
            <item row="3" column="0">
             <widget class="QLabel" name="noHakLabel">
@@ -293,7 +293,7 @@
             </widget>
            </item>
            <item row="3" column="1">
-            <widget class="QComboBox" name="noHakComboBox"/>
+            <widget class="QComboBox" name="cmb_hak"/>
            </item>
            <item row="4" column="0">
             <widget class="QLabel" name="masaBerlakuLabel">
@@ -303,7 +303,7 @@
             </widget>
            </item>
            <item row="4" column="1">
-            <widget class="QLineEdit" name="masaBerlakuLineEdit"/>
+            <widget class="QLineEdit" name="txt_berlaku_hak"/>
            </item>
            <item row="5" column="0">
             <widget class="QLabel" name="validatorLabel">
@@ -313,7 +313,7 @@
             </widget>
            </item>
            <item row="5" column="1">
-            <widget class="QLineEdit" name="validatorLineEdit"/>
+            <widget class="QLineEdit" name="txt_validator"/>
            </item>
            <item row="6" column="0">
             <widget class="QLabel" name="noSuratUkurLabel">
@@ -323,7 +323,7 @@
             </widget>
            </item>
            <item row="6" column="1">
-            <widget class="QComboBox" name="noSuratUkurComboBox"/>
+            <widget class="QComboBox" name="cmb_surat_ukur"/>
            </item>
            <item row="7" column="0">
             <widget class="QLabel" name="masaBerlakuLabel_2">
@@ -333,7 +333,7 @@
             </widget>
            </item>
            <item row="7" column="1">
-            <widget class="QLineEdit" name="masaBerlakuLineEdit_2"/>
+            <widget class="QLineEdit" name="txt_berlaku_surat_ukur"/>
            </item>
           </layout>
          </item>
@@ -400,7 +400,7 @@
               </layout>
              </item>
              <item row="0" column="1">
-              <widget class="QLineEdit" name="lineEdit_2"/>
+              <widget class="QLineEdit" name="txt_nis"/>
              </item>
              <item row="1" column="0">
               <widget class="QLabel" name="luasPetaLabel">
@@ -410,7 +410,7 @@
               </widget>
              </item>
              <item row="1" column="1">
-              <widget class="QLineEdit" name="luasPetaLineEdit"/>
+              <widget class="QLineEdit" name="txt_luas_peta"/>
              </item>
              <item row="2" column="0">
               <widget class="QLabel" name="namaLabel">
@@ -420,7 +420,7 @@
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="QComboBox" name="namaComboBox"/>
+              <widget class="QComboBox" name="cmb_nama_persil"/>
              </item>
             </layout>
            </item>
@@ -429,6 +429,9 @@
         </layout>
        </widget>
       </widget>
+     </item>
+     <item>
+      <widget class="QTableWidget" name="dgv_pemilik"/>
      </item>
     </layout>
    </item>
