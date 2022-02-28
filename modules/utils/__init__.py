@@ -3,6 +3,7 @@ import json
 import os
 import math
 import urllib.parse
+import hashlib
 
 from multiprocessing.dummy import Pool as ThreadPool
 from functools import partial
@@ -29,6 +30,8 @@ from qgis.core import (
     QgsAuthMethodConfig,
     QgsProcessingFeatureSourceDefinition,
     QgsDxfExport,
+    QgsRectangle,
+    QgsFeatureRequest
 )
 from qgis.utils import iface
 from qgis.gui import QgsMapToolIdentifyFeature
@@ -956,3 +959,43 @@ def select_layer_by_regex(regex):
             results.append(layer)
 
     return results
+
+
+def get_feature_object_id(layer_id, feature_id):
+    identifier = f"{layer_id}|{feature_id}".encode("utf-8")
+    objectid = hashlib.md5(identifier).hexdigest()
+    return int(objectid, 16)
+
+
+# def get_polygon_by_point(layer, point):
+#     rect = QgsRectangle(point.x(), point.y(), point.x(), point.y())
+#     req = QgsFeatureRequest()
+#     req.setFilterRect(rect)
+#     feature_iterator = layer.getFeatures(req)
+#     return feature_iterator
+
+def get_polygon_by_point(layer, point):
+    features = layer.getFeatures()
+    return [f for f in features if f.geometry().contains(point)]
+
+
+def add_bintang(coords):
+    layers = select_layer_by_regex(r"\(Bintang\)")
+    if not layers:
+        layer_config = get_layer_config("Bintang")
+        layer = add_layer(layer_config["Nama Layer"], layer_config["Tipe Layer"], layer_config["Style Path"], None)
+    else:
+        layer = layers[0]
+        fids = [feat.id() for feat in layer.getFeatures()]
+        layer.deleteFeatures(fids)
+
+    data_profider = layer.dataProvider()
+    features = []
+    for coord in coords:
+        print(coord)
+        feature = QgsFeature()
+        point = QgsPoint(coord[0], coord[1])
+        feature.setGeometry(QgsGeometry.fromPoint(point))
+        features.append(feature)
+    data_profider.addFeatures(features)
+    layer.commitChanges()

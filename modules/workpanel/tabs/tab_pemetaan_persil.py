@@ -18,6 +18,8 @@ from ...utils import readSetting, select_layer_by_regex
 from ...utils.geometry import get_sdo_point, get_sdo_polygon
 from ...models.dataset import Dataset
 
+from ...pemetaan_persil_masif import UploadPersilMasif
+
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(
         os.path.dirname(__file__), "../../../ui/workpanel/tab_pemetaan_persil.ui"
@@ -37,10 +39,11 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
         self._iface = iface
         self._current_layer = self._iface.activeLayer()
         self._canvas = self._iface.mapCanvas()
-        if self._current_layer and self._current_layer.name().startswith("(080201)") or self._current_layer.name().startswith("(080202)") or self._current_layer.name().startswith("(080203)"):
-            self._txt = self._current_layer
-        else:
-            self._txt = None
+        self._txt = None
+
+        if self._current_layer:
+            if self._current_layer.name().startswith("(080201)") or self._current_layer.name().startswith("(080202)") or self._current_layer.name().startswith("(080203)"):
+                self._txt = self._current_layer
 
         self._srid_code = [
             23838,
@@ -612,7 +615,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
         self.txt_nis.setText(str_nis)
         pp = {}
 
-        layers = select_layer_by_regex(r"^(020100)*")
+        layers = select_layer_by_regex(r"^\(020100\)*")
         if not layers:
             QtWidgets.QMessageBox.warning(
                 None, "Kesalahan", "Layer batas bidang tanah (020100) tidak bisa ditemukan"
@@ -830,4 +833,5 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
                     return
 
     def _multi_upload(self):
-        pass
+        up = UploadPersilMasif()
+        up.show()

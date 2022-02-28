@@ -745,3 +745,18 @@ def create_persil_map_sdo(wilayah_id, pp, **kwargs):
         "wilayahId": wilayah_id,
         "pp": pp
     }
+
+
+@api(endpoint="updateGeometriPersilByNibSdo")
+def update_geometry_persil_by_nib_sdo(pemper, **kwargs):
+    return pemper
+
+
+@api(endpoint="updateGeometriPersilByHakSdo")
+def update_geometry_persil_by_hak_sdo(pemper, **kwargs):
+    return pemper
+
+
+@api(endpoint="updateGeometriPersilBySUSdo")
+def update_geometry_persil_by_su_sdo(pemper, **kwargs):
+    return pemper

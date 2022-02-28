@@ -910,6 +910,13 @@
             "Tipe Layer": "LineString",
             "Style Path": "",
             "Attributes": ""
+         },
+         {
+            "Kode": "Bintang",
+            "Nama Layer": "(Bintang)",
+            "Tipe Layer": "point",
+            "Style Path": "bintang.qml",
+            "Attributes": ""
          }
       ]
    }
