@@ -696,3 +696,17 @@ def get_surat_ukur(
 @api(endpoint="startImportDokumenPengukuran")
 def start_import_dokumen_pengukuran(surat_ukur_id,**kwargs):
     return{"suratUkurId": surat_ukur_id}
+
+@api(endpoint="getGambarDenah")
+def get_gambar_denah(
+    wilayah_id, kantor_id, nomor_gd, tahun_gd, start, limit, count, **kwargs
+):
+    return {
+        "wilayahId": wilayah_id,
+        "kantorId": kantor_id,
+        "nomorGD": nomor_gd,
+        "tahunGD": tahun_gd,
+        "start": start,
+        "limit": limit,
+        "count": count,        
+    }
