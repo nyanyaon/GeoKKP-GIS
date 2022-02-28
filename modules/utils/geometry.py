@@ -27,6 +27,7 @@ def get_sdo_polygon(feature, srid=24091960):
 
 def build_sdo_from_polygon(feature, srid):
     geom_wkt = feature.geometry().asWkt()
+    print(geom_wkt)
     geom_shapely = shapely.wkt.loads(geom_wkt)
     geom_shapely_ccw = shapely.geometry.polygon.orient(geom_shapely, 1.0)
 
