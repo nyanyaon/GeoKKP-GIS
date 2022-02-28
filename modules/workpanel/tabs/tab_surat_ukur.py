@@ -3,15 +3,17 @@ import json
 import re
 
 from qgis.PyQt import QtWidgets, uic
-from qgis.core import QgsProject
+from qgis.core import QgsProject, QgsMapLayer
 from qgis.PyQt.QtGui import QDesktopServices
 
 from qgis.PyQt.QtCore import pyqtSignal, QUrl
 from qgis.utils import iface
 
 from ...api import endpoints
-from ...utils import get_layer_config, readSetting, sdo_to_layer
+from ...utils import get_layer_config, get_project_crs, readSetting, sdo_to_layer
+from ...topology import quick_check_topology
 from ...models.dataset import Dataset
+from ...desain_surat_ukur import DesainSuratUkur
 
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../../../ui/workpanel/tab_surat_ukur.ui")
@@ -71,8 +73,12 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
         self._old_gugus_id = ""
         self._sumber_geometri = ""
 
+        self._current_layers = []
+        self._submit_layers = []
+
         # self._set_cmb_propinsi()
 
+        self.project = QgsProject
         self._set_initial_state()
 
         self.chb_per_kabupaten.stateChanged.connect(
@@ -96,8 +102,8 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
         self.btn_last.clicked.connect(self._btn_last_click)
 
         self.btn_start_process.clicked.connect(self._prepare_dokumen)
-        # self.btn_save_data.clicked.connect()
-        # self.btn_info_process.clicked.connect()
+        self.btn_save_data.clicked.connect(self._submit)
+        self.btn_info_process.clicked.connect(self._info_handler)
         # self.btn_create_layout.clicked.connect()
         self.btn_finish_process.clicked.connect(self._stop_import)
 
@@ -233,7 +239,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
             wilayah_id = self.cmb_desa.currentData()
         
         if (self.cmb_tipe_dokumen.currentText() == "SU/GS/SUS/PLL/GT"):
-            print("SU/GS/SUS/PLL/GT triggered")
+            # print("SU/GS/SUS/PLL/GT triggered")
             response = endpoints.get_surat_ukur(
                 wilayah_id,
                 "*",
@@ -253,15 +259,30 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
             print(self.dgv_surat_ukur.horizontalHeaderItem(0).text)
             self.dgv_surat_ukur.setHorizontalHeaderLabels(["DOKUMENPENGUKURANID","WILAYAHID","DESA","Tipe","Nomor","Sejak","Sampai","VALID","ROWNUMS"])
 
-            # TODO : check source code if necessary
+            # TODO : set rownumber
 
 
         else:
             print("GD Triggered")
+            response = endpoints.get_gambar_denah(
+                wilayah_id,
+                self._kantor_id,
+                self._txt_nomor,
+                self._txt_tahun,
+                str(self._start),
+                str(self._limit),
+                str(self._count),
+            )
+            d_set = Dataset(response.content)
 
-            # TODO : implement getGambarDenah
+            print(d_set)
+            if self._count == -1:
+                self._count = int(d_set["jumlahtotal"].rows[0]["COUNT(1)"])
+            
+            d_set.render_to_qtable_widget("GAMBARDENAH", self.dgv_surat_ukur, [0,1,2,7])
+            self.dgv_surat_ukur.setHorizontalHeaderLabels(["DOKUMENPENGUKURANID","WILAYAHID","DESA","Tipe","Nomor","Sejak","Sampai","VALID","ROWNUMS"])
 
-            pass
+            # TODO : set rownumber
         
         if self._count > 0:
             if self._start + self._limit >= self._count:
@@ -346,21 +367,17 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
             self._sumber_geometri = sdp["SumberGeometri"]
 
             if self._old_gugus_id:
-                print("triggered old gugus id")
                 gugus_id_str = [self._old_gugus_id]
-                print(gugus_id_str)
-                print(self._old_gugus_id)
                 response_draw_entity = endpoints.get_spatial_document_sdo(
                     gugus_id_str,False
                 )
                 de = json.loads(response_draw_entity.content)
-                print(de)
                 self._draw(de)
 
             else:
 
                 pass
-                # TODO: draw and the else
+                # NOTE: start drawing
             
             self._set_button(True)
             if self._sumber_geometri != "AC":
@@ -399,27 +416,40 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
     def _draw(self, de):
 
         if de["status"]:
+            epsg = get_project_crs
             if de["geoKkpPolygons"]:
-                crs = None
                 layer_config = get_layer_config("020100")
                 layer = sdo_to_layer(
                     de["geoKkpPolygons"],
                     name=layer_config["Nama Layer"],
                     symbol=layer_config["Style Path"],
-                    crs=crs,
+                    crs=epsg,
                     coords_field="boundary",
                 )
+                self._current_layers.append(layer)
+
             if de["geoKkpGariss"]:
                 layer_config = get_layer_config("020200")
                 layer = sdo_to_layer(
                     de["geoKkpGariss"],
                     name=layer_config["Nama Layer"],
                     symbol=layer_config["Style Path"],
-                    crs=crs,
+                    crs=epsg,
                     coords_field="line",
-                )                
+                )
+                self._current_layers.append(layer)                
                 # NOTE: will deprecate it in the future
                 # TODO: refactoring layer type
+            
+            print(self._current_layers)
+        else:
+            if de["message"]:
+                msg = de["message"]
+                QtWidgets.QMessageBox.critical(
+                    None, "GeoKKP", "Gagal menggambar layer : "+msg
+                )
+                return
+
 
     def _stop_import(self):
         self._set_button(False)
@@ -452,6 +482,12 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
         self._old_gugus_id = ""
         self._sumber_geometri = ""
 
+        # delete current layer
+        # layer_ids = [layer.id() for layer in self._current_layers]
+        # self.project.instance().removeMapLayers(layer_ids)
+        # iface.mapCanvas().refresh()
+        # self._current_layers = []
+
         # self.dgv_surat_ukur.setEnabled(True)
 
         QtWidgets.QMessageBox.information(
@@ -459,11 +495,11 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
         )
     
     def _cmb_tipe_dokumen_selected_index_changed(self):
-        if self.cmb_tipe_dokumen.selectedItems() == "GD":
+        if self.cmb_tipe_dokumen.currentText() == "GD":
             self.chb_per_kabupaten.setChecked(False)
             self.chb_per_kabupaten.setEnabled(False)
         else:
-            self.chb_per_kabupaten.setChecked(True)
+            self.chb_per_kabupaten.setChecked(False)
             self.chb_per_kabupaten.setEnabled(True)            
     
     def _create_layout(self):
@@ -474,6 +510,63 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
         pass
         # TODO: implement parcel mapping
 
+    def _info_handler(self):
+        QtWidgets.QMessageBox.information(
+            None, "GeoKKP", "Informasi tidak tersedia"
+        )
+
     def _submit(self):
+        self._submit_layers = [l for l in iface.mapCanvas().layers()
+ if l.type() == QgsMapLayer.VectorLayer]
+    
+        # topology check
+        topo_error_message = []
+        for layer in self._submit_layers:
+            valid, num = quick_check_topology(layer)
+            print(valid, num)
+            if not valid:
+                message = f"Ada {num} topology error di layer {layer.name()}"
+                topo_error_message.append(message)        
+
+        if topo_error_message:
+            QtWidgets.QMessageBox.warning(
+                None, "Perhatian", "\n".join(topo_error_message)
+            )
+            return
+        
+        # TODO: handle topology logic as layer
+        
+        print("submiting")
+
+        parameter_name = "BidangTanah"
+        if self._old_apartment:
+            parameter_name = "Apartemen"
+        print(parameter_name)
+        
+        sud = DesainSuratUkur(
+            self,
+            self._txt_tipe,
+            self._txt_nomor,
+            self._txt_tahun,
+            self._old_parcel,
+            self._old_apartment,
+            self._wilayah_id,
+            self.chb_per_kabupaten.isChecked(),
+            self._old_gugus_id,
+        )
+        sud.show()
+        sud.processed.connect(self._handle_processed_su)
+    
+    def _handle_processed_su(self, payload):
         pass
-        # TODO: implement submit dan kawan2nya
+
+
+
+
+        
+
+        
+            
+
+
+
