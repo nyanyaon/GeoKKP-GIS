@@ -248,7 +248,13 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
                     text_luas = f"{selected_data[0]['LUASTERTULIS']} (Luas Peta: {selected_data[0]['LUASTERHITUNG']})"
                     self.txt_luas.setText(text_luas)
 
-                    text_alamat = f"{selected_data[0]['NAMAJALAN']} {selected_data[0]['NOMORBANGUNAN']} {selected_data[0]['ALAMATTAMBAHAN']}"
+                    text_alamat = ""
+                    if selected_data[0]['NAMAJALAN']:
+                        text_alamat += selected_data[0]['NAMAJALAN']
+                    if selected_data[0]['NOMORBANGUNAN']:
+                        text_alamat += " " + selected_data[0]['NOMORBANGUNAN']
+                    if selected_data[0]['ALAMATTAMBAHAN']:
+                        text_alamat += " " + selected_data[0]['ALAMATTAMBAHAN']
                     self.txt_alamat.setText(text_alamat)
 
                     text_validator = selected_data[0]["VALIDATOR"]
@@ -365,7 +371,13 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
                 text_luas = f"{selected_data[0]['LUASTERTULIS']} (Luas Peta: {selected_data[0]['LUASTERHITUNG']})"
                 self.txt_luas.setText(text_luas)
 
-                text_alamat = f"{selected_data[0]['NAMAJALAN']} {selected_data[0]['NOMORBANGUNAN']} {selected_data[0]['ALAMATTAMBAHAN']}"
+                text_alamat = ""
+                if selected_data[0]['NAMAJALAN']:
+                    text_alamat += selected_data[0]['NAMAJALAN']
+                if selected_data[0]['NOMORBANGUNAN']:
+                    text_alamat += " " + selected_data[0]['NOMORBANGUNAN']
+                if selected_data[0]['ALAMATTAMBAHAN']:
+                    text_alamat += " " + selected_data[0]['ALAMATTAMBAHAN']
                 self.txt_alamat.setText(text_alamat)
 
                 text_validator = selected_data[0]["VALIDATOR"]
@@ -467,7 +479,13 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
                 text_luas = f"{selected_data[0]['LUASTERTULIS']} (Luas Peta: {selected_data[0]['LUASTERHITUNG']})"
                 self.txt_luas.setText(text_luas)
 
-                text_alamat = f"{selected_data[0]['NAMAJALAN']} {selected_data[0]['NOMORBANGUNAN']} {selected_data[0]['ALAMATTAMBAHAN']}"
+                text_alamat = ""
+                if selected_data[0]['NAMAJALAN']:
+                    text_alamat += selected_data[0]['NAMAJALAN']
+                if selected_data[0]['NOMORBANGUNAN']:
+                    text_alamat += " " + selected_data[0]['NOMORBANGUNAN']
+                if selected_data[0]['ALAMATTAMBAHAN']:
+                    text_alamat += " " + selected_data[0]['ALAMATTAMBAHAN']
                 self.txt_alamat.setText(text_alamat)
 
                 text_validator = selected_data[0]["VALIDATOR"]
@@ -674,16 +692,16 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
                 else 0
             )
 
-            pp["persilId"] = objectid
-            pp["nama"] = self.cmb_nama_persil.currentData()
-            pp["boundary"] = poli["batas"]
-            pp["text"] = teks_geom
-            pp["height"] = height
-            pp["rotation"] = orientation
-            pp["kantorId"] = self._kantor_id
-            pp["label"] = label
-            pp["area"] = poli["luas"]
-            pp["userUpdate"] = pegawai["userId"]
+            pp["PersilId"] = objectid
+            pp["Nama"] = self.cmb_nama_persil.currentData()
+            pp["Boundary"] = poli["batas"]
+            pp["Text"] = teks_geom
+            pp["Height"] = height
+            pp["Rotation"] = orientation
+            pp["KantorId"] = self._kantor_id
+            pp["Label"] = label
+            pp["Area"] = poli["luas"]
+            pp["UserUpdate"] = pegawai["userId"]
 
             self._pp = pp
             self.txt_luas_peta.setText(round(poli["luas"], 3))
@@ -766,15 +784,15 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
                 if self.cmb_nib.currentData():
                     teks_geom = get_sdo_point(point_geom, epsg)
 
-                    pp["persilId"] = objectid
-                    pp["boundary"] = poli["batas"]
-                    pp["text"] = teks_geom
-                    pp["height"] = height
-                    pp["rotation"] = orientation
-                    pp["kantorId"] = self._kantor_id
-                    pp["label"] = label
-                    pp["area"] = poli["luas"]
-                    pp["userUpdate"] = pegawai["userId"]
+                    pp["PersilId"] = objectid
+                    pp["Boundary"] = poli["batas"]
+                    pp["Text"] = teks_geom
+                    pp["Height"] = height
+                    pp["Rotation"] = orientation
+                    pp["KantorId"] = self._kantor_id
+                    pp["Label"] = label
+                    pp["Area"] = poli["luas"]
+                    pp["UserUpdate"] = pegawai["userId"]
 
                     response = endpoints.update_geometri_persil_sdo(pp)
                     response_str = response.content.decode("utf-8")
@@ -799,7 +817,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
         else:
             wilayah_id = self.cmb_desa.currentData()
 
-        if "boundary" in self._pp and self._pp["boundary"]:
+        if "Boundary" in self._pp and self._pp["Boundary"]:
             self._pp["nama"] = self.cmb_nama_persil.text()
             response = endpoints.create_persil_map_sdo(wilayah_id, self._pp)
             response_str = response.content.decode("utf-8")
