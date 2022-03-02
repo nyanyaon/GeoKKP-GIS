@@ -8,7 +8,8 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from PyQt5 import QtCore
 from qgis.utils import iface
-from qgis.core import QgsProject
+from qgis.core import QgsProject,QgsField
+from PyQt5.QtCore import QVariant
 
 from .utils import get_nlp, get_nlp_index, readSetting, storeSetting
 from .utils.geometry import get_sdo_point, get_sdo_polygon
@@ -224,6 +225,11 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         features = self._layer.getFeatures()
         print(features,"features")
 
+        
+        field_index = self._layer.fields().indexOf("key")
+        print("field_index", field_index)
+
+
         dataset = Dataset()
         table = dataset.add_table("ApartemenBaru")
         table.add_column("OID")
@@ -242,6 +248,13 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             
             identifier = f"{self._layer.id()}|{feature.id()}".encode("utf-8")
             objectid = hashlib.md5(identifier).hexdigest().upper()
+
+            
+            self._layer.startEditing()
+            self._layer.changeAttributeValue(
+                feature.id(), field_index, objectid
+                )
+            self._layer.commitChanges()
 
             point = feature.geometry().pointOnSurface().asPoint()
             teks = get_sdo_point(point)
@@ -263,12 +276,12 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             #         else 0
             # )
             try:
-                height = feature.attribute("height")
+                height = float(feature.attribute("height"))
             except:
-                height = 1
+                height = 0
 
             try:
-                orientation = feature.attribute("rotation")
+                orientation = float(feature.attribute("rotation"))
             except:
                 orientation = 0
 
@@ -282,6 +295,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             d_row = table.new_row()
             d_row["OID"] = objectid
             d_row["AREA"] = luas_round
+            d_row["LABEL"] = ""
             d_row["BOUNDARY"] = poli["batas"]
             d_row["TEXT"] = teks
             d_row["KETERANGAN"] = "Tunggal"
@@ -422,7 +436,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         valid =True
         msg = ""
 
-        if(self.validateCoordsExtend == False):
+        if(self.validateCoordsExtend() == False):
             valid = False
             if(self.chb_Sistem_Koordinat.isChecked()):
                 msg = "Koordinat diluar TM3!"
@@ -507,7 +521,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         list_data = []
         self._sts = {}
         self.dgv_GambarDenah.setColumnHidden(0, False)
-        print(self.cmb_lihat_data.currentText() == "Apartemen Baru",self.cmb_lihat_data.currentText())
+
         if(self.cmb_lihat_data.currentText() == "Apartemen Baru"):
             print(self.dgv_GambarDenah.rowCount())
             for x in range(self.dgv_GambarDenah.rowCount()):
@@ -598,20 +612,21 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                 QtWidgets.QMessageBox.critical(None, "GeoKKP Web", msg)
             return
         
-        self.status = True
-        self._nomorGD = ds["PersilBaru"][0]["nib"].split("/")[0]
-        self._tahunGD = ds["PersilBaru"][0]["nib"].split("/")[1]
 
 
         field_index = self._layer.fields().indexOf("label")
+        key = self._layer.fields().indexOf("key")
         print("field_index", field_index)
         features = self._layer.getFeatures()
+
         for feature in features:
 
             self._layer.startEditing()
-            self._layer.changeAttributeValue(
-                feature.id(), field_index, ds["PersilBaru"][0]["nib"]
-            )
+            for apartemen in ds["PersilBaru"]:
+                if(feature.attributes()[key] == apartemen["oid"]):
+                    self._layer.changeAttributeValue(
+                        feature.id(), field_index, apartemen["nib"]
+                )
             self._layer.commitChanges()
 
         QtWidgets.QMessageBox.information(
