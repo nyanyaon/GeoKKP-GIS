@@ -795,3 +795,15 @@ def update_geometry_persil_by_hak_sdo(pemper, **kwargs):
 @api(endpoint="updateGeometriPersilBySUSdo")
 def update_geometry_persil_by_su_sdo(pemper, **kwargs):
     return pemper
+
+
+@api(endpoint="updateGeometriPersilLegalSdo")
+def update_geometri_persil_legal_sdo(
+    kantor_id, nama_petugas, sts, gugus_id, user_id, **kwargs):
+    return {
+        "kantorId": kantor_id,
+        "namapetugas": nama_petugas,
+        "sts": sts,
+        "gugusId": gugus_id,
+        "userid": user_id
+    }
