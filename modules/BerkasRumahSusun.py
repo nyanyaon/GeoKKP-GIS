@@ -152,6 +152,7 @@ class BerkasRumahSusun(QtWidgets.QDialog, FORM_CLASS):
         self._bs["tahunBerkas"] = self._tahunBerkas
         self._bs["berkasId"] = self._berkasId
         self.startBerkas.emit(self._bs)
+        self.close()
         print(self._bs)
 
  

@@ -410,14 +410,30 @@
             "Nama Layer": "(020110) Apartemen",
             "Tipe Layer": "Polygon",
             "Style Path": "",
-            "Attributes": ""
+            "Attributes": [
+               {
+                  "key": "String",
+                  "type": "String",
+                  "label": "String",
+                  "height": "String",
+                  "rotation": "String"
+               }
+            ]
          },
          {
             "Kode": "080210",
             "Nama Layer": "(080210) Nomor Apartemen",
             "Tipe Layer": "Point",
             "Style Path": "",
-            "Attributes": ""
+            "Attributes": [
+               {
+                  "key": "String",
+                  "type": "String",
+                  "label": "String",
+                  "height": "String",
+                  "rotation": "String"
+               }
+            ]
          },
          {
             "Kode": "070200",

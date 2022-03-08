@@ -225,8 +225,6 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self.dgv_GambarDenah.setColumnHidden(0, False)
         item = self.dgv_GambarDenah.selectedItems()
         self.dgv_GambarDenah.setColumnHidden(0, True)
-    
-        self._importGambarDenah = False
         
         if(item == []):
             QtWidgets.QMessageBox.warning(
@@ -250,7 +248,6 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
 
         print(self._bs,username)
         self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
-
         if self._bs['valid'] == False:
             QtWidgets.QMessageBox.warning(
                 None, "GeoKKP", self._bs['errorStack'][0]
@@ -295,9 +292,8 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             return
 
         epsg = get_project_crs()
-        layer_config = get_layer_config("080210")
+        layer_config = get_layer_config("020110")
 
-        print(layer_config)
         if response_spatial_sdo_json["geoKkpPolygons"]:
             layer = sdo_to_layer(
                 response_spatial_sdo_json["geoKkpPolygons"],
