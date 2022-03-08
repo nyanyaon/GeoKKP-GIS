@@ -85,4 +85,12 @@ class DesainSuratUkur(QtWidgets.QDialog, FORM_CLASS):
 
     def _handle_processed(self, payload):
         print("desain processed", payload)
+        if payload["status"]:
+            QtWidgets.QMessageBox.information(
+            None, "GeoKKP - Informasi", f"{self._tipe} telah disimpan dalam database dengan nomor : {self._tipe}.{self._nomor}/{self._tahun}")
+        else:
+            err = payload["errorMessage"]
+            QtWidgets.QMessageBox.critical(
+            None, "GeoKKP - Error", f"Error : {err}")
+            self.error_log.setText(err)
         self.processed.emit(payload)

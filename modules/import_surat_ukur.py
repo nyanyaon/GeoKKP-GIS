@@ -416,9 +416,10 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
             return
 
         current_kabupaten_id = self.cmb_kabupaten.currentData()
-        self._set_cmb_kecamatan(
-            self._kantor_id, self._tipe_kantor_id, current_kabupaten_id
-        )
+        if not self._per_desa:
+            self._set_cmb_kecamatan(
+                self._kantor_id, self._tipe_kantor_id, current_kabupaten_id
+            )
 
     def _kecamatan_changed(self):
         current_kabupaten_id = self.cmb_kabupaten.currentData()
@@ -426,9 +427,10 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
             return
 
         current_kecamatan_id = self.cmb_kecamatan.currentData()
-        self._set_cmb_desa(
-            self._kantor_id, self._tipe_kantor_id, current_kecamatan_id
-        )
+        if not self._per_desa:
+            self._set_cmb_desa(
+                self._kantor_id, self._tipe_kantor_id, current_kecamatan_id
+            )
     
     def _clear_combobox(self, level):
         combo = [
@@ -473,62 +475,60 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
             print("there is no new parcels")
 
     def _fill_persil_data_table_automatically(self):
-        print(f"current layer {self._parent._current_layers}")
-        print(f"submit layer {self._parent._submit_layers}")
+        print(f"current layer : {self._parent._current_layers}")
+        print(f"submit layer : {self._parent._submit_layers}")
         for layer in self._parent._submit_layers:
-            if layer.name().startswith("(020100)"):
-                features = layer.getFeatures()
-                for feature in features:
-                    identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
-                    objectid = hashlib.md5(identifier).hexdigest().upper()
+            try:
+                layer.id()
+            except RuntimeError:
+                continue
 
-                    # TODO: freeze qgis layer in here to avoid editing
-                    point = feature.geometry().pointOnSurface().asPoint()
-                    teks = get_sdo_point(point)
-                    poli = get_sdo_polygon(feature)
+            if not layer.name().startswith("(020100)"):
+                continue
 
-                    sheet_number = get_nlp("250", point.x(), point.y())
-                    box_number = get_nlp_index("250", point.x(), point.y())
+            features = layer.getFeatures()
+            for feature in features:
+                identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
+                objectid = hashlib.md5(identifier).hexdigest().upper()
 
-                    if not poli["batas"]:
-                        continue
-                    data_row = None
-                    nib = (
-                        feature.attribute("label") if feature.attribute("label") else ""
-                    )
-                    height = (
-                        float(feature.attribute("height"))
-                        if feature.attribute("height")
-                        else 0
-                    )
-                    orientation = (
-                        float(feature.attribute("rotation"))
-                        if feature.attribute("rotation")
-                        else 0
-                    )
-                    luas_round = str(round(poli["luas"], 3))
-                    if len(self._ds_persil[DS_PERSIL_EDIT]) > 0:
-                        filter_ds = [
-                            row
-                            for row in self._ds_persil[DS_PERSIL_EDIT]
-                            if row["NIB"] == nib
+                point = feature.geometry().pointOnSurface().asPoint()
+                teks = get_sdo_point(point)
+                poli = get_sdo_polygon(feature)
+
+                nib = feature.attribute("label") if feature.attribute("label") else ""
+                height = (
+                    float(feature.attribute("height"))
+                    if feature.attribute("height")
+                    else 0
+                )
+                orientation = (
+                    float(feature.attribute("rotation"))
+                    if feature.attribute("rotation")
+                    else 0
+                )
+
+                if poli["batas"]:
+                    row = {}
+                    if len(self._ds_persil["PersilEdit"]):
+                        filtered = [
+                            f
+                            for f in self._ds_persil["PersilEdit"]
+                            if f["NIB"] == nib
                         ]
-                        if filter_ds:
-                            data_row = filter_ds[0]
-                            data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][11]] = sheet_number
-                            data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][12]] = box_number
+                        if filtered:
+                            row = filtered[0]
+                    luas_round = str(round(poli["luas"], 3))
 
-                    if data_row is not None:
-                        data_row[
-                            DS_COLUMN_MAP[DS_PERSIL_EDIT][0]
-                        ] = objectid  # 32 char md5 hash of layer id + feature id
-                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][4]] = nib
-                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][5]] = luas_round
-                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][6]] = poli["batas"]
-                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][7]] = teks
-                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][8]] = "Tunggal"
-                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][9]] = height
-                        data_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][10]] = orientation
+                    if row:
+                        row[DS_PERSIL_EDIT_COLUMNS[0]] = objectid
+                        row[DS_PERSIL_EDIT_COLUMNS[4]] = nib
+                        row[DS_PERSIL_EDIT_COLUMNS[5]] = luas_round
+                        row[DS_PERSIL_EDIT_COLUMNS[6]] = poli["batas"]
+                        row[DS_PERSIL_EDIT_COLUMNS[7]] = teks
+                        row[DS_PERSIL_EDIT_COLUMNS[8]] = "Tunggal"
+                        row[DS_PERSIL_EDIT_COLUMNS[9]] = height
+                        row[DS_PERSIL_EDIT_COLUMNS[10]] = orientation
+                        # self._ds_persil["PersilEdit"].append(row)
                     else:
                         a_row = {}
                         for index, col in enumerate(DS_COLUMN_MAP[DS_PERSIL_EDIT]):
@@ -541,28 +541,29 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
                         a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][8]] = "Tunggal"
                         a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][9]] = height
                         a_row[DS_COLUMN_MAP[DS_PERSIL_EDIT][10]] = orientation
-                        self._ds_persil[DS_PERSIL_EDIT].append(a_row)
-    
+                        self._ds_persil["PersilEdit"].append(a_row)
+                else:
+                    continue
 
     def _refresh_status(self):
-        jml_all = self.dgv_parcel.rowCount()
         msg_status = ""
         label = self.cmb_data_view.currentText()
         if label == "Persil Baru":
             self._current_parcel_table = "PersilBaru"
-            msg_status = "Jumlah Persil Baru "
+            msg_status = "Jumlah Persil Baru"
         elif label == "Persil Edit":
             self._current_parcel_table = "PersilEdit"
-            msg_status = "Jumlah Persil Edit "
+            msg_status = "Jumlah Persil Edit"
         elif label == "Apartemen Baru":
             self._current_parcel_table = "ApartemenBaru"
-            msg_status = "Jumlah Apartemen "
+            msg_status = "Jumlah Apartemen"
         elif label == "Apartemen Edit":
             self._current_parcel_table = "ApartemenEdit"
-            msg_status = "Jumlah Apartemen "
+            msg_status = "Jumlah Apartemen"
 
         self._populate_dgv_parcel()
-        jml_all = self.dgv_parcel.rowCount()
+        
+        jml_all = str(self.dgv_parcel.rowCount())
         right_status = f"{msg_status} : {jml_all}"
         self.writeRightStatus.emit(right_status)
 
@@ -574,7 +575,7 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
         columns = [
             col
             for col in data[0].keys()
-            if col not in ["BOUNDARY", "TEXT"]
+            if col not in ["BOUNDARY", "LUAST", "TEXT"]
         ]
         self.dgv_parcel.setColumnCount(len(columns))
         self.dgv_parcel.setHorizontalHeaderLabels(columns)
@@ -608,32 +609,26 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
         print("Drop from " + str(row_index_from) + " into row " + str(row_index_to))
         # event.accept()
         if not row_index_to == -1 and not row_index_from == row_index_to:
-            # TODO: get index of OID
             oid = self.dgv_parcel.item(row_index_from,0).text()
-            if not oid:
+            if (oid == None or oid == "None" or oid == ""):
                 QtWidgets.QMessageBox.warning(
                     None, "GeoKKP", "Persil asal harus punya batas geometri"
                     )
                 return
             source_parcel = self._select_row(self._ds_persil[self._current_parcel_table], "OID", oid)
-            print(source_parcel)
+            print(f"source_parcel = {source_parcel}")
 
             luas = source_parcel["AREA"]
             target_parcel = {}
-            geomT = source_parcel["TEXT"]
+            geom_t = source_parcel["TEXT"]
 
             reg = str(self.dgv_parcel.item(row_index_from,1).text())
-            # TODO: implement reg
-            # if reg == None:
-            #     reg = ""
-            #     print(reg)
-            # if not reg:
-            #     pass 
-            # else:
-            #     QtWidgets.QMessageBox.warning(
-            #         None, "GeoKKP","Persil tekstual tidak bisa digabung!"
-            #         )
-            #     return
+            print(reg)
+            if not (reg == None or reg == "None" or reg == ""):
+                QtWidgets.QMessageBox.warning(
+                    None, "GeoKKP","Persil tekstual tidak bisa digabung!"
+                    )
+                return
 
             regid = self.dgv_parcel.item(row_index_to,1).text()
             oid_to = self.dgv_parcel.item(row_index_to,0.).text()
@@ -642,35 +637,54 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
             else:
                 target_parcel = self._select_row(self._ds_persil[self._current_parcel_table],"OID",oid_to)
             
-
             if target_parcel["BOUNDARY"]:
-                pass
-                # TODO implement target parcel
-            #     merge_geom = {}
-
-            #     for i,list in enumerate(target_parcel["BOUNDARY"]):
-            #         merge_geom["SdoElemInfo"] = []
-            #         geom = target_parcel["BOUNDARY"]["SdoElemInfo"][i]
-            #         merge_geom["SdoElemInfo"].append(geom)
+                merge_geom = {}
                 
-            #     merge_geom["SdoElemInfo"]
+                merge_geom["SdoElemInfo"] = [None]*((len(target_parcel["BOUNDARY"]["SdoElemInfo"]))+(len(source_parcel["BOUNDARY"]["SdoElemInfo"])))
+                for i,item in enumerate(target_parcel["BOUNDARY"]["SdoElemInfo"]):        
+                    merge_geom["SdoElemInfo"][i] = (item)
+
+                # CHECK!
+                merge_geom["SdoElemInfo"][0 + len(target_parcel["BOUNDARY"]["SdoElemInfo"])] = source_parcel["BOUNDARY"]["SdoElemInfo"][0] + len(source_parcel["BOUNDARY"]["SdoOrdinates"])
+                merge_geom["SdoElemInfo"][1 + len(target_parcel["BOUNDARY"]["SdoElemInfo"])] = source_parcel["BOUNDARY"]["SdoElemInfo"][1]
+                merge_geom["SdoElemInfo"][2 + len(target_parcel["BOUNDARY"]["SdoElemInfo"])] = source_parcel["BOUNDARY"]["SdoElemInfo"][2]
+                
+                print(merge_geom["SdoElemInfo"])
+                merge_geom["SdoGtype"] = 2003
+                merge_geom["SdoSRID"] = source_parcel["BOUNDARY"]["SdoSRID"]
+                merge_geom["SdoSRIDAsInt"] = source_parcel["BOUNDARY"]["SdoSRIDAsInt"]
+                
+                
+                coordinates = [] 
+                for i,item in enumerate(target_parcel["BOUNDARY"]["SdoOrdinates"]):
+                    coordinates.append(item)
+                for i,item in enumerate(source_parcel["BOUNDARY"]["SdoOrdinates"]):
+                    coordinates.append(item)
+                merge_geom["SdoOrdinates"] = coordinates
+
+                print(merge_geom["SdoOrdinates"])
+
+                geom_t = target_parcel["TEXT"]
+                luas += target_parcel["AREA"]
+
             else:
                 merge_geom = source_parcel["BOUNDARY"]
+                target_parcel["LABEL"] = source_parcel["LABEL"]
             
             target_parcel["OID"] = oid
             target_parcel["AREA"] = str(luas)
             target_parcel["BOUNDARY"] = merge_geom
-            target_parcel["TEXT"] = geomT
+            target_parcel["TEXT"] = geom_t
             target_parcel["KETERANGAN"] = "Gabungan"
             target_parcel["HEIGHT"] = source_parcel["HEIGHT"]
             target_parcel["ORIENTATION"] = source_parcel["ORIENTATION"]
 
-            # TODO if baru
-            print(self._ds_persil[self._current_parcel_table])
-            if self.dgv_parcel.item(row_index_to,1).text():
-                target_parcel["REGID"] = self.dgv_parcel.item(row_index_to,1).text()
-            elif self.dgv_parcel.item(row_index_from,1).text():
-                target_parcel["REGID"] = self.dgv_parcel.item(row_index_from,1).text()
+            if "baru" in self._current_parcel_table.lower():
+                print(self._ds_persil[self._current_parcel_table])
+                if self.dgv_parcel.item(row_index_to,1).text():
+                    target_parcel["REGID"] = self.dgv_parcel.item(row_index_to,1).text()
+                elif self.dgv_parcel.item(row_index_from,1).text():
+                    target_parcel["REGID"] = self.dgv_parcel.item(row_index_from,1).text()
 
             print(target_parcel)
 
@@ -762,22 +776,22 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
 
         sdo_to_submit = {}
 
-        # self._fill_entity_data_table()
-        # self._fill_text_entity()
-        # self._fill_point_entity()
-        # self._fill_dimensi_entity()
+        lines = self._fill_entity_data_table()
+        texts = self._fill_text_entity()
+        # TODO: self._fill_point_entity()
+        # TODO: self._fill_dimensi_entity()
 
         lspe = [] # list sdo persil edit
         
-        # TODO: check the data type DATATYPE
+        # TODO: check the data type
         for row in self._ds_persil[DS_PERSIL_EDIT]:
             spe = {}
             spe["OID"] = row["OID"]
             spe["REGID"] = row["REGID"]
             spe["NIB"] = row["NIB"]
-            spe["Luast"] = row["LUAST"]
+            spe["Luast"] = float(row["LUAST"]) if row["LUAST"] else 0
             spe["Label"] = row["LABEL"]
-            spe["Area"] = row["AREA"]
+            spe["Area"] = float(row["AREA"].replace(",", ".")) if row["AREA"] else 0
             spe["Boundary"] = row["BOUNDARY"]
             spe["Text"] = row["TEXT"]
             spe["Keterangan"] = row["KETERANGAN"]
@@ -787,8 +801,172 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
             lspe.append(spe)
         
         sdo_to_submit["PersilEdit"] = lspe
-        print(sdo_to_submit)
-        print(self._ds_persil[DS_PERSIL_EDIT])
+        sdo_to_submit["Garis"] = lines
+        sdo_to_submit["Teks"] = texts
 
+        print(f"sdo_to_submit={sdo_to_submit}")
         
-        # self._run_integration()
+        self._run_integration(sdo_to_submit)
+    
+    def _fill_entity_data_table(self):
+        layers = self._parent._submit_layers
+
+        lines = []
+        for layer in layers:
+            if (
+                isinstance(layer, QgsVectorLayer)
+                and "line" not in QgsWkbTypes.displayString(layer.wkbType()).lower()
+            ):
+                continue
+
+            code, object_type = self.identify_layer_object(layer.name())
+            if not code and not object_type:
+                continue
+            object_type = object_type if object_type else "GarisLain"
+
+            features = layer.getFeatures()
+            for feature in features:
+                identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
+                objectid = hashlib.md5(identifier).hexdigest().upper()
+
+                line = self._get_sdo_linestring(feature)
+
+                if line and (code.startsWith("08") or object_type == "GarisLain"):
+                    row = {"Key": objectid, "Type": object_type, "Line": line}
+                    lines.append(row)
+        return lines        
+    
+    def identify_layer_object(self, layer_name):
+        layer_raw = layer_name.split(") ")
+        if len(layer_raw) != 2:
+            return None, None
+
+        code_raw, object_raw = layer_raw
+
+        try:
+            code = code_raw.replace("(", "")[-1]
+        except:
+            code = None
+
+        try:
+            object_type = object_raw.split("/")[0].replace(" ", "")
+        except:
+            object_type = None
+
+        return code, object_type
+
+    def _fill_text_entity(self):
+        layers = self._parent._submit_layers
+
+        points = []
+        for layer in layers:
+            if (
+                isinstance(layer, QgsVectorLayer)
+                and "point" not in QgsWkbTypes.displayString(layer.wkbType()).lower()
+            ):
+                continue
+
+            code, object_type = self.identify_layer_object(layer.name())
+            if not code and not object_type:
+                continue
+
+            object_type = object_type if object_type else "TeksLain"
+
+            features = layer.getFeatures()
+            for feature in features:
+                identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
+                objectid = hashlib.md5(identifier).hexdigest().upper()
+
+                point = get_sdo_point(feature)
+
+                label = feature.attribute("label") if feature.attribute("label") else ""
+                height = (
+                    float(feature.attribute("height"))
+                    if feature.attribute("height")
+                    else 0
+                )
+                orientation = (
+                    float(feature.attribute("rotation"))
+                    if feature.attribute("rotation")
+                    else 0
+                )
+
+                if point and (code.startsWith("08") or object_type == "TeksLain"):
+                    row = {
+                        "Key": objectid,
+                        "Type": object_type,
+                        "Height": height,
+                        "Orientation": orientation,
+                        "Label": label,
+                        "Position": point,
+                    }
+                    points.append(row)
+        return points
+
+    def _run_integration(self,sdo_to_submit):
+        sd = {}
+
+        pegawai_state = app_state.get("pegawai", {})
+        pegawai = pegawai_state.value
+        user_id = pegawai["userId"] if "userId" in pegawai else ""
+
+        sts = sdo_to_submit
+        response = endpoints.update_geometri_persil_legal_sdo(
+            kantor_id = self._kantor_id,
+            nama_petugas = user_id,
+            sts = sts,
+            gugus_id = self._old_gugus_id,
+            user_id = user_id,
+        )
+        ds = json.loads(response.content)
+
+        print(ds)
+
+        if len(ds) == 0:
+            sd["status"] = False
+            sd["autoClosed"] = True
+            sd["errorMessage"] = "Penyimpanan gagal Surat Ukur / Gambar Situasi!\nCek service berkas spatial di server sudah dijalankan!"
+            self.processed.emit(sd)
+            return
+        
+        if len(ds["Error"]) > 0:
+            sd["status"] = False
+            sd["autoClosed"] = True
+            sd["errorMessage"] = str(ds["Error"][0]["message"])
+            self.processed.emit(sd)
+            return
+        
+        self._new_parcels = []
+        
+        result_oid_map = {}
+        for row in ds["PersilBaru"]:
+            result_oid_map[row["oid"]] = row["nib"]
+
+        for layer in self._parent._current_layers:
+            try:
+                layer.id()
+            except RuntimeError:
+                continue
+            field_index = layer.fields().indexOf("label")
+            print("field_index", field_index)
+            features = layer.getFeatures()
+            for feature in features:
+                identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
+                objectid = hashlib.md5(identifier).hexdigest().upper()
+                print("objectid", objectid)
+                if objectid not in result_oid_map:
+                    continue
+
+                layer.startEditing()
+                layer.changeAttributeValue(
+                    feature.id(), field_index, result_oid_map[objectid]
+                )
+                layer.commitChanges()
+        
+        sd["status"] = True
+        self.processed.emit(sd)
+
+
+
+
+
