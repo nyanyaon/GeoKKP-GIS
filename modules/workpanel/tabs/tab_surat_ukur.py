@@ -107,6 +107,8 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
         # self.btn_create_layout.clicked.connect()
         self.btn_finish_process.clicked.connect(self._stop_import)
 
+        self.dgv_surat_ukur.itemDoubleClicked.connect(self._prepare_dokumen)
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         self.stackedWidget.setCurrentIndex(0)
@@ -256,7 +258,6 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
                 self._count = int(d_set["jumlahtotal"].rows[0]["COUNT(1)"])
             
             d_set.render_to_qtable_widget("suratukur", self.dgv_surat_ukur, [0,1,2,7,8])
-            print(self.dgv_surat_ukur.horizontalHeaderItem(0).text)
             self.dgv_surat_ukur.setHorizontalHeaderLabels(["DOKUMENPENGUKURANID","WILAYAHID","DESA","Tipe","Nomor","Sejak","Sampai","VALID","ROWNUMS"])
 
             # TODO : set rownumber
@@ -339,7 +340,13 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
             selected_item = self.dgv_surat_ukur.selectedItems()
             self.dgv_surat_ukur.setColumnHidden(0,True)
             self._dokumen_pengukuran_id = selected_item[0].text()
-            print(self._dokumen_pengukuran_id)
+            print("dokumen pengukuran id : ", self._dokumen_pengukuran_id)
+
+            self._txt_tipe = selected_item[1].text()
+            nomortahun = selected_item[2].text()
+            self._txt_nomor = nomortahun.split("/")[0]
+            self._txt_tahun = nomortahun.split("/")[1]
+            
             self._start_import()
         else:
             QtWidgets.QMessageBox.warning(
@@ -374,10 +381,9 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
                 de = json.loads(response_draw_entity.content)
                 self._draw(de)
 
-            else:
-
-                pass
-                # NOTE: start drawing
+            # else:
+            #     pass
+            #     # NOTE: start drawing
             
             self._set_button(True)
             if self._sumber_geometri != "AC":
@@ -442,6 +448,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
                 # TODO: refactoring layer type
             
             print(self._current_layers)
+            iface.actionZoomToLayer().trigger()
         else:
             if de["message"]:
                 msg = de["message"]
@@ -486,7 +493,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
         # layer_ids = [layer.id() for layer in self._current_layers]
         # self.project.instance().removeMapLayers(layer_ids)
         # iface.mapCanvas().refresh()
-        # self._current_layers = []
+        self._current_layers = []
 
         # self.dgv_surat_ukur.setEnabled(True)
 

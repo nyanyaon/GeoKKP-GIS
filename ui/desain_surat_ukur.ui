@@ -60,9 +60,6 @@
      </item>
      <item>
       <widget class="QLabel" name="label_status_r">
-       <property name="layoutDirection">
-        <enum>Qt::LeftToRight</enum>
-       </property>
        <property name="text">
         <string/>
        </property>
