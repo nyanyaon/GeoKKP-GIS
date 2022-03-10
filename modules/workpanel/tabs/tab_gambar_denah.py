@@ -247,39 +247,55 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self._bs = json.loads(response.content)
 
         print(self._bs,username)
-        self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
-        if self._bs['valid'] == False:
-            QtWidgets.QMessageBox.warning(
-                None, "GeoKKP", self._bs['errorStack'][0]
-            )
-            return
         
-        self.btn_informasi.setEnable(True)
-        self.btn_layout.setEnable(True)
-        self.btn_tutup.setEnable(True)
+        # if self._bs['valid'] == False:
+        #     QtWidgets.QMessageBox.warning(
+        #         None, "GeoKKP", self._bs['errorStack'][0]
+        #     )
+        #     return
+        
+        self.btn_informasi.setEnabled(True)
+        self.btn_layout.setEnabled(True)
+        self.btn_tutup.setEnabled(True)
 
-        if(self._bs != None and self._bs["valid"]):
-            self._importGambarDenah = False
-            self.btn_mulai.setEnabled(False)
-            self.btn_informasi.setEnabled(True)
-            self.btn_layout.setEnabled(True)
-            self.btn_tutup.setEnabled(True)
-            self.txt_nomor.setEnabled(False)
-            self.txt_tahun.setEnabled(False)
-            self.btn_cari.setEnabled(False)
-            if(self._bs["newGugusId"]==""):
-                self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
-            self._txtNomor.setText(item[4].text())
+        self._importGambarDenah = False
+        self.btn_mulai.setEnabled(False)
+        self.btn_informasi.setEnabled(True)
+        self.btn_layout.setEnabled(True)
+        self.btn_tutup.setEnabled(True)
+        self.txt_nomor.setEnabled(False)
+        self.txt_tahun.setEnabled(False)
+        self.btn_cari.setEnabled(False)
+        if(self._bs["newGugusId"]==""):
+            self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
+        self.txt_nomor.setText(item[4].text())
+        self.btn_cari.setEnabled(False)
+        self.btn_mulai.setEnabled(False)
+
+        self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
+
+        # if(self._bs != None and self._bs["valid"]):
+        #     self._importGambarDenah = False
+        #     self.btn_mulai.setEnabled(False)
+        #     self.btn_informasi.setEnabled(True)
+        #     self.btn_layout.setEnabled(True)
+        #     self.btn_tutup.setEnabled(True)
+        #     self.txt_nomor.setEnabled(False)
+        #     self.txt_tahun.setEnabled(False)
+        #     self.btn_cari.setEnabled(False)
+        #     if(self._bs["newGugusId"]==""):
+        #         self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
+        #     self._txtNomor.setText(item[4].text())
    
-            self._txtNomor.setEnabled(False)
-            self._txtTahun.setEnabled(False)
-            self.btn_cari.setEnabled(False)
-            self.btn_mulai.setEnabled(False)
-        else:
-            QtWidgets.QMessageBox.warning(
-                None, "GeoKKP", self._bs['errorStack'][0]
-            )
-            return 
+        #     self._txtNomor.setEnabled(False)
+        #     self._txtTahun.setEnabled(False)
+        #     self.btn_cari.setEnabled(False)
+        #     self.btn_mulai.setEnabled(False)
+        # else:
+        #     QtWidgets.QMessageBox.warning(
+        #         None, "GeoKKP", self._bs['errorStack'][0]
+        #     )
+        #     return 
 
     
     def _load_berkas_spasial(self, gugus_ids, riwayat=False):
@@ -336,7 +352,7 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             self.desainDenah.setupFmMin()
         else:
             self.desainDenah = FmImportGambarDenah()
-            self.desainDenah.setupFm(self._bs["nomorBerkas"],self._bs["tahunBerkas"],[self._bs["gambarUkurs"]],self._bs["wilayahId"],self._bs["newGugusId"],self._bs["newParcelNumber"],self._bs["newApartmentNumber"],[self._bs["newParcels"]],[self._bs["oldParcels"]],[self._bs["newApartments"]],[self._bs["oldApartments"]],self._bs["gantiDesa"],self._current_layers)
+            self.desainDenah.setupFm(self._bs["nomorBerkas"],self._bs["tahunBerkas"],[self._bs["gambarUkurs"]],self._bs["wilayahId"],self._bs["newGugusId"],self._bs["newParcelNumber"],self._bs["newApartmentNumber"],[self._bs["newParcels"]],[self._bs["oldParcels"]],[self._bs["newApartments"]],[self._bs["oldApartments"]],self._bs["gantiDesa"])
 
     
     def ImportGambarDenahCall(self):

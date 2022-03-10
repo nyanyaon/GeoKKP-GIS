@@ -1,3 +1,4 @@
+from operator import ne
 import os
 import json
 import hashlib
@@ -5,11 +6,10 @@ import ast
 
 from qgis.PyQt import QtWidgets, uic
 
-from qgis.PyQt.QtCore import pyqtSignal
 from PyQt5 import QtCore
 from qgis.utils import iface
-from qgis.core import QgsProject,QgsField
-from PyQt5.QtCore import QVariant
+from qgis.core import QgsProject
+
 
 from .utils import get_nlp, get_nlp_index, readSetting, storeSetting
 from .utils.geometry import get_sdo_point, get_sdo_polygon
@@ -220,6 +220,8 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             self.cmb_kecamatan.setEnabled(False)
             self.cmb_desa.setEnabled(False)
 
+
+
     def FillApartemenDataTableAutomatically(self):
         self._layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
         features = self._layer.getFeatures()
@@ -243,9 +245,6 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         table.add_column("URUT")
 
         for feature in features:
-            print(feature,"feature")
-            print(feature.geometry(),"geometry")
-            
             identifier = f"{self._layer.id()}|{feature.id()}".encode("utf-8")
             objectid = hashlib.md5(identifier).hexdigest().upper()
 
@@ -262,19 +261,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
 
             if not poli["batas"]:
                     continue
-            # data_row = None
-            # nomor = (
-            #     feature.attribute("label") if feature.attribute("label") else ""
-            # )
-            # height = (
-            #     try:
-            #         if feature.attribute("height")
-            #         else 0
-            #     except:
-            #         float(feature.attribute("height"))
-            #         if feature.attribute("height")
-            #         else 0
-            # )
+
             try:
                 height = float(feature.attribute("height"))
             except:
@@ -334,9 +321,9 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             table.add_column("AREA")
             table.add_column("BOUNDARY")
             table.add_column("TEXT")
+            table.add_column("KETERANGAN")
             table.add_column("HEIGHT")
             table.add_column("ORIENTATION")
-            table.add_column("URUT")
 
             for p in dsApartemen["APARTEMENBARU"]:
                 d_row = table.new_row()
@@ -344,9 +331,11 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                 d_row["NOGD"] = str(p["NOMOR"])
                 d_row["LUAST"] = str(p["LUASTERTULIS"])
 
-            dataset.render_to_qtable_widget("ApartemenEdit", self.dgv_GambarDenah)
+            dataset.render_to_qtable_widget("ApartemenEdit", self.dgv_GambarDenah,[5,6,7])
 
+        
             for feature in features:
+
                 identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
                 objectid = hashlib.md5(identifier).hexdigest().upper()
 
@@ -354,7 +343,11 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                 teks = get_sdo_point(point)
                 poli = get_sdo_polygon(feature)
 
-                nomor = feature.attribute("label") if feature.attribute("label") else ""
+                key = feature.attribute("key") if feature.attribute("key") else ""
+                label = feature.attribute("label") if feature.attribute("label") else ""
+
+                luas_round = str(round(poli["luas"], 3))
+
                 height = (
                     float(feature.attribute("height"))
                     if feature.attribute("height")
@@ -369,16 +362,33 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                 if poli["batas"]:
                     row = {}
                     if self.dgv_GambarDenah.rowCount() > 0:
-                        items = self.dgv_GambarDenah.findItems(nomor,QtCore.Qt.MatchExactly)
-                        print(items[0].text(),len(items))
-                        # filtered = [
-                        #     f
-                        #     for f in self.dgv_GambarDenah
-                        #     if f["NOGD"] == nomor
-                        # ]
-
-                        # if filtered:
-                        #     row = filtered[0]
+                        items = self.dgv_GambarDenah.findItems(key,QtCore.Qt.MatchExactly)
+                        if(items != []):
+                            row = items[0].row()
+                            print(row)
+                            self.dgv_GambarDenah.setItem(row,0,QtWidgets.QTableWidgetItem(objectid))
+                            self.dgv_GambarDenah.setItem(row,4,QtWidgets.QTableWidgetItem(label))
+                            self.dgv_GambarDenah.setItem(row,5,QtWidgets.QTableWidgetItem(luas_round))
+                            self.dgv_GambarDenah.setItem(row,6,QtWidgets.QTableWidgetItem(str(poli["batas"])))
+                            self.dgv_GambarDenah.setItem(row,7,QtWidgets.QTableWidgetItem(str(teks)))
+                            self.dgv_GambarDenah.setItem(row,8,QtWidgets.QTableWidgetItem("Tunggal"))
+                            self.dgv_GambarDenah.setItem(row,9,QtWidgets.QTableWidgetItem(height))
+                            self.dgv_GambarDenah.setItem(row,10,QtWidgets.QTableWidgetItem(orientation))
+                        else:
+                            total_row = self.dgv_GambarDenah.rowCount()
+                            self.dgv_GambarDenah.insertRow(total_row)
+                            print(total_row)
+                            self.dgv_GambarDenah.setItem(total_row,0,QtWidgets.QTableWidgetItem(objectid))
+                            self.dgv_GambarDenah.setItem(total_row,1,QtWidgets.QTableWidgetItem(""))
+                            self.dgv_GambarDenah.setItem(total_row,2,QtWidgets.QTableWidgetItem(""))
+                            self.dgv_GambarDenah.setItem(total_row,3,QtWidgets.QTableWidgetItem(""))
+                            self.dgv_GambarDenah.setItem(total_row,4,QtWidgets.QTableWidgetItem(label))
+                            self.dgv_GambarDenah.setItem(total_row,5,QtWidgets.QTableWidgetItem(luas_round))
+                            self.dgv_GambarDenah.setItem(total_row,6,QtWidgets.QTableWidgetItem(str(poli["batas"])))
+                            self.dgv_GambarDenah.setItem(total_row,7,QtWidgets.QTableWidgetItem(str(teks)))
+                            self.dgv_GambarDenah.setItem(total_row,8,QtWidgets.QTableWidgetItem("Tunggal"))
+                            self.dgv_GambarDenah.setItem(total_row,9,QtWidgets.QTableWidgetItem(height))
+                            self.dgv_GambarDenah.setItem(total_row,10,QtWidgets.QTableWidgetItem(orientation))
 
     def _cmb_propinsi_selected_index_changed(self, index):
         self._set_cmb_kabupaten()
@@ -442,6 +452,8 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                 msg = "Koordinat diluar TM3!"
             else:
                 msg = "Koordinat diluar area penggambaran"
+
+        print(self.dgv_GambarDenah.rowCount(),len(self._newApartments) ,self._newApartmentNumber)
         
         if(self._newApartmentNumber > 0):
             if(self.dgv_GambarDenah.rowCount() + len(self._newApartments) > self._newApartmentNumber):
@@ -540,21 +552,22 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                 list_data.append(temp)
             self._sts["ApartemenBaru"] = list_data
         else:
-            for data in self.dgv_GambarDenah:
+            for x in range(self.dgv_GambarDenah.rowCount()):
+                boundary =  str(self.dgv_GambarDenah.item(x,6).text())
+                text = str(self.dgv_GambarDenah.item(x,7).text())
                 temp = {
-                    "OID": data["OID"],
-                    "REGID": data["REGID"],
-                    "NIB": data["NIB"],
-                    "Luast": float(str(data["LUAST"]).replace(",", ".")),
-                    "Label": data["LABEL"],
-                    "Area": float(str(data["AREA"]).replace(",", ".")),
-                    "Boundary": data["BOUNDARY"],
-                    "Text": data["TEXT"],
-                    "Keterangan": data["KETERANGAN"],
-                    "Height": data["HEIGHT"],
-                    "Orientation": data["ORIENTATION"],
+                    "OID": self.dgv_GambarDenah.item(x,0).text(),
+                    "REGID": self.dgv_GambarDenah.item(x,1).text(),
+                    "NOGD": self.dgv_GambarDenah.item(x,2).text(),
+                    "Luast": float(str(self.dgv_GambarDenah.item(x,3).text()).replace(",", ".")),
+                    "Label": self.dgv_GambarDenah.item(x,4).text(),
+                    "Area": float(str(self.dgv_GambarDenah.item(x,5).text()).replace(",", ".")),
+                    "Boundary": ast.literal_eval(boundary) ,
+                    "Text": ast.literal_eval(text),
+                    "Keterangan": self.dgv_GambarDenah.item(x,8).text(),
+                    "Height": float(str(self.dgv_GambarDenah.item(x,9).text()).replace(",", ".")),
+                    "Orientation": float(str(self.dgv_GambarDenah.item(x,10).text()).replace(",", ".")),
                 }
-             
                 list_data.append(temp)
             self._sts["ApartemenEdit"] = list_data
 
