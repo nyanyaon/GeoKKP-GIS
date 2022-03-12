@@ -807,3 +807,51 @@ def update_geometri_persil_legal_sdo(
         "gugusId": gugus_id,
         "userid": user_id
     }
+
+@api(endpoint="unduhPersilParSdo")
+def unduh_persil_par_sdo(
+    jenis_hak, no_sertipikat, wilayah_id, kantor_id, username, srs_name, start, limit, count,  **kwargs):
+    return {
+        "jenisHak": jenis_hak,
+        "noSertipikat": no_sertipikat,
+        "wilayahId": wilayah_id,
+        "kantorId": kantor_id,
+        "username": username,
+        "srsName": srs_name,
+        "start": start,
+        "limit": limit,
+        "count": count, 
+    }
+
+@api(endpoint="getTandaTerimaPtslPM")
+def get_tanda_terima_ptsl_pm(kantor_id, nomor, tahun, program_id, wilayah_id,**kwargs):
+    return{
+        "kantorId": kantor_id,
+        "nomor": nomor,
+        "tahun": tahun,
+        "programId": program_id,
+        "wilayahId": wilayah_id,       
+    }
+
+@api(endpoint="unduhPersilParPTSLSdo")
+def unduh_persil_par_ptsl_sdo(gugus_id, kantor_id, username, srs_name, **kwargs):
+    return {
+        "gugusId": gugus_id,
+        "kantorId": kantor_id,
+        "username": username,
+        "srsName": srs_name,
+    }
+
+@api(endpoint="submitPTSLPMSdo")
+def submit_ptsl_pm_sdo(tanda_terima_id, kantor_id, wilayah_id, gambar_ukur_id, tm3srid, keterangan, user_id, jumlah_persil, sts):
+    return {
+        "tandaTerimaId": tanda_terima_id,
+        "kantorId": kantor_id,
+        "wilayahId": wilayah_id,
+        "gambarukurId": gambar_ukur_id,
+        "tm3srid": tm3srid,
+        "keterangan": keterangan,
+        "userid": user_id,
+        "jumlahPersil": jumlah_persil,
+        "sts": sts,
+    }
