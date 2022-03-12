@@ -1,12 +1,15 @@
 import os
 import json
 import hashlib
+import ast
 
 from qgis.PyQt import QtWidgets, uic
 
 from qgis.PyQt.QtCore import pyqtSignal
 from PyQt5 import QtCore
 from qgis.utils import iface
+from qgis.core import QgsProject,QgsField
+from PyQt5.QtCore import QVariant
 
 from .utils import get_nlp, get_nlp_index, readSetting, storeSetting
 from .utils.geometry import get_sdo_point, get_sdo_polygon
@@ -190,6 +193,10 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
 
         self._kantor_id = kantor["kantorID"]
         self._tipe_kantor_id = str(kantor["tipeKantorId"])
+        self.btn_proses.setEnabled(False)
+
+        self.btn_validasi.clicked.connect(self.btnValidate_Click)
+        self.btn_proses.clicked.connect(self.btnProcess_Click)
 
         self._set_cmb_propinsi()
 
@@ -214,7 +221,94 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             self.cmb_desa.setEnabled(False)
 
     def FillApartemenDataTableAutomatically(self):
-        pass
+        self._layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
+        features = self._layer.getFeatures()
+        print(features,"features")
+
+        
+        field_index = self._layer.fields().indexOf("key")
+        print("field_index", field_index)
+
+
+        dataset = Dataset()
+        table = dataset.add_table("ApartemenBaru")
+        table.add_column("OID")
+        table.add_column("LABEL")
+        table.add_column("AREA")
+        table.add_column("BOUNDARY")
+        table.add_column("TEXT")
+        table.add_column("KETERANGAN")
+        table.add_column("HEIGHT")
+        table.add_column("ORIENTATION")
+        table.add_column("URUT")
+
+        for feature in features:
+            print(feature,"feature")
+            print(feature.geometry(),"geometry")
+            
+            identifier = f"{self._layer.id()}|{feature.id()}".encode("utf-8")
+            objectid = hashlib.md5(identifier).hexdigest().upper()
+
+            
+            self._layer.startEditing()
+            self._layer.changeAttributeValue(
+                feature.id(), field_index, objectid
+                )
+            self._layer.commitChanges()
+
+            point = feature.geometry().pointOnSurface().asPoint()
+            teks = get_sdo_point(point)
+            poli = get_sdo_polygon(feature)
+
+            if not poli["batas"]:
+                    continue
+            # data_row = None
+            # nomor = (
+            #     feature.attribute("label") if feature.attribute("label") else ""
+            # )
+            # height = (
+            #     try:
+            #         if feature.attribute("height")
+            #         else 0
+            #     except:
+            #         float(feature.attribute("height"))
+            #         if feature.attribute("height")
+            #         else 0
+            # )
+            try:
+                height = float(feature.attribute("height"))
+            except:
+                height = 0
+
+            try:
+                orientation = float(feature.attribute("rotation"))
+            except:
+                orientation = 0
+
+            # orientation = (
+            #     float(feature.attribute("rotation"))
+            #     if feature.attribute("rotation")
+            #     else 0
+            # )
+            luas_round = str(round(poli["luas"], 3))
+
+            d_row = table.new_row()
+            d_row["OID"] = objectid
+            d_row["AREA"] = luas_round
+            d_row["LABEL"] = ""
+            d_row["BOUNDARY"] = poli["batas"]
+            d_row["TEXT"] = teks
+            d_row["KETERANGAN"] = "Tunggal"
+            d_row["HEIGHT"] = height
+            d_row["ORIENTATION"] = orientation
+            try:
+                d_row["URUT"]= int(
+                    teks.replace("#", "")
+                )
+            except:
+                d_row["URUT"] = 0
+
+        dataset.render_to_qtable_widget("ApartemenBaru", self.dgv_GambarDenah , [3,4])
 
     def FillNewApartments(self):
         if(self._newApartments != None and len(self._newApartments) > 0 ):
@@ -225,8 +319,12 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             response = endpoints.get_apartments(_apartemens[0])
             dsApartemen = json.loads(response.content)
             print(dsApartemen) 
+
+            layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
+            features = layer.getFeatures()
+            print(features,"features")
+
             dataset = Dataset()
-            
             table = dataset.add_table("ApartemenEdit")
             table.add_column("OID")
             table.add_column("REGID")
@@ -248,57 +346,40 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
 
             dataset.render_to_qtable_widget("ApartemenEdit", self.dgv_GambarDenah)
 
-            for layer in self._current_layers:
-                try:
-                    layer.id()
-                except RuntimeError:
-                    continue
+            for feature in features:
+                identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
+                objectid = hashlib.md5(identifier).hexdigest().upper()
 
-                if not layer.name().startswith("(020100)"):
-                    continue
+                point = feature.geometry().pointOnSurface().asPoint()
+                teks = get_sdo_point(point)
+                poli = get_sdo_polygon(feature)
 
-                features = layer.getFeatures()
-                for feature in features:
-                    identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
-                    objectid = hashlib.md5(identifier).hexdigest().upper()
+                nomor = feature.attribute("label") if feature.attribute("label") else ""
+                height = (
+                    float(feature.attribute("height"))
+                    if feature.attribute("height")
+                    else 1
+                )
+                orientation = (
+                    float(feature.attribute("rotation"))
+                    if feature.attribute("rotation")
+                    else 0
+                )
+            
+                if poli["batas"]:
+                    row = {}
+                    if self.dgv_GambarDenah.rowCount() > 0:
+                        items = self.dgv_GambarDenah.findItems(nomor,QtCore.Qt.MatchExactly)
+                        print(items[0].text(),len(items))
+                        # filtered = [
+                        #     f
+                        #     for f in self.dgv_GambarDenah
+                        #     if f["NOGD"] == nomor
+                        # ]
 
-                    point = feature.geometry().pointOnSurface().asPoint()
-                    teks = get_sdo_point(point)
-                    poli = get_sdo_polygon(feature)
+                        # if filtered:
+                        #     row = filtered[0]
 
-                    nomor = feature.attribute("label") if feature.attribute("label") else ""
-                    height = (
-                        float(feature.attribute("height"))
-                        if feature.attribute("height")
-                        else 0
-                    )
-                    orientation = (
-                        float(feature.attribute("rotation"))
-                        if feature.attribute("rotation")
-                        else 0
-                    )
-              
-                    if poli["batas"]:
-                        row = {}
-                        if self.dgv_GambarDenah.rowCount() > 0:
-                            items = self.dgv_GambarDenah.findItems(nomor,QtCore.Qt.MatchExactly)
-                            print(items[0].text(),len(items))
-                            # filtered = [
-                            #     f
-                            #     for f in self.dgv_GambarDenah
-                            #     if f["NOGD"] == nomor
-                            # ]
-
-                            # if filtered:
-                            #     row = filtered[0]
-
-      
-
-
-
-    def GetSdoPoint(self):
-        pass
-    
     def _cmb_propinsi_selected_index_changed(self, index):
         self._set_cmb_kabupaten()
 
@@ -350,5 +431,232 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         self.cmb_desa.clear()
         for des in desa_dataset["DESA"]:
             self.cmb_desa.addItem(des["DESANAMA"], des["DESAID"])
+
+    def btnValidate_Click(self):
+        valid =True
+        msg = ""
+
+        if(self.validateCoordsExtend() == False):
+            valid = False
+            if(self.chb_Sistem_Koordinat.isChecked()):
+                msg = "Koordinat diluar TM3!"
+            else:
+                msg = "Koordinat diluar area penggambaran"
+        
+        if(self._newApartmentNumber > 0):
+            if(self.dgv_GambarDenah.rowCount() + len(self._newApartments) > self._newApartmentNumber):
+                sisa = self._newApartmentNumber - len(self._newApartments)
+                msg = f"Jumlah Apartemen baru tidak sesuai \nAnda telah memasukkan {str(len(self._newApartments))} unit rumah susun ke dalam berkas {self._nomorBerkas}/{self._tahunBerkas} \nHanya {str(sisa)} unit rumah susun lagi yang bisa dimasukkan ke berkas tersebut"
+                valid = False
+
+        if(self.cmb_lihat_data.currentText() == "Apartemen Edit"):
+            self.dgv_GambarDenah.setColumnHidden(0, False)
+            for x in range(self.dgv_GambarDenah.rowCount()):
+                if self.dgv_GambarDenah.item(x,2).text() is None:
+                    valid = False
+                    msg = "Ada Apartemen yang tidak memiliki geometri!"
+                    break
+                if self.dgv_GambarDenah.item(x,6).text() is None:
+                    valid = False
+                    msg = "Ada Apartemen yang tidak memiliki REGID!"
+                    break
+            self.dgv_GambarDenah.setColumnHidden(0, True)
+
+        if valid:
+            self.btn_proses.setEnabled(True)
+            self.label_status_l.setText("Lakukan Integrasi")
+        else:
+            self.label_status_l.setText("Ada kesalahan, cek error log")
+            self.error_log.setText(msg)
+            self.tabWidget.setCurrentIndex(1)
+
+    def validateCoordsExtend(self):
+        layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
+        ext = layer.extent()
+
+        retval = True
+
+        xmin = ext.xMinimum()
+        xmax = ext.xMaximum()
+        ymin = ext.yMinimum()
+        ymax = ext.yMaximum()
+
+        print(xmin,xmax,ymin,ymax)
+
+        if(self.chb_Sistem_Koordinat.isChecked()):
+            if(xmin<32000 or xmax > 368000  or ymin < 282000  or ymax > 2166000  ):
+                retval = False
+        else:
+            if(xmin<-2200000 or xmax > 2200000 or ymin < -2200000 or ymax > 2200000 ):
+                retval = False
+
+        return retval
+
+    def btnProcess_Click(self):
+        prmpt = ""
+        if(self.cmb_desa.currentData() is not None):
+            prmpt = f"Anda akan melakukan integrasi Unit Rumah Susun di Desa {self.cmb_desa.currentText()}, kecamatan {self.cmb_kecamatan.currentText()}"
+            self._desaId = self.cmb_desa.currentData()
+        else:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Pilih desa terlebih dahulu!"
+            )
+            return
+
+        if(self.dgv_GambarDenah.rowCount() > 0):
+
+            result = QtWidgets.QMessageBox.question(self, "Perhatian", prmpt)
+
+            if(result != QtWidgets.QMessageBox.Yes):
+                return
+
+            self._newGugusId = ""
+        
+        skb = ""
+        if(self.chb_Sistem_Koordinat.isChecked()):
+            skb = "TM3"
+        else:
+            skb = "NonTM3"
+
+        list_data = []
+        self._sts = {}
+        self.dgv_GambarDenah.setColumnHidden(0, False)
+
+        if(self.cmb_lihat_data.currentText() == "Apartemen Baru"):
+            print(self.dgv_GambarDenah.rowCount())
+            for x in range(self.dgv_GambarDenah.rowCount()):
+                boundary =  str(self.dgv_GambarDenah.item(x,3).text())
+                text = str(self.dgv_GambarDenah.item(x,4).text())
+                temp = {
+                    "OID": self.dgv_GambarDenah.item(x,0).text(),
+                    "Label": self.dgv_GambarDenah.item(x,1).text(),
+                    "Area": float(str(self.dgv_GambarDenah.item(x,2).text()).replace(",", ".")),
+                    "Boundary": ast.literal_eval(boundary) ,
+                    "Text": ast.literal_eval(text),
+                    "Keterangan": self.dgv_GambarDenah.item(x,5).text(),
+                    "Height": float(str(self.dgv_GambarDenah.item(x,6).text()).replace(",", ".")),
+                    "Orientation": float(str(self.dgv_GambarDenah.item(x,7).text()).replace(",", ".")),
+                }
+                list_data.append(temp)
+            self._sts["ApartemenBaru"] = list_data
+        else:
+            for data in self.dgv_GambarDenah:
+                temp = {
+                    "OID": data["OID"],
+                    "REGID": data["REGID"],
+                    "NIB": data["NIB"],
+                    "Luast": float(str(data["LUAST"]).replace(",", ".")),
+                    "Label": data["LABEL"],
+                    "Area": float(str(data["AREA"]).replace(",", ".")),
+                    "Boundary": data["BOUNDARY"],
+                    "Text": data["TEXT"],
+                    "Keterangan": data["KETERANGAN"],
+                    "Height": data["HEIGHT"],
+                    "Orientation": data["ORIENTATION"],
+                }
+             
+                list_data.append(temp)
+            self._sts["ApartemenEdit"] = list_data
+
+        self._fill_entity_datatable()
+        self._fill_text_entity()
+        self._fill_point_entity()
+        self._fill_dimensi_entity()
+
+        user = app_state.get("pegawai", {})
+        
+        user_id = (
+            user.value["userId"]
+            if user.value and "userId" in user.value.keys() and user.value["userId"]
+            else ""
+        )
+
+        self._wilayahId = self.cmb_desa.currentData()
+
+        response = endpoints.submit_sdo(
+                self._nomorBerkas,
+                self._tahunBerkas,
+                self._kantorId,
+                self._tipe_kantor_id,
+                self._wilayahId,
+                user_id,
+                user_id,
+                self._newGugusId,
+                self._guRegid,
+                skb,
+                "",
+                False,
+                self._sts,
+            )
+        ds = json.loads(response.content)
+        print(ds)
+
+        if not ds:
+            QtWidgets.QMessageBox.critical(
+                None,
+                "Integrasi",
+                "Integrasi gagal!\nCek service berkas spatial di server sudah dijalankan!",
+            )
+
+        if ds["Error"]:
+            if ds["Error"][0]["message"].startswith(
+                "Geometri persil dengan ID"
+            ) or ds["Error"][0]["message"].startswith(
+                "Geometri apartemen dengan ID"
+            ):
+                # TODO: zoom to object
+                msg = str(ds["Error"][0]["message"]).split("|")[0]
+                QtWidgets.QMessageBox.critical(None, "GeoKKP Web", msg)
+            else:
+                msg = str(ds["Error"][0]["message"])
+                QtWidgets.QMessageBox.critical(None, "GeoKKP Web", msg)
+            return
+        
+
+
+        field_index = self._layer.fields().indexOf("label")
+        key = self._layer.fields().indexOf("key")
+        print("field_index", field_index)
+        features = self._layer.getFeatures()
+
+        for feature in features:
+
+            self._layer.startEditing()
+            for apartemen in ds["PersilBaru"]:
+                if(feature.attributes()[key] == apartemen["oid"]):
+                    self._layer.changeAttributeValue(
+                        feature.id(), field_index, apartemen["nib"]
+                )
+            self._layer.commitChanges()
+
+        QtWidgets.QMessageBox.information(
+                None,
+                "GeoKKP Web",
+                "Unit Rumah Susun telah disimpan dalam database",
+        )
+
+    def _fill_entity_datatable(self):
+        # TODO: add layer query by code
+        pass
+
+    def _fill_text_entity(self):
+        # TODO: add layer query by code
+        pass
+
+    def _fill_point_entity(self):
+        # TODO: add layer query by code
+        pass
+
+    def _fill_dimensi_entity(self):
+        # TODO: add layer query by code
+        pass
+
+
+
+        
+
+        
+        
+
 
   
