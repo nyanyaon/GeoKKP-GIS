@@ -265,7 +265,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
 
         else:
             print("GD Triggered")
-            response = endpoints.get_gambar_denah(
+            response = endpoints.getGambarDenah(
                 wilayah_id,
                 self._kantor_id,
                 self._txt_nomor,
