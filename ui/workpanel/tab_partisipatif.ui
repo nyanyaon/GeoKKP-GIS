@@ -22,7 +22,7 @@
         <number>1</number>
        </property>
        <item>
-        <widget class="QToolButton" name="toolButton_46">
+        <widget class="QToolButton" name="btn_validasi">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -54,7 +54,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_48">
+        <widget class="QToolButton" name="btn_unduh">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -83,7 +83,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="toolButton_51">
+        <widget class="QToolButton" name="btn_cari">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -123,7 +123,7 @@
         </widget>
        </item>
        <item row="0" column="1">
-        <widget class="QComboBox" name="combo_provinsi_7"/>
+        <widget class="QComboBox" name="cmb_propinsi"/>
        </item>
        <item row="1" column="0">
         <widget class="QLabel" name="label_37">
@@ -133,7 +133,7 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QComboBox" name="combo_kabupaten_6"/>
+        <widget class="QComboBox" name="cmb_kabupaten"/>
        </item>
        <item row="2" column="0">
         <widget class="QLabel" name="label_38">
@@ -143,7 +143,7 @@
         </widget>
        </item>
        <item row="2" column="1">
-        <widget class="QComboBox" name="combo_kecamatan_6"/>
+        <widget class="QComboBox" name="cmb_kecamatan"/>
        </item>
        <item row="3" column="0">
         <widget class="QLabel" name="label_39">
@@ -153,7 +153,7 @@
         </widget>
        </item>
        <item row="3" column="1">
-        <widget class="QComboBox" name="combo_kelurahan_6"/>
+        <widget class="QComboBox" name="cmb_desa"/>
        </item>
        <item row="4" column="0">
         <widget class="QLabel" name="zonaTM3Label">
@@ -163,12 +163,12 @@
         </widget>
        </item>
        <item row="4" column="1">
-        <widget class="QComboBox" name="zonaTM3ComboBox"/>
+        <widget class="QComboBox" name="cmb_coordinate_system"/>
        </item>
       </layout>
      </item>
      <item>
-      <widget class="QTabWidget" name="tabWidget_2">
+      <widget class="QTabWidget" name="tab_widget">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
          <horstretch>0</horstretch>
@@ -176,7 +176,7 @@
         </sizepolicy>
        </property>
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
        <widget class="QWidget" name="partisipatif_perorangan">
         <attribute name="icon">
@@ -217,13 +217,63 @@
             </layout>
            </item>
            <item row="0" column="1">
-            <widget class="QComboBox" name="comboBox_3">
+            <widget class="QComboBox" name="cmb_jenis_hak">
              <property name="maximumSize">
               <size>
                <width>16777215</width>
                <height>16777215</height>
               </size>
              </property>
+             <item>
+              <property name="text">
+               <string>Pilih</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Hak Milik</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Hak Guna Usaha</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Hak Guna Bangunan</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Hak Pakai</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Hak Pengelolaan</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Hak Wakaf</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Letter C</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Girik</string>
+              </property>
+             </item>
+             <item>
+              <property name="text">
+               <string>Lainnya</string>
+              </property>
+             </item>
             </widget>
            </item>
            <item row="1" column="0">
@@ -234,7 +284,7 @@
             </widget>
            </item>
            <item row="1" column="1">
-            <widget class="QLineEdit" name="nomorLineEdit_3"/>
+            <widget class="QLineEdit" name="txt_nomor"/>
            </item>
           </layout>
          </item>
@@ -285,7 +335,7 @@
             </layout>
            </item>
            <item row="0" column="1">
-            <widget class="QComboBox" name="comboBox_4"/>
+            <widget class="QComboBox" name="cmb_program"/>
            </item>
            <item row="1" column="0">
             <layout class="QHBoxLayout" name="horizontalLayout_29">
@@ -320,10 +370,18 @@
            <item row="1" column="1">
             <layout class="QHBoxLayout" name="horizontalLayout_31">
              <item>
-              <widget class="QLineEdit" name="lineEdit_6"/>
+              <widget class="QLineEdit" name="txt_no_gugus">
+               <property name="placeholderText">
+                <string>Nomor</string>
+               </property>
+              </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="lineEdit_7"/>
+              <widget class="QLineEdit" name="txt_tahun_gugus">
+               <property name="placeholderText">
+                <string>Tahun</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </item>
@@ -334,7 +392,125 @@
       </widget>
      </item>
      <item>
-      <widget class="QTableWidget" name="tableWidget_2"/>
+      <widget class="QTableWidget" name="dgv_inbox">
+       <property name="editTriggers">
+        <set>QAbstractItemView::NoEditTriggers</set>
+       </property>
+       <property name="selectionMode">
+        <enum>QAbstractItemView::SingleSelection</enum>
+       </property>
+       <property name="selectionBehavior">
+        <enum>QAbstractItemView::SelectRows</enum>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_2">
+       <item>
+        <widget class="QPushButton" name="btn_first">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>&lt;&lt;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_prev">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>&lt;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="txt_paging">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="acceptDrops">
+          <bool>false</bool>
+         </property>
+         <property name="alignment">
+          <set>Qt::AlignCenter</set>
+         </property>
+         <property name="readOnly">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_next">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>&gt;</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="btn_last">
+         <property name="enabled">
+          <bool>true</bool>
+         </property>
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>50</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="text">
+          <string>&gt;&gt;</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
