@@ -81,6 +81,7 @@ from .modules.trilateration import TrilaterationDialog
 from .modules.triangulation import TriangulationDialog
 from .modules.pengaturan_lokasi import PengaturanLokasiDialog
 from .modules.draw_nlp import DrawNLPDialog
+from .modules.import_wilayah_admin import ImportWilayahAdmin
 from .modules.draw_dimension import (
     DimensionDistanceTool,
     DimensionAngleTool,
@@ -184,6 +185,7 @@ class GeoKKP:
         self.aturlokasi_action = PengaturanLokasiDialog()
         self.pencarianlokasi_action = FeatureSearchDialog()
         self.inspeksinlp_action = DrawNLPDialog()
+        self.import_wilayah_admin = ImportWilayahAdmin()
         # self.loginaction.loginChanged.connect()
 
     # noinspection PyMethodMayBeStatic
@@ -684,6 +686,15 @@ class GeoKKP:
         )
         self.popupPeralatan.addAction(self.actionFeatureSearch)
 
+        # ======== Menu: Import Admin ========
+        self.add_action(
+            iconPath("pentagon.png"),
+            text=self.tr(u"Import Wilayah Administrasi"),
+            callback=self.import_admin,
+            parent=self.iface.mainWindow().menuBar(),
+        )
+        # -------------------------------------------
+
         # Pengaturan Dropdown menu Peralatan
         self.PeralatanButton = QToolButton()
         self.PeralatanButton.setMenu(self.popupPeralatan)
@@ -1058,6 +1069,12 @@ class GeoKKP:
         if self.layoutaction is None:
             self.layoutaction = LayoutDialog()
         self.layoutaction.show()
+
+    def import_admin(self):
+        if self.import_wilayah_admin is None:
+            self.import_wilayah_admin = ImportWilayahAdmin()
+        self.import_wilayah_admin.show()
+        self.import_wilayah_admin.setup_workpanel()
 
     # def layout_gu(self):
     #     if self.layoutguaction is None:
