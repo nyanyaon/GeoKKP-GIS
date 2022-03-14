@@ -70,6 +70,11 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self.btn_first.clicked.connect(self.btnFirst_click)
         self.btn_last.clicked.connect(self.btnLast_click)
 
+        
+        self.btn_informasi.setEnabled(False)
+        self.btn_layout.setEnabled(False)
+        self.btn_tutup.setEnabled(False)
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         self.stackedWidget.setCurrentIndex(0)
@@ -86,9 +91,6 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self._kantor_id = kantor["kantorID"]
         self._tipe_kantor_id = str(kantor["tipeKantorId"])
 
-        self.btn_informasi.setEnabled(False)
-        self.btn_layout.setEnabled(False)
-        self.btn_tutup.setEnabled(False)
 
         self._set_cmb_propinsi()
 
@@ -254,48 +256,34 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         #     )
         #     return
         
-        self.btn_informasi.setEnabled(True)
-        self.btn_layout.setEnabled(True)
-        self.btn_tutup.setEnabled(True)
+        
 
-        self._importGambarDenah = False
-        self.btn_mulai.setEnabled(False)
-        self.btn_informasi.setEnabled(True)
-        self.btn_layout.setEnabled(True)
-        self.btn_tutup.setEnabled(True)
-        self.txt_nomor.setEnabled(False)
-        self.txt_tahun.setEnabled(False)
-        self.btn_cari.setEnabled(False)
-        if(self._bs["newGugusId"]==""):
-            self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
-        self.txt_nomor.setText(item[4].text())
-        self.btn_cari.setEnabled(False)
-        self.btn_mulai.setEnabled(False)
-
-        self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
-
-        # if(self._bs != None and self._bs["valid"]):
-        #     self._importGambarDenah = False
-        #     self.btn_mulai.setEnabled(False)
-        #     self.btn_informasi.setEnabled(True)
-        #     self.btn_layout.setEnabled(True)
-        #     self.btn_tutup.setEnabled(True)
-        #     self.txt_nomor.setEnabled(False)
-        #     self.txt_tahun.setEnabled(False)
-        #     self.btn_cari.setEnabled(False)
-        #     if(self._bs["newGugusId"]==""):
-        #         self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
-        #     self._txtNomor.setText(item[4].text())
+        if(self._bs != None and self._bs["valid"]):
+            self._importGambarDenah = False
+            self.btn_mulai.setEnabled(False)
+            self.btn_informasi.setEnabled(True)
+            self.btn_layout.setEnabled(True)
+            self.btn_tutup.setEnabled(True)
+            self.txt_nomor.setEnabled(False)
+            self.txt_tahun.setEnabled(False)
+            self.btn_cari.setEnabled(False)
+            if(self._bs["newGugusId"]!=""):
+                self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
+            self._txtNomor.setText(item[4].text())
    
-        #     self._txtNomor.setEnabled(False)
-        #     self._txtTahun.setEnabled(False)
-        #     self.btn_cari.setEnabled(False)
-        #     self.btn_mulai.setEnabled(False)
-        # else:
-        #     QtWidgets.QMessageBox.warning(
-        #         None, "GeoKKP", self._bs['errorStack'][0]
-        #     )
-        #     return 
+            self._txtNomor.setEnabled(False)
+            self._txtTahun.setEnabled(False)
+            self.btn_cari.setEnabled(False)
+            self.btn_mulai.setEnabled(False)
+
+            self.btn_informasi.setEnabled(True)
+            self.btn_layout.setEnabled(True)
+            self.btn_tutup.setEnabled(True)
+        else:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", self._bs['errorStack'][0]
+            )
+            return 
 
     
     def _load_berkas_spasial(self, gugus_ids, riwayat=False):

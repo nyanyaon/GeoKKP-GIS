@@ -11,7 +11,7 @@ from qgis.utils import iface
 from qgis.core import QgsProject
 
 
-from .utils import get_nlp, get_nlp_index, readSetting, storeSetting
+from .utils import  readSetting
 from .utils.geometry import get_sdo_point, get_sdo_polygon
 from .api import endpoints
 from .memo import app_state
@@ -223,14 +223,19 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
 
 
     def FillApartemenDataTableAutomatically(self):
-        self._layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
-        features = self._layer.getFeatures()
-        print(features,"features")
+        try:
+            self._layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
+            print(self._layer,"layer")
+            features = self._layer.getFeatures()
+            print(features,"features")
+        except:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Layer (020110) Apartemen tidak ditemukan"
+            )
+            return
 
-        
         field_index = self._layer.fields().indexOf("key")
         print("field_index", field_index)
-
 
         dataset = Dataset()
         table = dataset.add_table("ApartemenBaru")
@@ -625,8 +630,6 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                 QtWidgets.QMessageBox.critical(None, "GeoKKP Web", msg)
             return
         
-
-
         field_index = self._layer.fields().indexOf("label")
         key = self._layer.fields().indexOf("key")
         print("field_index", field_index)
