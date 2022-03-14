@@ -11,7 +11,7 @@
          {
             "Kode": "010200",
             "Nama Layer": "(010200) Batas Propinsi",
-            "Tipe Layer": "Polygon",
+            "Tipe Layer": "1",
             "Style Path": "administrasi.qml",
             "Attributes": ""
          },
@@ -926,6 +926,28 @@
             "Tipe Layer": "LineString",
             "Style Path": "",
             "Attributes": ""
+         },
+         {
+            "Kode": "Tn_Rincikan",
+            "Nama Layer": "(Tn_Rincikan) Teks Rincikan",
+            "Tipe Layer": "Point",
+            "Style Path": "",
+            "Attributes": ""
+         },
+         {
+            "Kode": "Lb_Rincikan",
+            "Nama Layer": "(Lb_Rincikan) Garis Rincikan",
+            "Tipe Layer": "Polygon",
+            "Style Path": "",
+            "Attributes": [
+               {
+                  "key": "String",
+                  "type": "String",
+                  "label": "String",
+                  "height": "String",
+                  "rotation": "String"
+               }
+            ]
          },
          {
             "Kode": "Bintang",

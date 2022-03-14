@@ -310,8 +310,6 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
                 layer_config["Attributes"][0],
             )
 
-        self._current_layers.append(layer)
-
     def Submit(self):
         topo_error_message = []
 

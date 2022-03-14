@@ -807,3 +807,4 @@ def update_geometri_persil_legal_sdo(
         "gugusId": gugus_id,
         "userid": user_id
     }
+
