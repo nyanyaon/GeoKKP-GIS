@@ -49,7 +49,6 @@ class FmImportGambarDenah():
         self._newGugusId=newGugusId
         self._oldApartments = oldApartment
         self._gantiDesa=gantiDesa
-        self._current_layers = current_layers
 
         self._gUkurId = ""
         if len(self._gambarUkur) > 0:

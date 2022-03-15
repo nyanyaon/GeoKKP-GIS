@@ -7,12 +7,12 @@ from qgis.PyQt import QtWidgets, uic
 
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
+from qgis.core import QgsProject
 
 from .utils import get_nlp, get_nlp_index, readSetting, storeSetting
 from .utils.geometry import get_sdo_point, get_sdo_polygon
 from .api import endpoints
 from .memo import app_state
-
 from .models.dataset import Dataset
 
 FORM_CLASS, _ = uic.loadUiType(
@@ -144,15 +144,30 @@ class BerkasRumahSusun(QtWidgets.QDialog, FORM_CLASS):
         self.StartBerkas()
 
     def StartBerkas(self):
+
+        try:
+            self._layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
+        except:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Layer (020110) Apartemen tidak ditemukan"
+            )
+            return
+
         username_state = app_state.get("username", "")
         username = username_state.value
         response = endpoints.start_berkas_spasial(self._nomorBerkas,self._tahunBerkas,self._kantor_id,self._tipe_kantor_id,username)
         self._bs = json.loads(response.content)
-        self._bs["nomorBerkas"] = self._nomorBerkas
-        self._bs["tahunBerkas"] = self._tahunBerkas
-        self._bs["berkasId"] = self._berkasId
-        self.startBerkas.emit(self._bs)
-        self.close()
-        print(self._bs)
+       
+        if(self._bs["errorStack"] == []):
+            self._bs["nomorBerkas"] = self._nomorBerkas
+            self._bs["tahunBerkas"] = self._tahunBerkas
+            self._bs["berkasId"] = self._berkasId
+            self.startBerkas.emit(self._bs)
+            self.close()
+        else:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", self._bs["errorStack"][0]
+            )
+            return
 
  

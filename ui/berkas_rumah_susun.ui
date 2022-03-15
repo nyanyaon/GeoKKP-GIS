@@ -46,7 +46,14 @@
     </layout>
    </item>
    <item>
-    <widget class="QTableWidget" name="dvg_inbox"/>
+    <widget class="QTableWidget" name="dvg_inbox">
+     <property name="editTriggers">
+      <set>QAbstractItemView::NoEditTriggers</set>
+     </property>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_2">
