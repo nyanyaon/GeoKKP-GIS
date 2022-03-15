@@ -409,7 +409,7 @@
             "Kode": "020110",
             "Nama Layer": "(020110) Apartemen",
             "Tipe Layer": "Polygon",
-            "Style Path": "",
+            "Style Path": "simplepersil.qml",
             "Attributes": [
                {
                   "key": "String",
@@ -938,12 +938,13 @@
             "Kode": "Lb_Rincikan",
             "Nama Layer": "(Lb_Rincikan) Garis Rincikan",
             "Tipe Layer": "Polygon",
-            "Style Path": "",
+            "Style Path": "simplepersil.qml",
             "Attributes": [
                {
                   "key": "String",
                   "type": "String",
                   "label": "String",
+                  "pemilik": "String",
                   "height": "String",
                   "rotation": "String"
                }

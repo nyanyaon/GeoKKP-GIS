@@ -17,6 +17,7 @@ from ...api import endpoints
 from ...models.dataset import Dataset
 from ...create_pbt import CreatePBT
 from ...memo import app_state
+from ...desain_pbt import DesainPBT
 
 from qgis.PyQt.QtCore import pyqtSignal, QUrl
 from qgis.utils import iface
@@ -50,6 +51,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
 
         self._submitted_parcels = []
         self.dvg_invent.doubleClicked.connect(self.prepare_berkas)
+        self.btn_save.clicked.connect(self.submit)
 
         self.btn_save.setEnabled(False)
         self.btn_unggah.setEnabled(False)
@@ -83,6 +85,11 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         for program in program_invent["PROGRAM"]:
             self.cmb_kegiatan.addItem(program["NAMA"],program["PROGRAMID"])
 
+    def submit(self):
+        layer = QgsProject.instance().mapLayersByName("(Lb_Rincikan) Garis Rincikan")[0]
+        self.petaBidang = DesainPBT(self.pbt,"TM3",True,current_layers=layer)
+        self.petaBidang.show()
+    
     def btnCari_Click(self):
         self._start = 0 
         self._count = -1
@@ -259,6 +266,10 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
         print(response_spatial_sdo_json)
 
+        response = endpoints.get_rincikan_by_pbt(self._currentDokumenPengukuranId)
+        response_json = json.loads(response.content)
+        print(response_json)
+
         if not response_spatial_sdo_json["status"]:
             QtWidgets.QMessageBox.critical(None, "Error", "Proses Unduh Geometri gagal")
             return
@@ -266,7 +277,15 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         epsg = get_project_crs()
         layer_config = get_layer_config("Lb_Rincikan")
 
+        
+
         if response_spatial_sdo_json["geoKkpPolygons"]:
+            for index,feature in enumerate(response_spatial_sdo_json["geoKkpPolygons"]):
+                for label in response_json["RINCIKANBARU"]:
+                    if(label["PERSILINVENTID"] == feature["key"]):
+                        response_spatial_sdo_json["geoKkpPolygons"][index]["label"] = label["NOMOR"]
+                        break
+
             layer = sdo_to_layer(
                 response_spatial_sdo_json["geoKkpPolygons"],
                 name=layer_config["Nama Layer"],
@@ -275,17 +294,19 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
                 coords_field="boundary",
             )
 
-        layer_config = get_layer_config("Tn_Rincikan")
+        
 
-        if response_spatial_sdo_json["geoKkpTekss"]:
-            layer = sdo_to_layer(
-                response_spatial_sdo_json["geoKkpTekss"],
-                name=layer_config["Nama Layer"],
-                symbol=layer_config["Style Path"],
-                crs=epsg,
-                coords_field="position",
-            )
-
+        # layer_config = get_layer_config("Tn_Rincikan")
+        # if response_spatial_sdo_json["geoKkpTekss"] != []:
+        #     layer = sdo_to_layer(
+        #         response_spatial_sdo_json["geoKkpTekss"],
+        #         name=layer_config["Nama Layer"],
+        #         symbol=layer_config["Style Path"],
+        #         crs=epsg,
+        #         coords_field="position",
+        #     )
+            
+        iface.actionZoomToLayer().trigger()
 
     def tutup_proses(self):
         response = endpoints.stop_pbt(self._currentDokumenPengukuranId)
