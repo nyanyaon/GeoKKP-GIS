@@ -11,7 +11,7 @@ from ...utils import (
     get_project_crs,
     sdo_to_layer,
     get_layer_config,
-    add_layer,
+    parse_sdo_geometry,
 )
 from ...api import endpoints
 from ...models.dataset import Dataset
@@ -266,9 +266,8 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
         print(response_spatial_sdo_json)
 
-        response = endpoints.get_rincikan_by_pbt(self._currentDokumenPengukuranId)
-        response_json = json.loads(response.content)
-        print(response_json)
+        # response = endpoints.get_rincikan_by_pbt(self._currentDokumenPengukuranId)
+        # response_json = json.loads(response.content)
 
         if not response_spatial_sdo_json["status"]:
             QtWidgets.QMessageBox.critical(None, "Error", "Proses Unduh Geometri gagal")
@@ -277,14 +276,23 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         epsg = get_project_crs()
         layer_config = get_layer_config("Lb_Rincikan")
 
-        
-
+        nama = []
         if response_spatial_sdo_json["geoKkpPolygons"]:
             for index,feature in enumerate(response_spatial_sdo_json["geoKkpPolygons"]):
-                for label in response_json["RINCIKANBARU"]:
-                    if(label["PERSILINVENTID"] == feature["key"]):
-                        response_spatial_sdo_json["geoKkpPolygons"][index]["label"] = label["NOMOR"]
-                        break
+                # for label in response_json["RINCIKANBARU"]:
+                #     if(label["PERSILINVENTID"] == feature["key"]):
+                #         response_spatial_sdo_json["geoKkpPolygons"][index]["label"] = label["NOMOR"]
+                #         break
+                response_spatial_sdo_json["geoKkpPolygons"][index]["pemilik"] = ""
+                geometryPoly = parse_sdo_geometry(feature["boundary"]["sdoElemInfo"],feature["boundary"]["sdoOrdinates"])
+                for feature in response_spatial_sdo_json["geoKkpTekss"]:
+                    geometryPoint = parse_sdo_geometry(feature["position"]["sdoElemInfo"],feature["position"]["sdoOrdinates"])
+                    if(geometryPoly.contains(geometryPoint)):
+                        if(feature["type"] == "TeksNama"):
+                            response_spatial_sdo_json["geoKkpPolygons"][index]["pemilik"] = feature["label"]
+                        else:
+                            response_spatial_sdo_json["geoKkpPolygons"][index]["label"] = feature["label"]
+                            
 
             layer = sdo_to_layer(
                 response_spatial_sdo_json["geoKkpPolygons"],
@@ -293,8 +301,6 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
                 crs=epsg,
                 coords_field="boundary",
             )
-
-        
 
         # layer_config = get_layer_config("Tn_Rincikan")
         # if response_spatial_sdo_json["geoKkpTekss"] != []:
