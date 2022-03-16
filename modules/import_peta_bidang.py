@@ -215,7 +215,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             self.combo_lihat_data.addItem("Persil Inventaris")
             self._fill_new_rincikan()
             self._fill_persil_rincikan()
-            self._fill_pemilik_rincikan()
+            # self._fill_pemilik_rincikan()
             self._populate_table()
 
     def _get_current_settings(self):
@@ -407,6 +407,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             return
         features = self.layer.getFeatures()
         for feature in features:
+            print(feature.geometry())
             identifier = f"{self.layer.id()}|{feature.id()}".encode("utf-8")
             objectid = hashlib.md5(identifier).hexdigest().upper()
 
@@ -416,6 +417,10 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
 
             key = feature.attribute("key") if feature.attribute("key") else ""
             nib = feature.attribute("label") if feature.attribute("label") else ""
+            try:
+                pemilik = feature.attribute("pemilik") if feature.attribute("pemilik") else ""
+            except:
+                pemilik = ""
             height = (
                 float(feature.attribute("height"))
                 if feature.attribute("height")
@@ -440,7 +445,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                     if filtered:
                         row = filtered[0]
                 luas_round = str(round(poli["luas"], 3))
-
+                print(feature.geometry())
                 if row != {}:
                     row[DS_PERSIL_INVENTARIS_COLUMNS[0]] = objectid
                     row[DS_PERSIL_INVENTARIS_COLUMNS[1]] = row["REGID"]
@@ -451,7 +456,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                     row[DS_PERSIL_INVENTARIS_COLUMNS[6]] = teks
                     row[DS_PERSIL_INVENTARIS_COLUMNS[7]] = height
                     row[DS_PERSIL_INVENTARIS_COLUMNS[8]] = orientation
-                    row[DS_PERSIL_INVENTARIS_COLUMNS[9]] = ""
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[9]] = pemilik
                     row[DS_PERSIL_INVENTARIS_COLUMNS[10]] = ""
                 else:
                     row[DS_PERSIL_INVENTARIS_COLUMNS[0]] = objectid
@@ -463,14 +468,10 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                     row[DS_PERSIL_INVENTARIS_COLUMNS[6]] = teks
                     row[DS_PERSIL_INVENTARIS_COLUMNS[7]] = height
                     row[DS_PERSIL_INVENTARIS_COLUMNS[8]] = orientation
-                    row[DS_PERSIL_INVENTARIS_COLUMNS[9]] = ""
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[9]] = pemilik
                     row[DS_PERSIL_INVENTARIS_COLUMNS[10]] = "sudah diukur"
                 self._ent_dataset["PersilInventaris"].append(row)
-
-    def _fill_pemilik_rincikan(self):
-        # TODO fill persil rincikan
-        pass
-
+        
     def _populate_table(self):
         self.tabel_desain.setRowCount(0)
         data = self._ent_dataset[self._current_table]
@@ -849,25 +850,35 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             for row in self._ent_dataset["PersilInventaris"]:
                 spr = {
                     "OID": row["OID"],
-                    "REGID": row["REGID"] if row["REGID"] else "",
+                    "REGID": row["REGID"],
                     "Label": row["NOMOR"],
-                    "Luast": row["LUAST"] if row["LUAST"] else 0,
+                    "Luast": row["LUAST"],
                     "Area": float(row["AREA"].replace(",", ".")) if row["AREA"] else 0,
                     "Boundary": row["BOUNDARY"],
                     "Text": row["TEXT"],
                     "Height": row["HEIGHT"],
                     "Orientation": row["ORIENTATION"],
-                    "Pemilik": row["PEMILIK"] if row["PEMILIK"] else "",
+                    "Pemilik": row["PEMILIK"],
                 }
                 text = {
                     "key":row["OID"],
-                    "Type": "TeksLain",
+                    "Type": "TeksRincikan",
                     "Height": 1.0,
                     "Orientation": 0.00,
                     "Label": row["NOMOR"],
                     "position":row["TEXT"]
                 }
                 position.append(text)
+                if(row["PEMILIK"] != ""):
+                    textPemilik = {
+                    "key":row["OID"],
+                    "Type": "TeksNama",
+                    "Height": 1.0,
+                    "Orientation": 0.00,
+                    "Label": row["PEMILIK"],
+                    "position":row["TEXT"]
+                    }
+                    position.append(textPemilik)
                 lspr.append(spr)
             sts["PersilRincikan"] = lspr
             sts["Teks"] = position
