@@ -16,6 +16,7 @@ from ...utils import (
     sdo_to_layer,
     get_layer_config,
     add_layer,
+    select_layer_by_regex
 )
 
 from ...utils import readSetting
@@ -315,6 +316,14 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             )
 
     def Submit(self):
+        # replacing_current_layers
+        self._current_layers = select_layer_by_regex(r"^\(020110\)*")
+        if not self._current_layers:
+            QtWidgets.QMessageBox.warning(
+                None, "Kesalahan", "Layer Apartemen (020110) tidak bisa ditemukan"
+            )
+            return
+
         topo_error_message = []
 
         for layer in self._current_layers:

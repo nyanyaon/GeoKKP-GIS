@@ -94,6 +94,11 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
         print("get_user_entity_by_username", response_json)
         app_state.set("pegawai", response_json)
 
+        # add notif for succesful setting loaction
+        if response_json["pegawaiID"]:
+            QtWidgets.QMessageBox.information(
+            None, "GeoKKP - Informasi", "Berhasil mengatur lokasi")
+
     def _set_crs_by_local_data(self):
         print("using local data")
         iface.mainWindow().blockSignals(True)

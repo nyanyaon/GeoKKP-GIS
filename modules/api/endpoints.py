@@ -868,3 +868,20 @@ def unduh_wilayah_sdo(wilayah_id, srs_name, tipe_wilayah, **kwargs):
         "srsName": srs_name,
         "tipeWilayah": tipe_wilayah
     }
+
+@api(endpoint="getWilayahPtslSkb")
+def get_wilayah_ptsl_skb(kantor_id):
+    return {
+        "kantorId": kantor_id
+    }
+
+@api(endpoint="GetTandaTerimaPtslSkb")
+def get_tanda_terima_ptsl_skb(kantor_id, nomor, tahun, program_id, surveyor_id, wilayah_id):
+    return {
+        "kantorId":  kantor_id,
+        "nomor": nomor,
+        "tahun": tahun,
+        "programId": program_id,
+        "surveyorId": surveyor_id,
+        "wilayahId": wilayah_id
+    }

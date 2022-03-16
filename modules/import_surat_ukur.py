@@ -475,7 +475,6 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
             print("there is no new parcels")
 
     def _fill_persil_data_table_automatically(self):
-        print(f"current layer : {self._parent._current_layers}")
         print(f"submit layer : {self._parent._submit_layers}")
         for layer in self._parent._submit_layers:
             try:
@@ -942,7 +941,7 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
         for row in ds["PersilBaru"]:
             result_oid_map[row["oid"]] = row["nib"]
 
-        for layer in self._parent._current_layers:
+        for layer in self._parent._submit_layers:
             try:
                 layer.id()
             except RuntimeError:

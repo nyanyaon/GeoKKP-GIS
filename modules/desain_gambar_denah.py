@@ -10,8 +10,7 @@ from PyQt5 import QtCore
 from qgis.utils import iface
 from qgis.core import QgsProject
 
-
-from .utils import  readSetting
+from .utils import get_nlp, get_nlp_index, readSetting, storeSetting, select_layer_by_regex
 from .utils.geometry import get_sdo_point, get_sdo_polygon
 from .api import endpoints
 from .memo import app_state
@@ -220,19 +219,18 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             self.cmb_kecamatan.setEnabled(False)
             self.cmb_desa.setEnabled(False)
 
-
-
     def FillApartemenDataTableAutomatically(self):
-        try:
-            self._layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
-            print(self._layer,"layer")
-            features = self._layer.getFeatures()
-            print(features,"features")
-        except:
+        # replacing_qgisproject
+        layers = select_layer_by_regex(r"^\(020110\)*")
+        if not layers:
             QtWidgets.QMessageBox.warning(
-                None, "GeoKKP", "Layer (020110) Apartemen tidak ditemukan"
+                None, "Kesalahan", "Layer Apartemen (020110) tidak bisa ditemukan"
             )
             return
+        self._layer = layers[0]
+
+        features = self._layer.getFeatures()
+        print(features,"features")
 
         field_index = self._layer.fields().indexOf("key")
         print("field_index", field_index)
@@ -312,7 +310,15 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             dsApartemen = json.loads(response.content)
             print(dsApartemen) 
 
-            layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
+            # replacing_qgisproject
+            layers = select_layer_by_regex(r"^\(020110\)*")
+            if not layers:
+                QtWidgets.QMessageBox.warning(
+                    None, "Kesalahan", "Layer Apartemen (020110) tidak bisa ditemukan"
+                )
+                return
+            layer = layers[0]
+
             features = layer.getFeatures()
             print(features,"features")
 
@@ -488,7 +494,14 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             self.tabWidget.setCurrentIndex(1)
 
     def validateCoordsExtend(self):
-        layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
+        # replacing_qgisproject
+        layers = select_layer_by_regex(r"^\(020110\)*")
+        if not layers:
+            QtWidgets.QMessageBox.warning(
+                None, "Kesalahan", "Layer Apartemen (020110) tidak bisa ditemukan"
+            )
+            return
+        layer = layers[0]
         ext = layer.extent()
 
         retval = True
