@@ -71,6 +71,11 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self.btn_first.clicked.connect(self.btnFirst_click)
         self.btn_last.clicked.connect(self.btnLast_click)
 
+        
+        self.btn_informasi.setEnabled(False)
+        self.btn_layout.setEnabled(False)
+        self.btn_tutup.setEnabled(False)
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         self.stackedWidget.setCurrentIndex(0)
@@ -87,9 +92,6 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self._kantor_id = kantor["kantorID"]
         self._tipe_kantor_id = str(kantor["tipeKantorId"])
 
-        self.btn_informasi.setEnabled(False)
-        self.btn_layout.setEnabled(False)
-        self.btn_tutup.setEnabled(False)
 
         self._set_cmb_propinsi()
 
@@ -248,16 +250,14 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self._bs = json.loads(response.content)
 
         print(self._bs,username)
-        self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
-        if self._bs['valid'] == False:
-            QtWidgets.QMessageBox.warning(
-                None, "GeoKKP", self._bs['errorStack'][0]
-            )
-            return
         
-        self.btn_informasi.setEnable(True)
-        self.btn_layout.setEnable(True)
-        self.btn_tutup.setEnable(True)
+        # if self._bs['valid'] == False:
+        #     QtWidgets.QMessageBox.warning(
+        #         None, "GeoKKP", self._bs['errorStack'][0]
+        #     )
+        #     return
+        
+        
 
         if(self._bs != None and self._bs["valid"]):
             self._importGambarDenah = False
@@ -268,7 +268,7 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             self.txt_nomor.setEnabled(False)
             self.txt_tahun.setEnabled(False)
             self.btn_cari.setEnabled(False)
-            if(self._bs["newGugusId"]==""):
+            if(self._bs["newGugusId"]!=""):
                 self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
             self._txtNomor.setText(item[4].text())
    
@@ -276,6 +276,10 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             self._txtTahun.setEnabled(False)
             self.btn_cari.setEnabled(False)
             self.btn_mulai.setEnabled(False)
+
+            self.btn_informasi.setEnabled(True)
+            self.btn_layout.setEnabled(True)
+            self.btn_tutup.setEnabled(True)
         else:
             QtWidgets.QMessageBox.warning(
                 None, "GeoKKP", self._bs['errorStack'][0]
@@ -311,8 +315,6 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
                 layer_config["Attributes"][0],
             )
 
-        # self._current_layers.append(layer)
-
     def Submit(self):
         # replacing_current_layers
         self._current_layers = select_layer_by_regex(r"^\(020110\)*")
@@ -345,7 +347,7 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             self.desainDenah.setupFmMin()
         else:
             self.desainDenah = FmImportGambarDenah()
-            self.desainDenah.setupFm(self._bs["nomorBerkas"],self._bs["tahunBerkas"],[self._bs["gambarUkurs"]],self._bs["wilayahId"],self._bs["newGugusId"],self._bs["newParcelNumber"],self._bs["newApartmentNumber"],[self._bs["newParcels"]],[self._bs["oldParcels"]],[self._bs["newApartments"]],[self._bs["oldApartments"]],self._bs["gantiDesa"],self._current_layers)
+            self.desainDenah.setupFm(self._bs["nomorBerkas"],self._bs["tahunBerkas"],[self._bs["gambarUkurs"]],self._bs["wilayahId"],self._bs["newGugusId"],self._bs["newParcelNumber"],self._bs["newApartmentNumber"],[self._bs["newParcels"]],[self._bs["oldParcels"]],[self._bs["newApartments"]],[self._bs["oldApartments"]],self._bs["gantiDesa"])
 
     
     def ImportGambarDenahCall(self):

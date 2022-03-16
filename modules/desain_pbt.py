@@ -58,7 +58,7 @@ class DesainPBT(QtWidgets.QDialog, FORM_CLASS):
     def setup_workpanel(self):
         layout = QtWidgets.QVBoxLayout(self.tab_desain)
         if not self._is_pengadaan:
-            ipb = ImportPetaBidang(
+            ipb = ImportPetaBidang( 
                 self._pbt,
                 self._tipe_sistem_koordinat,
                 self._is_invent,
