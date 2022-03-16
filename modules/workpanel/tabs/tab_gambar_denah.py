@@ -73,7 +73,7 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         
         self.btn_informasi.setEnabled(False)
         self.btn_layout.setEnabled(False)
-        self.btn_tutup.setEnabled(False)
+        # self.btn_tutup.setEnabled(False)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -387,7 +387,7 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
 
         self.btn_informasi.setEnabled(False)
         self.btn_layout.setEnabled(False)
-        self.btn_tutup.setEnabled(False)
+        # self.btn_tutup.setEnabled(False)
         self.txt_nomor.setEnabled(True)
         self.txt_tahun.setEnabled(True)
         self.btn_cari.setEnabled(True)
