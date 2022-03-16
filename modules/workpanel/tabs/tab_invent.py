@@ -89,6 +89,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         layer = QgsProject.instance().mapLayersByName("(Lb_Rincikan) Garis Rincikan")[0]
         self.petaBidang = DesainPBT(self.pbt,"TM3",True,current_layers=layer)
         self.petaBidang.show()
+        self.petaBidang.processed.connect(self.pd_Event)
     
     def btnCari_Click(self):
         self._start = 0 
@@ -208,6 +209,19 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
                 None, "GeoKKP", payload["myPBT"]["PBT"]["errorStack"][0]
             )
 
+    def pd_Event(self,payload):
+        if(payload["submittedParcel"] is not None):
+            self._submitted_parcels = payload["submittedParcel"]
+            self.pbt["wilayahId"] = payload["wilayahId"]
+            self.pbt["gugusId"] = [self._submitted_parcels]
+            self.pbt["wilayahId"] = payload["wilayahId"]
+            if(self.pbt["mitraKerjaid"]  != ""):
+                # TODO : Link Berkas
+                pass
+            else:
+                if(self.pbt["autoClosed"]):
+                    self.stop_proses
+
     def prepare_berkas(self):
         item = self.dvg_invent.selectedItems()
 
@@ -265,10 +279,6 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         response_spatial_sdo = endpoints.get_spatial_document_sdo([gugus_ids],riwayat)
         response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
         print(response_spatial_sdo_json)
-
-        # response = endpoints.get_rincikan_by_pbt(self._currentDokumenPengukuranId)
-        # response_json = json.loads(response.content)
-
         if not response_spatial_sdo_json["status"]:
             QtWidgets.QMessageBox.critical(None, "Error", "Proses Unduh Geometri gagal")
             return
@@ -276,13 +286,8 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         epsg = get_project_crs()
         layer_config = get_layer_config("Lb_Rincikan")
 
-        nama = []
         if response_spatial_sdo_json["geoKkpPolygons"]:
             for index,feature in enumerate(response_spatial_sdo_json["geoKkpPolygons"]):
-                # for label in response_json["RINCIKANBARU"]:
-                #     if(label["PERSILINVENTID"] == feature["key"]):
-                #         response_spatial_sdo_json["geoKkpPolygons"][index]["label"] = label["NOMOR"]
-                #         break
                 response_spatial_sdo_json["geoKkpPolygons"][index]["pemilik"] = ""
                 geometryPoly = parse_sdo_geometry(feature["boundary"]["sdoElemInfo"],feature["boundary"]["sdoOrdinates"])
                 for feature in response_spatial_sdo_json["geoKkpTekss"]:
@@ -334,7 +339,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
             self.txt_tahun.setEnabled(True)
             self.txt_nomor.setEnabled(True)
 
-            pbt = None
+            self.pbt = None
 
             QtWidgets.QMessageBox.information(
                 None, "GeoKKP", "Proses spasial sudah dihentikan"
@@ -369,7 +374,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
                         "Persil belum dipetakan\nUntuk menyelesaikan berkas lakukan proses Map Placing terlebih dahulu",
                     )
 
-        response = endpoints.finish_pbt(self._current_document_pengukuran_id)
+        response = endpoints.finish_pbt(self._currentDokumenPengukuranId)
         if response.content.decode("utf-8").split(":")[0] == "OK":
             self._processAvailable = False
             self.btn_start.setEnabled(True)
@@ -380,13 +385,16 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
             self.btn_close.setEnabled(False)
             self.btn_finish.setEnabled(False)
 
+            self.btn_cari.setEnabled(True)
+            self.txt_tahun.setEnabled(True)
+            self.txt_nomor.setEnabled(True)
+
             self._pbt = None
             QtWidgets.QMessageBox.information(
                 None,
                 "Informasi",
                 "Proses spasial sudah selesai",
             )
-            self._cari_berkas_apbn()
         else:
             QtWidgets.QMessageBox.critical(
                 None,

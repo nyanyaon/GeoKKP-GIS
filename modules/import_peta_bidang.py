@@ -703,6 +703,12 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
         msg = ""
         # TODO: extent check
 
+        if(self._current_table == "PersilInventaris"):
+            if(self.validateCoordsExtend() == False):
+                valid = False
+                msg += "Koordinat diluar TM3!"
+
+
         if self.combo_kegiatan.count() < 1:
             valid = False
             msg += "\nTidak ada SK Penlok yang sedang aktif, silahkan dibuat terlebih dahulu"
@@ -765,6 +771,25 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             self.writeErrorLog.emit(msg)
             self.changeTabIndex.emit(1)
 
+    def validateCoordsExtend(self):
+        layer = QgsProject.instance().mapLayersByName("(Lb_Rincikan) Garis Rincikan")[0]
+        ext = layer.extent()
+
+        retval = True
+
+        xmin = ext.xMinimum()
+        xmax = ext.xMaximum()
+        ymin = ext.yMinimum()
+        ymax = ext.yMaximum()
+
+        print(xmin,xmax,ymin,ymax)
+
+        if(xmin<32000 or xmax > 368000  or ymin < 282000  or ymax > 2166000  ):
+            retval = False
+  
+
+        return retval
+    
     def _handle_process(self):
         self.btn_proses.setDisabled(True)
         self.btn_validasi.setDisabled(True)
