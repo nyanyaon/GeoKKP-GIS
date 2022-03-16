@@ -10,7 +10,7 @@ from qgis.PyQt.QtCore import pyqtSignal, QUrl
 from qgis.utils import iface
 
 from ...api import endpoints
-from ...utils import get_layer_config, get_project_crs, readSetting, sdo_to_layer
+from ...utils import get_layer_config, get_project_crs, readSetting, sdo_to_layer, add_layer
 from ...topology import quick_check_topology
 from ...models.dataset import Dataset
 from ...desain_surat_ukur import DesainSuratUkur
@@ -73,7 +73,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
         self._old_gugus_id = ""
         self._sumber_geometri = ""
 
-        self._current_layers = []
+        # self._current_layers = []
         self._submit_layers = []
 
         # self._set_cmb_propinsi()
@@ -381,7 +381,16 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
                 de = json.loads(response_draw_entity.content)
                 self._draw(de)
 
-            # else:
+            else:
+                layer_config = get_layer_config("020100")
+                add_layer(
+                            layer_config["Nama Layer"],
+                            layer_config["Tipe Layer"],
+                            layer_config["Style Path"],
+                            layer_config["Attributes"][0],
+                        )
+                QtWidgets.QMessageBox.information(None, "GeoKKP - Informasi", "Gambar Persil Baru")
+
             #     pass
             #     # NOTE: start drawing
             
@@ -432,7 +441,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
                     crs=epsg,
                     coords_field="boundary",
                 )
-                self._current_layers.append(layer)
+                # self._current_layers.append(layer)
 
             if de["geoKkpGariss"]:
                 layer_config = get_layer_config("020200")
@@ -443,11 +452,11 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
                     crs=epsg,
                     coords_field="line",
                 )
-                self._current_layers.append(layer)                
+                # self._current_layers.append(layer)                
                 # NOTE: will deprecate it in the future
                 # TODO: refactoring layer type
             
-            print(self._current_layers)
+            # print(self._current_layers)
             iface.actionZoomToLayer().trigger()
         else:
             if de["message"]:
@@ -493,7 +502,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
         # layer_ids = [layer.id() for layer in self._current_layers]
         # self.project.instance().removeMapLayers(layer_ids)
         # iface.mapCanvas().refresh()
-        self._current_layers = []
+        self._submit_layers = []
 
         # self.dgv_surat_ukur.setEnabled(True)
 

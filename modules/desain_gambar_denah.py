@@ -11,7 +11,7 @@ from qgis.utils import iface
 from qgis.core import QgsProject,QgsField
 from PyQt5.QtCore import QVariant
 
-from .utils import get_nlp, get_nlp_index, readSetting, storeSetting
+from .utils import get_nlp, get_nlp_index, readSetting, storeSetting, select_layer_by_regex
 from .utils.geometry import get_sdo_point, get_sdo_polygon
 from .api import endpoints
 from .memo import app_state
@@ -221,7 +221,15 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             self.cmb_desa.setEnabled(False)
 
     def FillApartemenDataTableAutomatically(self):
-        self._layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
+        # replacing_qgisproject
+        layers = select_layer_by_regex(r"^\(020110\)*")
+        if not self._current_layers:
+            QtWidgets.QMessageBox.warning(
+                None, "Kesalahan", "Layer Apartemen (020110) tidak bisa ditemukan"
+            )
+            return
+        self._layer = layers[0]
+
         features = self._layer.getFeatures()
         print(features,"features")
 
@@ -320,7 +328,15 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             dsApartemen = json.loads(response.content)
             print(dsApartemen) 
 
-            layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
+            # replacing_qgisproject
+            layers = select_layer_by_regex(r"^\(020110\)*")
+            if not self._current_layers:
+                QtWidgets.QMessageBox.warning(
+                    None, "Kesalahan", "Layer Apartemen (020110) tidak bisa ditemukan"
+                )
+                return
+            layer = layers[0]
+
             features = layer.getFeatures()
             print(features,"features")
 
@@ -471,7 +487,14 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             self.tabWidget.setCurrentIndex(1)
 
     def validateCoordsExtend(self):
-        layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
+        # replacing_qgisproject
+        layers = select_layer_by_regex(r"^\(020110\)*")
+        if not self._current_layers:
+            QtWidgets.QMessageBox.warning(
+                None, "Kesalahan", "Layer Apartemen (020110) tidak bisa ditemukan"
+            )
+            return
+        layer = layers[0]
         ext = layer.extent()
 
         retval = True

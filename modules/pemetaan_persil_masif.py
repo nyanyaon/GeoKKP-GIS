@@ -92,6 +92,8 @@ class UploadPersilMasif(QtWidgets.QDialog, FORM_CLASS):
         self.cmb_coordinate_system.addItem("TM3-47.1")
         self.cmb_coordinate_system.addItem("TM3-47.2")
         self.cmb_coordinate_system.addItem("TM3-48.1")
+        self.cmb_coordinate_system.addItem("TM3-48.2")
+        self.cmb_coordinate_system.addItem("TM3-49.1")
         self.cmb_coordinate_system.addItem("TM3-49.2")
         self.cmb_coordinate_system.addItem("TM3-50.1")
         self.cmb_coordinate_system.addItem("TM3-50.2")
