@@ -82,6 +82,7 @@ from .modules.triangulation import TriangulationDialog
 from .modules.pengaturan_lokasi import PengaturanLokasiDialog
 from .modules.draw_nlp import DrawNLPDialog
 from .modules.import_wilayah_admin import ImportWilayahAdmin
+from .modules.create_pbt_kjskb import CreatePBTKJSKB
 from .modules.draw_dimension import (
     DimensionDistanceTool,
     DimensionAngleTool,
@@ -186,6 +187,7 @@ class GeoKKP:
         self.pencarianlokasi_action = FeatureSearchDialog()
         self.inspeksinlp_action = DrawNLPDialog()
         self.import_wilayah_admin = ImportWilayahAdmin()
+        self.create_pbt_kjskb_action = CreatePBTKJSKB()
         # self.loginaction.loginChanged.connect()
 
     # noinspection PyMethodMayBeStatic
@@ -695,6 +697,16 @@ class GeoKKP:
         )
         # -------------------------------------------
 
+        # ======== Menu: KJSKB ========
+        self.add_action(
+            # TODO: replace icon
+            iconPath("pentagon.png"),
+            text=self.tr(u"Persetujuan Peta Bidang KJSKB"),
+            callback=self.create_pbt_kjskb,
+            parent=self.iface.mainWindow().menuBar(),
+        )
+        # -------------------------------------------
+
         # Pengaturan Dropdown menu Peralatan
         self.PeralatanButton = QToolButton()
         self.PeralatanButton.setMenu(self.popupPeralatan)
@@ -1075,6 +1087,12 @@ class GeoKKP:
             self.import_wilayah_admin = ImportWilayahAdmin()
         self.import_wilayah_admin.show()
         self.import_wilayah_admin.setup_workpanel()
+    
+    def create_pbt_kjskb(self):
+        if self.create_pbt_kjskb_action is None:
+            self.create_pbt_kjskb_action = CreatePBTKJSKB()
+        self.create_pbt_kjskb_action.show()
+        self.create_pbt_kjskb_action.setup_workpanel()
 
     # def layout_gu(self):
     #     if self.layoutguaction is None:
