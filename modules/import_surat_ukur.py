@@ -708,20 +708,20 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
         msg = ""
         if not self._validate_extent():
             if self._tipe_sistem_koordinat == "TM3":
-                msg = "\nKoordinat diluar TM3! Koordinat Harus diantara [32000, 282000] dan [368000, 2166000]"
+                msg += "\nKoordinat diluar TM3! Koordinat Harus diantara [32000, 282000] dan [368000, 2166000]"
             else:
-                msg = "\nKoordinat diluar boundary! Koordinat Harus diantara [-2200000, -2200000] dan [2200000, 2200000]"
+                msg += "\nKoordinat diluar boundary! Koordinat Harus diantara [-2200000, -2200000] dan [2200000, 2200000]"
             valid = False
         
         if len(self._new_parcels) > 1:
             for row in self._ds_persil[DS_PERSIL_EDIT]:
                 if not row["BOUNDARY"]:
                     valid = False
-                    msg = "\nAda Persil Edit yang tidak memiliki geometri!"
+                    msg += "\nAda Persil Edit yang tidak memiliki geometri!"
                     break
                 if not row["REGID"]:
                     valid = False
-                    msg = "\nAda Persil Edit yang tidak memiliki regid!"
+                    msg += "\nAda Persil Edit yang tidak memiliki regid!"
                     break
         
         if valid:

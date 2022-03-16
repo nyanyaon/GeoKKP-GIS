@@ -526,6 +526,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             self.txt_berlaku_surat_ukur.setText("")
 
     def _pick_text(self):
+        # TODO: add cancel pick text mode
         self._clear_selections()
         self._iface.actionSelect().trigger()
         self._toggle_select_feature(True)

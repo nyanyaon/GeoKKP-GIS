@@ -50,6 +50,19 @@ DS_PERSIL_BARU_COLUMNS = [
     "NOLEMBAR",
     "KOTAK",
 ]
+DS_PERSIL_INVENTARIS_COLUMNS = [
+    "OID",
+    "REGID",
+    "NOMOR",
+    "LUAST",
+    "AREA",
+    "BOUNDARY",
+    "TEXT",
+    "HEIGHT",
+    "ORIENTATION",
+    "PEMILIK",
+    "STATUS",
+]
 DS_PERSIL_POLIGON_COLUMNS = [
     "Key",
     "Type",
@@ -203,6 +216,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             self._fill_new_rincikan()
             self._fill_persil_rincikan()
             self._fill_pemilik_rincikan()
+            self._populate_table()
 
     def _get_current_settings(self):
         self._current_kantor = readSetting("kantorterpilih")
@@ -368,21 +382,90 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
     def _fill_new_rincikan(self):
         response = endpoints.get_rincikan_by_pbt(self._dokumen_pengukuran_id)
         response_json = json.loads(response.content)
-
+        self.rowEdit = []
+        print(response_json)
         self._jml_rincikan = len(response_json["RINCIKANBARU"])
         for data in response_json["RINCIKANBARU"]:
-            columns = list(data.keys())
             row = {
-                "REGID": data[columns[0]],
-                "NOMOR": data[columns[1]],
-                "LUAST": data[columns[2]],
-                "STATUS": data[columns[3]],
+                "REGID": data["PERSILINVENTID"],
+                "NOMOR": data["NOMOR"],
+                "LUAST": data["LUAS"],
+                "STATUS": data["STATUS"],
             }
-            self._ent_dataset.append(row)
+            self.rowEdit.append(row)
+            # self._ent_dataset["PersilInventaris"].append(row)
 
     def _fill_persil_rincikan(self):
-        # TODO fill persil rincikan
-        pass
+        try:
+            self.layer = QgsProject.instance().mapLayersByName("(Lb_Rincikan) Garis Rincikan")[0]
+        except:
+            QtWidgets.QMessageBox.warning(
+                    None,
+                    "Geo KKP",
+                    "Layer (Lb_Rincikan) Garis Rincikan tidak ditemukan",
+            )
+            return
+        features = self.layer.getFeatures()
+        for feature in features:
+            identifier = f"{self.layer.id()}|{feature.id()}".encode("utf-8")
+            objectid = hashlib.md5(identifier).hexdigest().upper()
+
+            point = feature.geometry().pointOnSurface().asPoint()
+            teks = get_sdo_point(point)
+            poli = get_sdo_polygon(feature)
+
+            key = feature.attribute("key") if feature.attribute("key") else ""
+            nib = feature.attribute("label") if feature.attribute("label") else ""
+            height = (
+                float(feature.attribute("height"))
+                if feature.attribute("height")
+                else 0
+            )
+            orientation = (
+                float(feature.attribute("rotation"))
+                if feature.attribute("rotation")
+                else 0
+            )
+
+            if poli["batas"]:
+                print(self.rowEdit,teks)
+                row = {}
+                if len(self.rowEdit):
+                    filtered = [
+                        f
+                        for f in self.rowEdit
+                        if f["REGID"] == key
+                    ]
+
+                    if filtered:
+                        row = filtered[0]
+                luas_round = str(round(poli["luas"], 3))
+
+                if row != {}:
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[0]] = objectid
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[1]] = row["REGID"]
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[2]] = row["NOMOR"]
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[3]] = row["LUAST"]
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[4]] = luas_round
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[5]] = poli["batas"]
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[6]] = teks
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[7]] = height
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[8]] = orientation
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[9]] = ""
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[10]] = ""
+                else:
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[0]] = objectid
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[1]] = ""
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[2]] = nib
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[3]] = 0
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[4]] = luas_round
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[5]] = poli["batas"]
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[6]] = teks
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[7]] = height
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[8]] = orientation
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[9]] = ""
+                    row[DS_PERSIL_INVENTARIS_COLUMNS[10]] = "sudah diukur"
+                self._ent_dataset["PersilInventaris"].append(row)
 
     def _fill_pemilik_rincikan(self):
         # TODO fill persil rincikan
@@ -391,6 +474,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
     def _populate_table(self):
         self.tabel_desain.setRowCount(0)
         data = self._ent_dataset[self._current_table]
+
         if data:
             columns = [col for col in data[0].keys() if col not in ["BOUNDARY", "TEXT"]]
 
@@ -761,10 +845,11 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             sts["PersilEdit"] = lspe
 
             lspr = []
+            position = []
             for row in self._ent_dataset["PersilInventaris"]:
                 spr = {
                     "OID": row["OID"],
-                    "REGID": row["REGID"],
+                    "REGID": row["REGID"] if row["REGID"] else "",
                     "Label": row["NOMOR"],
                     "Luast": row["LUAST"] if row["LUAST"] else 0,
                     "Area": float(row["AREA"].replace(",", ".")) if row["AREA"] else 0,
@@ -772,20 +857,33 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                     "Text": row["TEXT"],
                     "Height": row["HEIGHT"],
                     "Orientation": row["ORIENTATION"],
-                    "Pemilik": row["PEMILIK"],
+                    "Pemilik": row["PEMILIK"] if row["PEMILIK"] else "",
                 }
+                text = {
+                    "key":row["OID"],
+                    "Type": "TeksLain",
+                    "Height": 1.0,
+                    "Orientation": 0.00,
+                    "Label": row["NOMOR"],
+                    "position":row["TEXT"]
+                }
+                position.append(text)
                 lspr.append(spr)
             sts["PersilRincikan"] = lspr
+            sts["Teks"] = position
 
         program_id = self.combo_kegiatan.currentData()
         tm3 = self.combo_tm3.currentText()
         tm3_zone = tm3.replace("TM3-", "")
         srid = get_epsg_from_tm3_zone(tm3_zone, False)
-
         pegawai_state = app_state.get("pegawai", {})
         pegawai = pegawai_state.value
         user_id = pegawai["userId"] if "userId" in pegawai else ""
-        jml_persil = self.spin_jumlah_bidang.value()
+
+        if(self._current_table == "PersilInventaris"):
+            jml_persil = 0
+        else:
+            jml_persil = self.spin_jumlah_bidang.value()
 
         response = endpoints.submit_for_ptsl_kt_redis(
             self._dokumen_pengukuran_id,
@@ -847,27 +945,39 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             for row in response_json["PersilBaru"]:
                 result_oid_map[row["oid"]] = row["nib"]
 
-            for layer in self._current_layers:
-                # TODO: remove the usage of current layer
-                try:
-                    layer.id()
-                except RuntimeError:
-                    continue
-                field_index = layer.fields().indexOf("label")
-                print("field_index", field_index)
-                features = layer.getFeatures()
-                for feature in features:
-                    identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
-                    objectid = hashlib.md5(identifier).hexdigest().upper()
-                    print("objectid", objectid)
-                    if objectid not in result_oid_map:
+            if(self._current_table != "PersilInventaris"):
+                for layer in self._current_layers:
+                    # TODO: remove the usage of current layer
+                    try:
+                        layer.id()
+                    except RuntimeError:
                         continue
+                    field_index = layer.fields().indexOf("label")
+                    print("field_index", field_index)
+                    features = layer.getFeatures()
+                    for feature in features:
+                        identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
+                        objectid = hashlib.md5(identifier).hexdigest().upper()
+                        print("objectid", objectid)
+                        if objectid not in result_oid_map:
+                            continue
 
-                    layer.startEditing()
-                    layer.changeAttributeValue(
-                        feature.id(), field_index, result_oid_map[objectid]
-                    )
-                    layer.commitChanges()
+                        layer.startEditing()
+                        layer.changeAttributeValue(
+                            feature.id(), field_index, result_oid_map[objectid]
+                        )
+                        layer.commitChanges()
+            else:
+                features = self.layer.getFeatures()
+                # for feature in features:
+                #     self.layer.startEditing()
+                #     layer.changeAttributeValue(
+                #         feature.id(), field_index, result_oid_map[objectid]
+                #     )
+                #     layer.commitChanges()
+                QtWidgets.QMessageBox.information(
+                    None, "GeoKKP", response_json["Sukses"][0]["message"]
+                )
 
     def _fill_text_entity(self):
         layers = QgsProject.instance().mapLayers()
@@ -890,7 +1000,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             for feature in features:
                 identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
                 objectid = hashlib.md5(identifier).hexdigest().upper()
-
+                print(feature,"point")
                 point = get_sdo_point(feature)
 
                 label = feature.attribute("label") if feature.attribute("label") else ""

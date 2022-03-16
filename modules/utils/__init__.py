@@ -109,7 +109,7 @@ SDO_GTYPE_MAP = {
     "09": "MultiSolid",
 }
 
-SDO_FIELD_EXCLUDE = ["text", "boundary", "line"]
+SDO_FIELD_EXCLUDE = ["text", "boundary", "line","position"]
 
 
 # constants for processing snap parameter (auto-adjust)
