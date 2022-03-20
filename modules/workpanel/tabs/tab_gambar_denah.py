@@ -73,7 +73,7 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         
         self.btn_informasi.setEnabled(False)
         self.btn_layout.setEnabled(False)
-        # self.btn_tutup.setEnabled(False)
+        self.btn_tutup.setEnabled(False)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -146,6 +146,8 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         for des in desa_dataset["DESA"]:
             self.cmb_desa.addItem(des["DESANAMA"], des["DESAID"])
 
+        
+
     def btnCari_Click(self):
         self._start = 0
         self._count = -1
@@ -188,7 +190,7 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             str(self._count))
 
         self.dSet = json.loads(response.content)
-
+        print(self.dSet)
         if(self._count == -1):
             self._count = int(self.dSet["jumlahtotal"][0]["COUNT(1)"])
 
@@ -210,11 +212,14 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             d_row["Desa"] = p["DESA"]
             d_row["Tipe"] = p["TIPEDOKUMENID"]
             d_row["Nomor"] = p["NOMOR"]
-            d_row["Sejak"] = datetime.fromisoformat(p["VALIDSEJAK"])
+            if(p["VALIDSEJAK"] == None):
+                d_row["Sejak"] = ""
+            else:
+                d_row["Sejak"] = datetime.fromisoformat(p["VALIDSEJAK"])
             if(p["VALIDSAMPAI"] == None):
                 d_row["Sampai"] = ""
             else:
-                d_row["Sampai"] = p["VALIDSAMPAI"]
+                d_row["Sampai"] = datetime.fromisoformat(p["VALIDSAMPAI"])
             d_row["Rownums"] = p["ROWNUMS"]
 
         dataset.render_to_qtable_widget("GAMBARDENAH", self.dgv_GambarDenah,[0,1,2,7])
@@ -269,10 +274,10 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             self.btn_cari.setEnabled(False)
             if(self._bs["newGugusId"]!=""):
                 self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
-            self._txtNomor.setText(item[4].text())
+            self.txt_nomor.setText(item[4].text())
    
-            self._txtNomor.setEnabled(False)
-            self._txtTahun.setEnabled(False)
+            self.txt_nomor.setEnabled(False)
+            self.txt_tahun.setEnabled(False)
             self.btn_cari.setEnabled(False)
             self.btn_mulai.setEnabled(False)
 
@@ -314,8 +319,17 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
                 layer_config["Attributes"][0],
             )
 
+        iface.actionZoomToLayer().trigger()
+
     def Submit(self):
         topo_error_message = []
+
+        self.desa = {
+            "provinsi":[self.cmb_propinsi.currentText(),self.cmb_propinsi.currentData()],
+            "kabupaten":[self.cmb_kabupaten.currentText(),self.cmb_kabupaten.currentData()],
+            "kecamatan":[self.cmb_kecamatan.currentText(),self.cmb_kecamatan.currentData()],
+            "desa":[self.cmb_desa.currentText(),self.cmb_desa.currentData()]      
+        }
 
         for layer in self._current_layers:
             try:
@@ -338,7 +352,21 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             self.desainDenah.setupFmMin()
         else:
             self.desainDenah = FmImportGambarDenah()
-            self.desainDenah.setupFm(self._bs["nomorBerkas"],self._bs["tahunBerkas"],[self._bs["gambarUkurs"]],self._bs["wilayahId"],self._bs["newGugusId"],self._bs["newParcelNumber"],self._bs["newApartmentNumber"],[self._bs["newParcels"]],[self._bs["oldParcels"]],[self._bs["newApartments"]],[self._bs["oldApartments"]],self._bs["gantiDesa"])
+            self.desainDenah.setupFm(
+                self._bs["nomorBerkas"],
+                self._bs["tahunBerkas"],
+                [self._bs["gambarUkurs"]],
+                self._bs["wilayahId"],
+                self._bs["newGugusId"],
+                self._bs["newParcelNumber"],
+                self._bs["newApartmentNumber"],
+                [self._bs["newParcels"]],
+                [self._bs["oldParcels"]],
+                [self._bs["newApartments"]],
+                [self._bs["oldApartments"]],
+                self._bs["gantiDesa"],
+                self.desa
+                )
 
     
     def ImportGambarDenahCall(self):
@@ -376,16 +404,14 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self.refresh_grid()
 
     def StopProcess(self):
-        username_state = app_state.get("username", "")
-        username = username_state.value
-        response = endpoints.stop_berkas(self._bs['nomorBerkas'],self._bs["tahunBerkas"],username)
+        response = endpoints.stop_berkas(self._bs['nomorBerkas'],self._bs["tahunBerkas"],self._kantor_id)
         print(json.loads(response.content))
         self._bs = None
         self._importGambarDenah = True
 
         self.btn_informasi.setEnabled(False)
         self.btn_layout.setEnabled(False)
-        # self.btn_tutup.setEnabled(False)
+        self.btn_tutup.setEnabled(False)
         self.txt_nomor.setEnabled(True)
         self.txt_tahun.setEnabled(True)
         self.btn_cari.setEnabled(True)

@@ -41,6 +41,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         newApartments,
         oldApartments,
         gantiDesa,
+        desa = [],
         current_layers = [],
         parent=iface.mainWindow()):
         
@@ -48,6 +49,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         super(DesainGambarDenah, self).__init__(parent)
         self.setupUi(self)
 
+        self._jumlahBerkasBaru = 0
         self._nomorBerkas=nomorBerkas
         self._tahunBerkas=tahunBerkas
         self._tipeBerkas=tipeBerkas
@@ -64,25 +66,30 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         self._newGugusId=newGugusId
         self._importGambarDenah = importGambarDenah
         self._current_layers = current_layers
+        self._desa = desa
 
-        self.cmb_propinsi.currentIndexChanged.connect(
-            self._cmb_propinsi_selected_index_changed
-        )
-        self.cmb_kabupaten.currentIndexChanged.connect(
-            self._cmb_kabupaten_selected_index_changed
-        )
-        self.cmb_kecamatan.currentIndexChanged.connect(
-            self._cmb_kecamatan_selected_index_changed
-        )
+        
 
-    
+        
 
         self.firstLoadProp = True
         self.firstLoadKabu = True
         self.firstLoadKeca = True
         self.firstLoadDesa = True
 
+        if(self._importGambarDenah):
+            self.cmb_propinsi.currentIndexChanged.connect(
+                self._cmb_propinsi_selected_index_changed
+            )
+            self.cmb_kabupaten.currentIndexChanged.connect(
+                self._cmb_kabupaten_selected_index_changed
+            )
+            self.cmb_kecamatan.currentIndexChanged.connect(
+                self._cmb_kecamatan_selected_index_changed
+            )
+
         self.setup_workpanel()
+  
 
     def CreateDataSetIntegration(self):
         dataset = Dataset()
@@ -198,23 +205,30 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         self.btn_validasi.clicked.connect(self.btnValidate_Click)
         self.btn_proses.clicked.connect(self.btnProcess_Click)
 
-        self._set_cmb_propinsi()
-
         if(self.firstLoadProp):
             self._set_cmb_kabupaten
             self.firstLoadProp=False
 
         if(self._importGambarDenah):
+            self._set_cmb_propinsi()
             self.cmb_lihat_data.addItem("Apartemen Baru")
             self.FillApartemenDataTableAutomatically()
             self.cmb_lihat_data.setCurrentIndex(0)
             self._currentParcelTable = "ApartemenBaru"
-       
+            
         else:
             self.cmb_lihat_data.addItem("Apartemen Edit")
             self._currentParcelTable = "ApartemenEdit"
             self.cmb_lihat_data.setCurrentIndex(0)
             self.FillNewApartments()
+            self.cmb_propinsi.clear()
+            self.cmb_kabupaten.clear()
+            self.cmb_kecamatan.clear()
+            self.cmb_desa.clear()
+            self.cmb_propinsi.addItem(self._desa["provinsi"][0], self._desa["provinsi"][1])
+            self.cmb_kabupaten.addItem(self._desa["kabupaten"][0], self._desa["kabupaten"][1])
+            self.cmb_kecamatan.addItem(self._desa["kecamatan"][0], self._desa["kecamatan"][1])
+            self.cmb_desa.addItem(self._desa["desa"][0], self._desa["desa"][1])
             self.cmb_propinsi.setEnabled(False)
             self.cmb_kabupaten.setEnabled(False)
             self.cmb_kecamatan.setEnabled(False)
@@ -282,6 +296,8 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             #     if feature.attribute("rotation")
             #     else 0
             # )
+
+            self._jumlahBerkasBaru += 1
             luas_round = str(round(poli["luas"], 3))
 
             d_row = table.new_row()
@@ -303,6 +319,17 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         dataset.render_to_qtable_widget("ApartemenBaru", self.dgv_GambarDenah , [3,4])
 
     def FillNewApartments(self):
+        try:
+            self._layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
+            print(self._layer,"layer")
+            features = self._layer.getFeatures()
+            print(features,"features")
+        except:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Layer (020110) Apartemen tidak ditemukan"
+            )
+            return
+
         if(self._newApartments != None and len(self._newApartments) > 0 ):
             _apartemens = []
             for x in range(len(self._newApartments)):
@@ -353,16 +380,15 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
 
                 luas_round = str(round(poli["luas"], 3))
 
-                height = (
-                    float(feature.attribute("height"))
-                    if feature.attribute("height")
-                    else 1
-                )
-                orientation = (
-                    float(feature.attribute("rotation"))
-                    if feature.attribute("rotation")
-                    else 0
-                )
+                if feature.attribute("height") != "":
+                    height = feature.attribute("height")
+                else:
+                    height = 1
+
+                if feature.attribute("rotation") != "":
+                    rotation = feature.attribute("rotation")
+                else:
+                    rotation = 0
             
                 if poli["batas"]:
                     row = {}
@@ -378,10 +404,11 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                             self.dgv_GambarDenah.setItem(row,7,QtWidgets.QTableWidgetItem(str(teks)))
                             self.dgv_GambarDenah.setItem(row,8,QtWidgets.QTableWidgetItem("Tunggal"))
                             self.dgv_GambarDenah.setItem(row,9,QtWidgets.QTableWidgetItem(height))
-                            self.dgv_GambarDenah.setItem(row,10,QtWidgets.QTableWidgetItem(orientation))
+                            self.dgv_GambarDenah.setItem(row,10,QtWidgets.QTableWidgetItem(rotation))
                         else:
                             total_row = self.dgv_GambarDenah.rowCount()
                             self.dgv_GambarDenah.insertRow(total_row)
+                            self._jumlahBerkasBaru += 1
                             print(total_row)
                             self.dgv_GambarDenah.setItem(total_row,0,QtWidgets.QTableWidgetItem(objectid))
                             self.dgv_GambarDenah.setItem(total_row,1,QtWidgets.QTableWidgetItem(""))
@@ -392,8 +419,8 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                             self.dgv_GambarDenah.setItem(total_row,6,QtWidgets.QTableWidgetItem(str(poli["batas"])))
                             self.dgv_GambarDenah.setItem(total_row,7,QtWidgets.QTableWidgetItem(str(teks)))
                             self.dgv_GambarDenah.setItem(total_row,8,QtWidgets.QTableWidgetItem("Tunggal"))
-                            self.dgv_GambarDenah.setItem(total_row,9,QtWidgets.QTableWidgetItem(height))
-                            self.dgv_GambarDenah.setItem(total_row,10,QtWidgets.QTableWidgetItem(orientation))
+                            self.dgv_GambarDenah.setItem(total_row,9,QtWidgets.QTableWidgetItem(1))
+                            self.dgv_GambarDenah.setItem(total_row,10,QtWidgets.QTableWidgetItem(0))
 
     def _cmb_propinsi_selected_index_changed(self, index):
         self._set_cmb_kabupaten()
@@ -457,11 +484,10 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                 msg = "Koordinat diluar TM3!"
             else:
                 msg = "Koordinat diluar area penggambaran"
-
-        print(self.dgv_GambarDenah.rowCount(),len(self._newApartments) ,self._newApartmentNumber)
         
+        print(self._newApartmentNumber,self._newApartmentNumber,len(self._newApartments))
         if(self._newApartmentNumber > 0):
-            if(self.dgv_GambarDenah.rowCount() + len(self._newApartments) > self._newApartmentNumber):
+            if(self._jumlahBerkasBaru + len(self._newApartments) > self._newApartmentNumber):
                 sisa = self._newApartmentNumber - len(self._newApartments)
                 msg = f"Jumlah Apartemen baru tidak sesuai \nAnda telah memasukkan {str(len(self._newApartments))} unit rumah susun ke dalam berkas {self._nomorBerkas}/{self._tahunBerkas} \nHanya {str(sisa)} unit rumah susun lagi yang bisa dimasukkan ke berkas tersebut"
                 valid = False
@@ -644,6 +670,9 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                         feature.id(), field_index, apartemen["nib"]
                 )
             self._layer.commitChanges()
+
+        response = endpoints.stop_berkas(self._nomorBerkas,self._tahunBerkas,self._kantor_id)
+        print(json.loads(response.content))
 
         QtWidgets.QMessageBox.information(
                 None,
