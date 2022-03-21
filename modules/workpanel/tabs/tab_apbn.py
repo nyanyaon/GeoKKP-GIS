@@ -17,6 +17,7 @@ from ...utils import (
     sdo_to_layer,
     get_layer_config,
     add_layer,
+    select_layer_by_regex
 )
 from ...create_pbt import CreatePBT
 from ...memo import app_state
@@ -365,9 +366,16 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
                 layer_config["Attributes"][0],
             )
 
-        self._current_layers.append(layer)
+        # self._current_layers.append(layer)
 
     def _handle_simpan(self):
+        self._current_layers = select_layer_by_regex(r"^\(020100\)*")
+
+        if not self._current_layers:
+            QtWidgets.QMessageBox.warning(
+                None, "Kesalahan", "Layer batas bidang tanah (020100) tidak bisa ditemukan"
+            )
+            return
         topo_error_message = []
         # TODO: remove the usage of current layer
         for layer in self._current_layers:

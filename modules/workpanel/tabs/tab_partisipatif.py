@@ -10,7 +10,7 @@ from qgis.utils import iface
 
 from ...api import endpoints
 from ...memo import app_state
-from ...utils import get_layer_config, get_project_crs, readSetting, sdo_to_layer, get_epsg_from_tm3_zone
+from ...utils import get_layer_config, get_project_crs, readSetting, sdo_to_layer, get_epsg_from_tm3_zone, select_layer_by_regex
 from ...topology import quick_check_topology
 from ...models.dataset import Dataset
 from ...create_pbt_partisipatif import CreatePBTPartisipatif
@@ -109,7 +109,6 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
         self._kantor_id = kantor["kantorID"]
         self._tipe_kantor_id = str(kantor["tipeKantorId"])
 
-        self._current_layers = []
         self._validate_layers = []
 
         self._set_cmb_propinsi()
@@ -460,7 +459,6 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
                 layer.setLabeling(labeling)
                 layer.triggerRepaint()
 
-                self._current_layers.append(layer)
 
             if upr["garis"]:
                 layer_config = get_layer_config("020200")
@@ -471,11 +469,11 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
                     crs=epsg,
                     coords_field="line",
                 )
-                self._current_layers.append(layer)                
+            
                 # NOTE: will deprecate it in the future
                 # TODO: refactoring layer type
             
-            print(self._current_layers)
+
             iface.actionZoomToLayer().trigger()
         else:
             if upr["message"]:
@@ -492,7 +490,12 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
             )
             return
         
-        self._validate_layers = [l for l in iface.mapCanvas().layers() if l.type() == QgsMapLayer.VectorLayer]
+        self._validate_layers = select_layer_by_regex(r"^\(020100\)*")
+        if not self._validate_layers:
+            QtWidgets.QMessageBox.warning(
+                None, "Kesalahan", "Layer batas bidang tanah (020100) tidak bisa ditemukan"
+            )
+            return
 
         self._start_berkas()
     

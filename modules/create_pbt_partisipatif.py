@@ -250,8 +250,6 @@ class CreatePBTPartisipatif(QtWidgets.QDialog, FORM_CLASS):
             a_row["STATUS"] = "Ditolak"
         
     def _fill_persil_partisipatif(self):
-        # NOTE and TODO: remove use validate and current layers
-        # print(f"current layer : {self._parent._current_layers}")
         print(f"validate layer : {self._parent._validate_layers}")
         for layer in self._parent._validate_layers:
             try:

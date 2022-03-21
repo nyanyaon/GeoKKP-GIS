@@ -381,6 +381,8 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             return
 
         # TODO: handle topology logic as layer
+        # NOTE: check topology
+        
         topo_error_message = []
         for layer in self.current_layers:
             valid, num = quick_check_topology(layer)
