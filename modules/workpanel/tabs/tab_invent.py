@@ -59,6 +59,11 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         self.btn_close.setEnabled(False)
         self.btn_finish.setEnabled(False)
 
+        self.btn_first.clicked.connect(self._btn_first_click)
+        self.btn_prev.clicked.connect(self._btn_prev_click)
+        self.btn_next.clicked.connect(self._btn_next_click)
+        self.btn_last.clicked.connect(self._btn_last_click)
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         self.stackedWidget.setCurrentIndex(0)
@@ -97,10 +102,6 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         self._txtNomor = self.txt_nomor.text()
         self._txtTahun = self.txt_tahun.text()
         self._txtKegiatan = self.cmb_kegiatan.currentData()
-
-        self.btn_first.setEnabled(False)
-        self.btn_last.setEnabled(False)
-
         self.RefreshGrid()
 
     def RefreshGrid(self):
@@ -142,7 +143,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         if(self.dset["PBTAPBN"] != None and len(self.dset["PBTAPBN"]) > 0):
             dataset = Dataset()
             table = dataset.add_table("PBTAPBN")
-            table.add_column("DOKUMENPENGUKURANID")
+            table.add_column("DOKUMENPENGUKURANID") 
             table.add_column("NOMOR")
             table.add_column("PRODUK")
             table.add_column("LINTOR")
@@ -158,6 +159,37 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
 
             dataset.render_to_qtable_widget("PBTAPBN",self.dvg_invent,[0,4])
 
+    def _btn_first_click(self):
+        self._start = 0
+        self.btn_prev.setEnabled(False)
+        self.btn_next.setEnabled(True)
+        self.RefreshGrid()
+
+    def _btn_prev_click(self):
+        self._start -= self._limit
+        if self._start <= 0:
+            self.btn_prev.setEnabled(False)
+        self.btn_next.setEnabled(True)
+        self.RefreshGrid()
+
+    def _btn_next_click(self):
+        self._start += self._limit
+        if self._start + self._limit >= self._count:
+            self.btn_next.setEnabled(False)
+        self.btn_prev.setEnabled(True)
+        self.RefreshGrid()
+
+    def _btn_last_click(self):
+        self._start = self._count // self._limit * self._limit
+        print(self._start)
+        if self._start >= self._count:
+            self._start -= self._limit
+            self.btn_prev.setEnabled(False)
+        else:
+            self.btn_prev.setEnabled(True)
+        self.btn_next.setEnabled(False)
+        self.RefreshGrid()
+    
     def createPBT(self):
         self.pbti = CreatePBT("PBTI")
         self.pbti.show()
