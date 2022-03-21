@@ -944,9 +944,9 @@
                   "key": "String",
                   "type": "String",
                   "label": "String",
-                  "pemilik": "String",
                   "height": "String",
-                  "rotation": "String"
+                  "rotation": "String",
+                  "pemilik": "String"
                }
             ]
          },
