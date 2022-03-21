@@ -282,12 +282,19 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                     continue
 
             try:
-                height = float(feature.attribute("height"))
+                if(feature.attribute("height") != "" and feature.attribute("height") != "NULL"):
+                    height = float(feature.attribute("height"))
+                else:
+                    height = 1
             except:
-                height = 0
+                height = 1
 
             try:
-                orientation = float(feature.attribute("rotation"))
+                if(feature.attribute("rotation") != "" and feature.attribute("rotation") != "NULL"):
+                    orientation = float(feature.attribute("rotation"))
+
+                else:
+                    orientation = 1
             except:
                 orientation = 0
 
@@ -307,8 +314,8 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             d_row["BOUNDARY"] = poli["batas"]
             d_row["TEXT"] = teks
             d_row["KETERANGAN"] = "Tunggal"
-            d_row["HEIGHT"] = height
-            d_row["ORIENTATION"] = orientation
+            d_row["HEIGHT"] = str(height)
+            d_row["ORIENTATION"] = str(orientation)
             try:
                 d_row["URUT"]= int(
                     teks.replace("#", "")
@@ -380,15 +387,22 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
 
                 luas_round = str(round(poli["luas"], 3))
 
-                if feature.attribute("height") != "":
-                    height = feature.attribute("height")
-                else:
+                try:
+                    if(feature.attribute("height") != "" and feature.attribute("height") != "NULL"):
+                        height = float(feature.attribute("height"))
+                    else:
+                        height = 1
+                except:
                     height = 1
 
-                if feature.attribute("rotation") != "":
-                    rotation = feature.attribute("rotation")
-                else:
-                    rotation = 0
+                try:
+                    if(feature.attribute("rotation") != "" and feature.attribute("rotation") != "NULL"):
+                        orientation = float(feature.attribute("rotation"))
+
+                    else:
+                        orientation = 1
+                except:
+                    orientation = 0
             
                 if poli["batas"]:
                     row = {}
@@ -403,8 +417,8 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                             self.dgv_GambarDenah.setItem(row,6,QtWidgets.QTableWidgetItem(str(poli["batas"])))
                             self.dgv_GambarDenah.setItem(row,7,QtWidgets.QTableWidgetItem(str(teks)))
                             self.dgv_GambarDenah.setItem(row,8,QtWidgets.QTableWidgetItem("Tunggal"))
-                            self.dgv_GambarDenah.setItem(row,9,QtWidgets.QTableWidgetItem(height))
-                            self.dgv_GambarDenah.setItem(row,10,QtWidgets.QTableWidgetItem(rotation))
+                            self.dgv_GambarDenah.setItem(row,9,QtWidgets.QTableWidgetItem(str(height)))
+                            self.dgv_GambarDenah.setItem(row,10,QtWidgets.QTableWidgetItem(str(orientation)))
                         else:
                             total_row = self.dgv_GambarDenah.rowCount()
                             self.dgv_GambarDenah.insertRow(total_row)
@@ -419,8 +433,8 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                             self.dgv_GambarDenah.setItem(total_row,6,QtWidgets.QTableWidgetItem(str(poli["batas"])))
                             self.dgv_GambarDenah.setItem(total_row,7,QtWidgets.QTableWidgetItem(str(teks)))
                             self.dgv_GambarDenah.setItem(total_row,8,QtWidgets.QTableWidgetItem("Tunggal"))
-                            self.dgv_GambarDenah.setItem(total_row,9,QtWidgets.QTableWidgetItem(1))
-                            self.dgv_GambarDenah.setItem(total_row,10,QtWidgets.QTableWidgetItem(0))
+                            self.dgv_GambarDenah.setItem(total_row,9,QtWidgets.QTableWidgetItem(str(height)))
+                            self.dgv_GambarDenah.setItem(total_row,10,QtWidgets.QTableWidgetItem(str(orientation)))
 
     def _cmb_propinsi_selected_index_changed(self, index):
         self._set_cmb_kabupaten()
@@ -485,7 +499,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             else:
                 msg = "Koordinat diluar area penggambaran"
         
-        print(self._newApartmentNumber,self._newApartmentNumber,len(self._newApartments))
+        print(self._jumlahBerkasBaru,len(self._newApartments),self._newApartmentNumber)
         if(self._newApartmentNumber > 0):
             if(self._jumlahBerkasBaru + len(self._newApartments) > self._newApartmentNumber):
                 sisa = self._newApartmentNumber - len(self._newApartments)
@@ -586,19 +600,32 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             for x in range(self.dgv_GambarDenah.rowCount()):
                 boundary =  str(self.dgv_GambarDenah.item(x,6).text())
                 text = str(self.dgv_GambarDenah.item(x,7).text())
-                temp = {
-                    "OID": self.dgv_GambarDenah.item(x,0).text(),
-                    "REGID": self.dgv_GambarDenah.item(x,1).text(),
-                    "NOGD": self.dgv_GambarDenah.item(x,2).text(),
-                    "Luast": float(str(self.dgv_GambarDenah.item(x,3).text()).replace(",", ".")),
-                    "Label": self.dgv_GambarDenah.item(x,4).text(),
-                    "Area": float(str(self.dgv_GambarDenah.item(x,5).text()).replace(",", ".")),
-                    "Boundary": ast.literal_eval(boundary) ,
-                    "Text": ast.literal_eval(text),
-                    "Keterangan": self.dgv_GambarDenah.item(x,8).text(),
-                    "Height": float(str(self.dgv_GambarDenah.item(x,9).text()).replace(",", ".")),
-                    "Orientation": float(str(self.dgv_GambarDenah.item(x,10).text()).replace(",", ".")),
-                }
+                regid = self.dgv_GambarDenah.item(x,1).text()
+                if(regid != ""):
+                    temp = {
+                        "OID": self.dgv_GambarDenah.item(x,0).text(),
+                        "REGID": self.dgv_GambarDenah.item(x,1).text(),
+                        "NOGD": self.dgv_GambarDenah.item(x,2).text(),
+                        "Luast": float(str(self.dgv_GambarDenah.item(x,3).text()).replace(",", ".")),
+                        "Label": self.dgv_GambarDenah.item(x,4).text(),
+                        "Area": float(str(self.dgv_GambarDenah.item(x,5).text()).replace(",", ".")),
+                        "Boundary": ast.literal_eval(boundary) ,
+                        "Text": ast.literal_eval(text),
+                        "Keterangan": self.dgv_GambarDenah.item(x,8).text(),
+                        "Height": float(str(self.dgv_GambarDenah.item(x,9).text()).replace(",", ".")),
+                        "Orientation": float(str(self.dgv_GambarDenah.item(x,10).text()).replace(",", ".")),
+                    }
+                else:
+                    temp = {
+                        "OID": self.dgv_GambarDenah.item(x,0).text(),
+                        "Label": self.dgv_GambarDenah.item(x,4).text(),
+                        "Area": float(str(self.dgv_GambarDenah.item(x,5).text()).replace(",", ".")),
+                        "Boundary": ast.literal_eval(boundary) ,
+                        "Text": ast.literal_eval(text),
+                        "Keterangan": self.dgv_GambarDenah.item(x,8).text(),
+                        "Height": float(str(self.dgv_GambarDenah.item(x,9).text()).replace(",", ".")),
+                        "Orientation": float(str(self.dgv_GambarDenah.item(x,10).text()).replace(",", ".")),
+                    }
                 list_data.append(temp)
             self._sts["ApartemenEdit"] = list_data
 
