@@ -35,7 +35,7 @@ class FmImportGambarDenah():
         self._importGambarDenah = True
         self.setup_workpanel()
 
-    def setupFm(self,nomorBerkas,tahunBerkas,gambarUkur,wilayahId,newGugusId,newParcelNumber,newApartmentNumber,newParcels,oldParcels,newApartments, oldApartment,gantiDesa,current_layers = []):
+    def setupFm(self,nomorBerkas,tahunBerkas,gambarUkur,wilayahId,newGugusId,newParcelNumber,newApartmentNumber,newParcels,oldParcels,newApartments, oldApartment,gantiDesa,desa,current_layers = []):
 
         self._nomorBerkas=nomorBerkas
         self._tahunBerkas=tahunBerkas
@@ -49,6 +49,7 @@ class FmImportGambarDenah():
         self._newGugusId=newGugusId
         self._oldApartments = oldApartment
         self._gantiDesa=gantiDesa
+        self._desa = desa
 
         self._gUkurId = ""
         if len(self._gambarUkur) > 0:
@@ -69,7 +70,7 @@ class FmImportGambarDenah():
             self._brs.show()
             self._brs.startBerkas.connect(self.BerkasRumahSusunCall)
         else:
-            self._gdd = DesainGambarDenah(self._importGambarDenah,self._nomorBerkas,self._tahunBerkas,self._kantor_id,"DAG",self._gUkurId,self._wilayahId,self._newGugusId,self._newParcelNumber,self._newApartmentNumber,self._newParcels,self._oldParcels,self._newApartments,self._oldApartments,self._gantiDesa,self._current_layers)
+            self._gdd = DesainGambarDenah(self._importGambarDenah,self._nomorBerkas,self._tahunBerkas,self._kantor_id,"DAG",self._gUkurId,self._wilayahId,self._newGugusId,self._newParcelNumber,self._newApartmentNumber,self._newParcels,self._oldParcels,self._newApartments,self._oldApartments,self._gantiDesa,self._desa,self._current_layers)
             self._gdd.show()
 
     def BerkasRumahSusunCall(self,bs):

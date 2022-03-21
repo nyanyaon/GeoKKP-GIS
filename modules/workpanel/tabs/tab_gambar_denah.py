@@ -52,6 +52,7 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
 
         self._current_layers = []
         self._importGambarDenah = True
+        
         self.cmb_propinsi.currentIndexChanged.connect(
             self._cmb_propinsi_selected_index_changed
         )
@@ -147,6 +148,8 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         for des in desa_dataset["DESA"]:
             self.cmb_desa.addItem(des["DESANAMA"], des["DESAID"])
 
+        
+
     def btnCari_Click(self):
         self._start = 0
         self._count = -1
@@ -190,8 +193,7 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
 
         self.dSet = json.loads(response.content)
 
-        if(self._count == -1):
-            self._count = int(self.dSet["jumlahtotal"][0]["COUNT(1)"])
+        
 
         dataset = Dataset()
         table = dataset.add_table("GAMBARDENAH")
@@ -211,19 +213,39 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             d_row["Desa"] = p["DESA"]
             d_row["Tipe"] = p["TIPEDOKUMENID"]
             d_row["Nomor"] = p["NOMOR"]
-            d_row["Sejak"] = datetime.fromisoformat(p["VALIDSEJAK"])
+            if(p["VALIDSEJAK"] == None):
+                d_row["Sejak"] = ""
+            else:
+                d_row["Sejak"] = datetime.fromisoformat(p["VALIDSEJAK"])
             if(p["VALIDSAMPAI"] == None):
                 d_row["Sampai"] = ""
             else:
-                d_row["Sampai"] = p["VALIDSAMPAI"]
+                d_row["Sampai"] = datetime.fromisoformat(p["VALIDSAMPAI"])
             d_row["Rownums"] = p["ROWNUMS"]
 
-        dataset.render_to_qtable_widget("GAMBARDENAH", self.dgv_GambarDenah,[0,1,2,7])
+        if(self._count == -1):
+            self._count = int(self.dSet["jumlahtotal"][0]["COUNT(1)"])
 
-        # if(dSet["GAMBARDENAH"] != None and len(dSet["GAMBARDENAH"])>0):
-            
-        #     pass
+        dataset.render_to_qtable_widget("GAMBARDENAH", self.dgv_GambarDenah,[0,1,2,7])
     
+        if (self._count > 0 ):
+            print(self._start,self._count,self._limit)
+            if(self._start + self._limit >= self._count):
+                self.txt_paging.setText(str(self._start)+" - " + str(self._count) + " dari " + str(self._count))
+                self.btn_next.setEnabled(False)
+            else:
+                self.txt_paging.setText(str(self._start)+" - " + str(self._limit + self._start) + " dari " + str(self._count))
+                self.btn_next.setEnabled(True)
+        else:
+            self.txt_paging.setText("0")
+            self.btn_next.setEnabled(False)
+            self.btn_prev.setEnabled(False)
+
+        if(self._start == 0 or self._count == 0):
+            self.btn_prev.setEnabled(False)
+        else:
+            self.btn_prev.setEnabled(True)
+
     def prepareBerkas(self):
         self.dgv_GambarDenah.setColumnHidden(0, False)
         item = self.dgv_GambarDenah.selectedItems()
@@ -244,6 +266,8 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
 
         username_state = app_state.get("username", "")
         username = username_state.value
+
+        
 
         dokumenPengukuranId = dataSelect[0]
         response = endpoints.startBerkasSpasialByDokumenPengukuranId(dokumenPengukuranId,self._kantor_id,username)
@@ -270,23 +294,27 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             self.btn_cari.setEnabled(False)
             if(self._bs["newGugusId"]!=""):
                 self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
-            self._txtNomor.setText(item[4].text())
+            self.txt_nomor.setText(item[4].text())
    
-            self._txtNomor.setEnabled(False)
-            self._txtTahun.setEnabled(False)
+            self.txt_nomor.setEnabled(False)
+            self.txt_tahun.setEnabled(False)
             self.btn_cari.setEnabled(False)
             self.btn_mulai.setEnabled(False)
 
             self.btn_informasi.setEnabled(True)
             self.btn_layout.setEnabled(True)
             self.btn_tutup.setEnabled(True)
+
+            self.cmb_propinsi.setEnabled(False)
+            self.cmb_kabupaten.setEnabled(False)
+            self.cmb_kecamatan.setEnabled(False)
+            self.cmb_desa.setEnabled(False)
         else:
             QtWidgets.QMessageBox.warning(
                 None, "GeoKKP", self._bs['errorStack'][0]
             )
             return 
 
-    
     def _load_berkas_spasial(self, gugus_ids, riwayat=False):
         response_spatial_sdo = endpoints.get_spatial_document_sdo([gugus_ids],riwayat)
         response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
@@ -315,6 +343,8 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
                 layer_config["Attributes"][0],
             )
 
+        iface.actionZoomToLayer().trigger()
+
     def Submit(self):
         # replacing_current_layers
         self._current_layers = select_layer_by_regex(r"^\(020110\)*")
@@ -325,6 +355,13 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             return
 
         topo_error_message = []
+
+        self.desa = {
+            "provinsi":[self.cmb_propinsi.currentText(),self.cmb_propinsi.currentData()],
+            "kabupaten":[self.cmb_kabupaten.currentText(),self.cmb_kabupaten.currentData()],
+            "kecamatan":[self.cmb_kecamatan.currentText(),self.cmb_kecamatan.currentData()],
+            "desa":[self.cmb_desa.currentText(),self.cmb_desa.currentData()]      
+        }
 
         for layer in self._current_layers:
             try:
@@ -347,7 +384,21 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             self.desainDenah.setupFmMin()
         else:
             self.desainDenah = FmImportGambarDenah()
-            self.desainDenah.setupFm(self._bs["nomorBerkas"],self._bs["tahunBerkas"],[self._bs["gambarUkurs"]],self._bs["wilayahId"],self._bs["newGugusId"],self._bs["newParcelNumber"],self._bs["newApartmentNumber"],[self._bs["newParcels"]],[self._bs["oldParcels"]],[self._bs["newApartments"]],[self._bs["oldApartments"]],self._bs["gantiDesa"])
+            self.desainDenah.setupFm(
+                self._bs["nomorBerkas"],
+                self._bs["tahunBerkas"],
+                [self._bs["gambarUkurs"]],
+                self._bs["wilayahId"],
+                self._bs["newGugusId"],
+                self._bs["newParcelNumber"],
+                self._bs["newApartmentNumber"],
+                [self._bs["newParcels"]],
+                [self._bs["oldParcels"]],
+                [self._bs["newApartments"]],
+                [self._bs["oldApartments"]],
+                self._bs["gantiDesa"],
+                self.desa
+                )
 
     
     def ImportGambarDenahCall(self):
@@ -360,17 +411,16 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self.refresh_grid()
 
     def btnPrev_click(self):
-        self._start = self._start - self._limit 
+        self._start -= self._limit 
         if(self._start <= 0):
             self.btn_prev.setEnabled(False)
         self.btn_next.setEnabled(True)
-
         self.refresh_grid()
 
     def btnNext_click(self):
-        self._start = self._limit + self._start
+        self._start += self._limit
         if(self._start + self._limit >= self._count):
-            self.btn_next.setEnabled = False
+            self.btn_next.setEnabled(False)
         self.btn_prev.setEnabled(True)
         self.refresh_grid()
 
@@ -385,12 +435,17 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self.refresh_grid()
 
     def StopProcess(self):
-        username_state = app_state.get("username", "")
-        username = username_state.value
-        response = endpoints.stop_berkas(self._bs['nomorBerkas'],self._bs["tahunBerkas"],username)
-        print(json.loads(response.content))
+        response = endpoints.stop_berkas(self._bs['nomorBerkas'],self._bs["tahunBerkas"],self._kantor_id)
         self._bs = None
         self._importGambarDenah = True
+
+        if(json.loads(response.content) is False):
+            QtWidgets.QMessageBox.information(
+                None,
+                "GeoKKP Web",
+                "Berkas gagal di stop",
+            )
+            return
 
         self.btn_informasi.setEnabled(False)
         self.btn_layout.setEnabled(False)
@@ -399,6 +454,17 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self.txt_tahun.setEnabled(True)
         self.btn_cari.setEnabled(True)
         self.btn_mulai.setEnabled(True)
+
+        self.cmb_propinsi.setEnabled(True)
+        self.cmb_kabupaten.setEnabled(True)
+        self.cmb_kecamatan.setEnabled(True)
+        self.cmb_desa.setEnabled(True)
+
+        QtWidgets.QMessageBox.information(
+                None,
+                "GeoKKP Web",
+                "Berkas berhasil di stop",
+        )
 
         
             
