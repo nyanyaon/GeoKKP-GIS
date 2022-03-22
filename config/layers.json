@@ -938,7 +938,7 @@
             "Kode": "Lb_Rincikan",
             "Nama Layer": "(Lb_Rincikan) Garis Rincikan",
             "Tipe Layer": "Polygon",
-            "Style Path": "simplepersil.qml",
+            "Style Path": "rincikan.qml",
             "Attributes": [
                {
                   "key": "String",
