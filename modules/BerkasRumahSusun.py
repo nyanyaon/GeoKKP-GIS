@@ -67,7 +67,7 @@ class BerkasRumahSusun(QtWidgets.QDialog, FORM_CLASS):
                 self.txt_paging.setText(str(self._start)+" - " + str(self._count + self._start) + " dari " + str(self._count))
                 self.btn_next.setEnabled(True)
         else:
-            self.txt_paging = "0"
+            self.txt_paging.setText("0")
             self.btn_next.setEnabled(False)
             self.btn_prev.setEnabled(False)
 
