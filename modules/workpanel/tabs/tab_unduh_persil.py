@@ -399,9 +399,7 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
             self.lbl_wilayah_induk.setVisible(True)
 
     def DownloadAll(self):
-
         try:
-
             self.toolbar_inbox.setEnabled(False)
             self.btn_cari.setEnabled(False)
             self.chb_per_kabupaten.setEnabled(False)
@@ -491,3 +489,4 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
     def DownloadRadius(self):
         downloadPersil = DownloadPersilSekitar()
         downloadPersil.show()
+      
