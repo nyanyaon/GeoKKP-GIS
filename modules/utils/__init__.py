@@ -994,8 +994,8 @@ def add_bintang(coords):
     for coord in coords:
         print(coord)
         feature = QgsFeature()
-        point = QgsPoint(coord[0], coord[1])
-        feature.setGeometry(QgsGeometry.fromPoint(point))
+        point = QgsPointXY(coord[0], coord[1])
+        feature.setGeometry(QgsGeometry.fromPointXY(point))
         features.append(feature)
     data_profider.addFeatures(features)
     layer.commitChanges()

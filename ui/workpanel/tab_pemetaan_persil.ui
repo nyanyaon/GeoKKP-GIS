@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>477</height>
+    <height>572</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -420,7 +420,49 @@
               </widget>
              </item>
              <item row="2" column="1">
-              <widget class="QComboBox" name="cmb_nama_persil"/>
+              <widget class="QComboBox" name="cmb_nama_persil">
+               <property name="editable">
+                <bool>true</bool>
+               </property>
+               <property name="currentIndex">
+                <number>-1</number>
+               </property>
+               <item>
+                <property name="text">
+                 <string>Sungai</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Selokan</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Jalan</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Taman</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Trotoar</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Jembatan</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Lainnya</string>
+                </property>
+               </item>
+              </widget>
              </item>
             </layout>
            </item>

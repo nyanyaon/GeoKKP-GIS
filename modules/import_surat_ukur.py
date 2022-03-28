@@ -965,6 +965,33 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
         sd["status"] = True
         self.processed.emit(sd)
 
+    def _get_sdo_linestring(self, feature, srid=24091960):
+        geom = {}
+        geom["ElemArrayOfInts"] = None
+        geom["OrdinatesArrayOfDoubles"] = None
+        geom["Dimensionality"] = 0
+        geom["LRS"] = 0
+        geom["GeometryType"] = 0
+        geom["SdoElemInfo"] = [1, 2, 1]
+        geom["SdoGtype"] = 2002
+        geom["SdoSRID"] = srid
+        geom["SdoSRIDAsInt"] = srid
+        geom["SdoPoint"] = None
+
+        if feature.geometry().isMultipart():
+            linestrings = feature.geometry().asMultiPolyline()
+        else:
+            linestrings = [feature.geometry().asPolyline()]
+
+        coordinates = []
+        for linestring in linestrings:
+            for point in linestring:
+                coordinates.append(point.x())
+                coordinates.append(point.y())
+        geom["SdoOrdinates"] = coordinates
+
+        return geom
+
 
 
 
