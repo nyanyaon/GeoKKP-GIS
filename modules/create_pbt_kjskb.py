@@ -244,8 +244,6 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
         for i in [0,1,2,3]:
             self.dgv_inbox_pbt.setColumnHidden(i,True)
         print(selected_item)
-        print(selected_item[8].text())
-        print(type(selected_item[8].text()))
 
         if (len(selected_item) > 0) and (selected_item[8].text() == "None"):
             tandaterima = selected_item[4].text()
