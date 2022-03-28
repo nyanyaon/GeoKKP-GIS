@@ -154,10 +154,15 @@ class UploadPersilMasif(QtWidgets.QDialog, FORM_CLASS):
 
     def _cmb_desa_selected_index_changed(self):
         row = self.cmb_desa.currentData()
-        if "ZONATM3" in row and row["ZONATM3"]:
-            crs = f"TM3-{row['ZONATM3']}"
-            self.cmb_coordinate_system.setCurrentText(crs)
-            self.cmb_coordinate_system.setDisabled(True)
+        print("row desa:",row)
+        self.cmb_coordinate_system.setDisabled(False)
+        if row:
+            if "ZONATM3" in row and row["ZONATM3"]:
+                crs = f"TM3-{row['ZONATM3']}".replace(",",".")
+                self.cmb_coordinate_system.setCurrentText(crs)
+                self.cmb_coordinate_system.setDisabled(True)
+            else:
+                self.cmb_coordinate_system.setDisabled(False)
         else:
             self.cmb_coordinate_system.setDisabled(False)
 
@@ -203,6 +208,7 @@ class UploadPersilMasif(QtWidgets.QDialog, FORM_CLASS):
         self.cmb_desa.clear()
         for des in desa_dataset["DESA"]:
             self.cmb_desa.addItem(des["DESANAMA"], des)
+        self._cmb_desa_selected_index_changed()
 
     def _btn_import_click(self):
         pegawai_state = app_state.get("pegawai", {})
