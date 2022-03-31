@@ -878,10 +878,29 @@ def get_wilayah_ptsl_skb(kantor_id):
 @api(endpoint="GetTandaTerimaPtslSkb")
 def get_tanda_terima_ptsl_skb(kantor_id, nomor, tahun, program_id, surveyor_id, wilayah_id):
     return {
-        "kantorId":  kantor_id,
+        "kantorId": kantor_id,
         "nomor": nomor,
         "tahun": tahun,
         "programId": program_id,
         "surveyorId": surveyor_id,
         "wilayahId": wilayah_id
+    }
+
+@api(endpoint="tolakPBTForPtslSkb")
+def tolak_pbt_for_ptsl_skb(user_id, kantor_id, tandaterima_id, catatan):
+    return{
+        "userId": user_id,
+        "kantorId": kantor_id,
+        "tandaterimaId": tandaterima_id,
+        "catatan": catatan
+    }
+
+@api(endpoint="createNewPBTForPtslSkb")
+def create_new_pbt_for_ptsl_skb(user_id,program_id,wilayah_id,surveyor_id,tandaterima_id):
+    return{
+        "userId": user_id,
+        "programId": program_id,
+        "wilayahId": wilayah_id,
+        "surveyorId": surveyor_id,
+        "tandaterimaId": tandaterima_id
     }
