@@ -51,6 +51,8 @@ class GeoKKPDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.setupUi(self)
         self.project = QgsProject
 
+        print("Hola")
+
         self.mulaiGeokkp.clicked.connect(self.mulai)
         self.bantuanGeokkp.clicked.connect(self.bantuan)
 

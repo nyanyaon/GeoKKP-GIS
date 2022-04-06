@@ -836,7 +836,7 @@ class GeoKKP:
 
         # remove the dockwidget
         if self.workpanel is not None:
-            print("not none")
+            # print("not none")
             del self.workpanel
 
         # remove the toolbar
