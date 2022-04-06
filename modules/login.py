@@ -1,3 +1,4 @@
+import configparser
 import os
 import json
 
@@ -14,6 +15,7 @@ from .utils import (
     dialogBox,
     get_saved_credentials,
     save_credentials,
+    addIndonesia,
 )
 
 from .api import endpoints
@@ -39,8 +41,13 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
 
         self.postlogin = PostLoginDock()
-
         self.bar = QgsMessageBar()
+
+        config = configparser.ConfigParser()
+        config.read(os.path.join(os.path.dirname(__file__), "..", 'metadata.txt'))
+        version = config.get('general', 'version')        
+        self.teksVersi.setText("<p>Versi <a href='https://github.com/danylaksono/GeoKKP-GIS'> \
+            <span style='text-decoration: underline; color:#009da5;'>" + version + "</span></a></p>")
 
         # login action
         self.buttonBoxLogin.clicked.connect(self.doLoginRequest)
@@ -69,7 +76,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
 
         username = self.inputUsername.text()
         password = self.inputPassword.text()
-        logMessage(f"{username}, {password}")
+        # logMessage(f"{username}, {password}")
         try:
             response = endpoints.login(username, password)
             content = json.loads(response.content)
@@ -105,7 +112,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         except Exception as e:
             print(e)
             dialogBox(
-                "Gagal mengambil status data e sertifikat dari server",
+                "Gagal mengambil status data e-sertifikat dari server",
                 "Koneksi Bermasalah",
                 "Warning",
             )
@@ -152,6 +159,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         app_state.set("logged_in", True)
         if not QgsProject.instance().mapLayersByName("Google Satellite"):
             add_google_basemap()
+        addIndonesia()
         # if self.postlogin is None:
         #     self.postlogin = PostLoginDock()
         # # show the dialog

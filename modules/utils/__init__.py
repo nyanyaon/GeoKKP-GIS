@@ -207,6 +207,15 @@ def add_google_basemap():
     url = "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
     loadXYZ(url, "Google Satellite")
 
+def addIndonesia():
+    """
+    batas daerah Indonesia untuk zoom awal
+    """
+    Indonesia = os.path.join(os.path.dirname(__file__), "../../data/indonesia.geojson")
+    Indonesialayer = iface.addVectorLayer(Indonesia, "Indonesia", "ogr")
+    iface.mapCanvas().setExtent(Indonesialayer.extent())
+    iface.mapCanvas().refresh()
+
 
 def activate_editing(layer):
     """

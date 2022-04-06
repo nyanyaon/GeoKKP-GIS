@@ -51,7 +51,7 @@ class Initialize:
         data = json.load(f)
 
         # print("initt", data)
-        dialogBox("Plugin GeoKKP berhasil dimuat")
+        # dialogBox("Plugin GeoKKP berhasil dimuat")
         f.close()
         storeSetting("layers", data["layers"])
 
