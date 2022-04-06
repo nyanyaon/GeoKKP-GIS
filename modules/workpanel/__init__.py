@@ -1,3 +1,4 @@
+import configparser
 import os
 import json
 
@@ -54,12 +55,20 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         self.setWindowIcon(icon("icon.png"))
         self.stackedWidget.setCurrentIndex(0)
 
+        print("HOLE")
+
         self.project = QgsProject
         self.loginaction = LoginDialog()
 
         self._main_dock = None
         self._main_tab = None
         self._setup_workpanel()
+
+        config = configparser.ConfigParser()
+        config.read(os.path.join(os.path.dirname(__file__), "..", "..", 'metadata.txt'))
+        version = config.get('general', 'version')        
+        self.teksVersi.setText("<p>Versi <a href='https://github.com/danylaksono/GeoKKP-GIS'> \
+            <span style='text-decoration: underline; color:#009da5;'>" + version + "</span></a></p>")
 
         self.mulaiGeokkp.clicked.connect(self.login_geokkp)
         self.bantuanGeokkp.clicked.connect(self.openhelp)

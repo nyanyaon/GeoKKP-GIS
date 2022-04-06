@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>559</width>
+    <width>437</width>
     <height>543</height>
    </rect>
   </property>
@@ -39,7 +39,7 @@
        <bool>false</bool>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="welcome_dock">
        <layout class="QGridLayout" name="gridLayout_15">
@@ -471,7 +471,13 @@ color:rgb(23, 145, 205)</string>
              </spacer>
             </item>
             <item>
-             <widget class="QLabel" name="lblTermsOfService">
+             <widget class="QLabel" name="teksVersi">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>600</height>
+               </size>
+              </property>
               <property name="text">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Versi &lt;a href=&quot;https://github.com/danylaksono/GeoKKP-GIS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#009da5;&quot;&gt;1.1.4&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
