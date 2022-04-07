@@ -1,6 +1,7 @@
 import csv
 import os
 import math
+from .utils import logMessage
 
 from qgis.PyQt import uic, QtGui  # , QtCore
 from qgis.PyQt.QtWidgets import QFileDialog, QDialog, QTableWidgetItem, QSizePolicy
@@ -477,7 +478,7 @@ class AzDistanceDialog(QDialog, FORM_CLASS):
                 for titik in list_titik:
                     writer.writerow(titik)
         except IOError:
-            print("I/O Error occured")
+            logMessage("I/O Error occured")
 
     def validate_az(self, az_str):
         message = """

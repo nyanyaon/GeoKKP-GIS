@@ -347,8 +347,8 @@ class GeoKKP:
 
         # ======== Menu: Buat Layer ========
         self.add_action(
-            iconPath("buatlayer.png"),
-            text=self.tr(u"Ubah Layer"),
+            iconPath("ubahlayer.png"),
+            text=self.tr(u"Ubah ke Layer"),
             callback=self.convert_layers,
             parent=self.iface.mainWindow().menuBar(),
         )
@@ -414,71 +414,6 @@ class GeoKKP:
         # Register menu to toolbar
         self.toolbar.addWidget(self.AddDataButton)
         self.menu.addMenu(self.popupAddData)
-        # -------------------------------------------
-
-        # ======== Dropdown Menu: Dimensi ========
-        # Deklarasi menu dimensi
-        self.popupDimension = QMenu("&Dimensi", self.iface.mainWindow())
-
-        #  --- Sub-menu Dimensi Jarak ---
-        self.actionDistanceDimension = self.add_action(
-            icon("dimension_distance.png"),
-            text=self.tr(u"Dimensi Jarak"),
-            callback=self.dimension_distance,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            checkable=True,
-            parent=self.popupDimension,
-        )
-        self.popupDimension.addAction(self.actionDistanceDimension)
-
-        #  --- Sub-menu Dimensi Sudut ---
-        self.actionAngleDimension = self.add_action(
-            icon("dimension_angle.png"),
-            text=self.tr(u"Dimensi Sudut"),
-            callback=self.dimension_angle,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            checkable=True,
-            parent=self.popupDimension,
-        )
-        self.popupDimension.addAction(self.actionAngleDimension)
-
-        #  --- Sub-menu Dimensi Titik ---
-        self.actionPointDimension = self.add_action(
-            icon("dimension_point.png"),
-            text=self.tr(u"Dimensi Titik"),
-            callback=self.dimension_point,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            checkable=True,
-            parent=self.popupDimension,
-        )
-        self.popupDimension.addAction(self.actionPointDimension)
-
-        #  --- Sub-menu Toggle Titik Batas Persil ---
-        self.actionTitikPersil = self.add_action(
-            icon("titik_persil.png"),
-            text=self.tr(u"Titik Batas Persil"),
-            callback=self.toggle_titik_persil,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            checkable=True,
-            need_auth=False,
-            parent=self.popupDimension,
-        )
-        self.popupDimension.addAction(self.actionTitikPersil)
-
-        # Pengaturan Dropdown menu Dimensi
-        self.DimensionButton = QToolButton()
-        self.DimensionButton.setMenu(self.popupDimension)
-        # self.DimensionButton.setIcon(icon("dimension.png"))
-        # self.DimensionButton.setToolTip("Dimension")
-        self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
-        self.DimensionButton.setPopupMode(QToolButton.MenuButtonPopup)
-        # Register menu to toolbar
-        self.toolbar.addWidget(self.DimensionButton)
-        self.menu.addMenu(self.popupDimension)
         # -------------------------------------------
 
         # ======== Dropdown Menu: Penggambaran ========
@@ -552,6 +487,71 @@ class GeoKKP:
         self.menu.addMenu(self.popupDraw)
         # -------------------------------------------
 
+        # ======== Dropdown Menu: Dimensi ========
+        # Deklarasi menu dimensi
+        self.popupDimension = QMenu("&Dimensi", self.iface.mainWindow())
+
+        #  --- Sub-menu Dimensi Jarak ---
+        self.actionDistanceDimension = self.add_action(
+            icon("dimension_distance.png"),
+            text=self.tr(u"Dimensi Jarak"),
+            callback=self.dimension_distance,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            checkable=True,
+            parent=self.popupDimension,
+        )
+        self.popupDimension.addAction(self.actionDistanceDimension)
+
+        #  --- Sub-menu Dimensi Sudut ---
+        self.actionAngleDimension = self.add_action(
+            icon("dimension_angle.png"),
+            text=self.tr(u"Dimensi Sudut"),
+            callback=self.dimension_angle,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            checkable=True,
+            parent=self.popupDimension,
+        )
+        self.popupDimension.addAction(self.actionAngleDimension)
+
+        #  --- Sub-menu Dimensi Titik ---
+        self.actionPointDimension = self.add_action(
+            icon("dimension_point.png"),
+            text=self.tr(u"Dimensi Titik"),
+            callback=self.dimension_point,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            checkable=True,
+            parent=self.popupDimension,
+        )
+        self.popupDimension.addAction(self.actionPointDimension)
+
+        #  --- Sub-menu Toggle Titik Batas Persil ---
+        self.actionTitikPersil = self.add_action(
+            icon("titik_persil.png"),
+            text=self.tr(u"Titik Batas Persil"),
+            callback=self.toggle_titik_persil,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            checkable=True,
+            need_auth=False,
+            parent=self.popupDimension,
+        )
+        self.popupDimension.addAction(self.actionTitikPersil)
+
+        # Pengaturan Dropdown menu Dimensi
+        self.DimensionButton = QToolButton()
+        self.DimensionButton.setMenu(self.popupDimension)
+        # self.DimensionButton.setIcon(icon("dimension.png"))
+        # self.DimensionButton.setToolTip("Dimension")
+        self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
+        self.DimensionButton.setPopupMode(QToolButton.MenuButtonPopup)
+        # Register menu to toolbar
+        self.toolbar.addWidget(self.DimensionButton)
+        self.menu.addMenu(self.popupDimension)
+        # -------------------------------------------
+
         # ======== Dropdown Menu: Validasi ========
         # Deklarasi menu validasi
         self.popupValidasi = QMenu("&Validasi", self.iface.mainWindow())
@@ -588,15 +588,6 @@ class GeoKKP:
         # Register menu to toolbar
         self.toolbar.addWidget(self.ValidasiButton)
         self.menu.addMenu(self.popupValidasi)
-        # -------------------------------------------
-
-        # ======== Menu: Layout ========
-        self.add_action(
-            iconPath("layout.png"),
-            text=self.tr(u"Buka Layout Pencetakan"),
-            callback=self.print_layout,
-            parent=self.iface.mainWindow().menuBar(),
-        )
         # -------------------------------------------
 
         # ======== Dropdown Menu: Peralatan ========
@@ -690,7 +681,7 @@ class GeoKKP:
 
         # ======== Menu: Import Admin ========
         self.add_action(
-            iconPath("pentagon.png"),
+            iconPath("carialamat.png"),
             text=self.tr(u"Import Wilayah Administrasi"),
             callback=self.import_admin,
             parent=self.iface.mainWindow().menuBar(),
@@ -700,9 +691,19 @@ class GeoKKP:
         # ======== Menu: KJSKB ========
         self.add_action(
             # TODO: replace icon
-            iconPath("pentagon.png"),
+            iconPath("checked.png"),
             text=self.tr(u"Persetujuan Peta Bidang KJSKB"),
             callback=self.create_pbt_kjskb,
+            parent=self.iface.mainWindow().menuBar(),
+        )
+        # -------------------------------------------
+
+        
+        # ======== Menu: Layout ========
+        self.add_action(
+            iconPath("layout.png"),
+            text=self.tr(u"Buat Layout Pencetakan"),
+            callback=self.print_layout,
             parent=self.iface.mainWindow().menuBar(),
         )
         # -------------------------------------------
@@ -1033,7 +1034,7 @@ class GeoKKP:
         try:
             self.iface.showAttributeTable(self.iface.activeLayer())
         except Exception as e:
-            dialogBox(e)
+            dialogBox("Layer aktif bukan vektor atau tidak ada layer aktif")
 
     def toggle_titik_persil(self):
         # check whether batas persil layer (020100) is loaded
@@ -1244,7 +1245,7 @@ class GeoKKP:
         pass
 
     def show_workpanel(self):
-        print("Show Workpanel")
+        # print("Show Workpanel")
         login_state = app_state.get("logged_in")
         if not login_state.value:
             return
@@ -1309,7 +1310,7 @@ class GeoKKP:
 
     def set_symbology(self, layer, qml):
         uri = os.path.join(os.path.dirname(__file__), "styles/" + qml)
-        print(uri)
+        # print(uri)
         layer.loadNamedStyle(uri)
 
     def set_dimension_style(self):

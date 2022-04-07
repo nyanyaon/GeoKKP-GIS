@@ -55,8 +55,6 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         self.setWindowIcon(icon("icon.png"))
         self.stackedWidget.setCurrentIndex(0)
 
-        print("HOLE")
-
         self.project = QgsProject
         self.loginaction = LoginDialog()
 

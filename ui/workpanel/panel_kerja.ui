@@ -7,13 +7,19 @@
     <x>0</x>
     <y>0</y>
     <width>437</width>
-    <height>543</height>
+    <height>453</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
     <width>437</width>
-    <height>543</height>
+    <height>441</height>
    </size>
   </property>
   <property name="focusPolicy">
@@ -39,9 +45,15 @@
        <bool>false</bool>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="welcome_dock">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <layout class="QGridLayout" name="gridLayout_15">
         <item row="0" column="0">
          <layout class="QVBoxLayout" name="verticalLayout">
@@ -472,17 +484,29 @@ color:rgb(23, 145, 205)</string>
             </item>
             <item>
              <widget class="QLabel" name="teksVersi">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>600</height>
+                <height>500</height>
                </size>
               </property>
               <property name="text">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Versi &lt;a href=&quot;https://github.com/danylaksono/GeoKKP-GIS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#009da5;&quot;&gt;1.1.4&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
+              <property name="scaledContents">
+               <bool>true</bool>
+              </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
+              </property>
+              <property name="wordWrap">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -509,9 +533,18 @@ color:rgb(23, 145, 205)</string>
        </layout>
       </widget>
       <widget class="QWidget" name="main_dock">
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>650</height>
+        </size>
+       </property>
        <layout class="QGridLayout" name="gridLayout_7">
         <item row="0" column="0">
          <layout class="QVBoxLayout" name="Layout">
+          <property name="sizeConstraint">
+           <enum>QLayout::SetMaximumSize</enum>
+          </property>
           <item>
            <widget class="QTabWidget" name="main_tab">
             <property name="sizePolicy">

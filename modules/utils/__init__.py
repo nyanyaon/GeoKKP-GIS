@@ -207,6 +207,21 @@ def add_google_basemap():
     url = "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
     loadXYZ(url, "Google Satellite")
 
+def addIndonesia():
+    """
+    batas daerah Indonesia untuk zoom awal
+    """
+    Indonesia = os.path.join(os.path.dirname(__file__), "../../data/indonesia.geojson") 
+    if not QgsProject.instance().mapLayersByName("Indonesia"):
+        Indonesialayer = iface.addVectorLayer(Indonesia, "Indonesia", "ogr")
+    rect = QgsRectangle(95.01465904879074742, -10.92107512532208702, 140.97716190709050466, 5.91010159644157262)
+    iface.mapCanvas().setExtent(rect)
+    iface.mapCanvas().refresh()
+
+def deleteLayerbyName(layername):
+    to_be_deleted = QgsProject.instance().mapLayersByName(layername)[0]
+    # QgsProject.instance().layerTreeRoot().removeLayer(to_be_deleted)
+    QgsProject.instance().removeMapLayer(to_be_deleted.id())
 
 def activate_editing(layer):
     """
