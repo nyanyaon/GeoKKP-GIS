@@ -97,7 +97,7 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
         self._ds_program = Dataset(response.content)
         response_json = json.loads(response.content)
 
-        print(response_json)
+        # print(response_json)
 
         dt_program = DataTable()
         dt_program.add_column("PROGRAMID")
@@ -135,7 +135,7 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
             self._program_id = self.cmb_program.currentData()
 
             drs_surveyor = self._select_rows(self._ds_program["PROGRAM"], "PROGRAMID", self._program_id)
-            print("drs_surveyor:", drs_surveyor)
+            # print("drs_surveyor:", drs_surveyor)
 
             dt_surveyor = DataTable()
             dt_surveyor.add_column("SURVEYORID")
@@ -154,7 +154,7 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
             
             self.cmb_surveyor.clear()
             for row in dt_surveyor.rows:
-                print(row)
+                # print(row)
                 self.cmb_surveyor.addItem(row["NAMA"], row["SURVEYORID"])
     
     def _cmb_surveyor_index_changed(self):
@@ -327,9 +327,9 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
         selected_item = self.dgv_inbox_pbt.selectedItems()
         self.dgv_inbox_pbt.setColumnHidden(0,True)
         self._tandaterima_id = selected_item[0].text()
-        print("tanda terima id:",self._tandaterima_id)
+        # print("tanda terima id:",self._tandaterima_id)
         catatan = self.txt_catatan.toPlainText()
-        print(catatan)
+        # print(catatan)
         if catatan == "":
             QtWidgets.QMessageBox.warning(
                 None, "GeoKKP", "Catatan belum terisi!"
@@ -349,7 +349,7 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
         )
 
         batal = json.loads(responses.content)
-        print(batal)
+        # print(batal)
         if batal != "Sukses":
             QtWidgets.QMessageBox.critical(
                 None, "Error!", "Proses penolakan tidak berhasil!"
@@ -398,7 +398,7 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
                 self._tandaterima_id
             )
             pbt = json.loads(responses.content)
-            print(pbt)
+            # print(pbt)
             if not pbt["ErrorStack"] and len(pbt["ErrorStack"]) == 0:
                 nomor = pbt["Nomor"]
                 tahun = pbt["Tahun"]

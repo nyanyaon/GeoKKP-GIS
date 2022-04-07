@@ -38,6 +38,9 @@ class Initialize:
         self.simpan_boundary_settings()
         self.simpan_default_layout_settings()
 
+        # a workaround
+        self.iface.mainWindow().showMaximized()
+
     def set_locale(self):
         locale.setlocale(locale.LC_NUMERIC, "en_US")
 

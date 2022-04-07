@@ -53,13 +53,13 @@ class BerkasRumahSusun(QtWidgets.QDialog, FORM_CLASS):
         self._tipe_kantor_id = str(kantor["tipeKantorId"])
         response = endpoints.getBerkasHMSRS(self._txtNomor,self._txtTahun,self._kantor_id,self._start,self._limit,self._count)
         self.dSet = json.loads(response.content)
-        print(self.dSet)
+        # print(self.dSet)
 
         if(self._count == -1 ):
             self._count = int(str(self.dSet["JUMLAHTOTAL"][0]["COUNT(1)"]))
         
         if (self._count > 0 ):
-            print(self._start,self._count,self._limit)
+            # print(self._start,self._count,self._limit)
             if(self._start + self._limit >= self._count):
                 self.txt_paging.setText(str(self._start)+" - " + str(self._count) + " dari " + str(self._count))
                 self.btn_next.setEnabled(False)

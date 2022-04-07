@@ -160,6 +160,9 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         if not QgsProject.instance().mapLayersByName("Google Satellite"):
             add_google_basemap()
         addIndonesia()
+        #    indonesia = QgsProject.instance().mapLayersByName("Indonesia")[0]
+        #    self.iface.mapCanvas().setExtent(indonesia.extent())
+        #    self.iface.mapCanvas().refresh()
         # if self.postlogin is None:
         #     self.postlogin = PostLoginDock()
         # # show the dialog

@@ -1245,7 +1245,7 @@ class GeoKKP:
         pass
 
     def show_workpanel(self):
-        print("Show Workpanel")
+        # print("Show Workpanel")
         login_state = app_state.get("logged_in")
         if not login_state.value:
             return
@@ -1310,7 +1310,7 @@ class GeoKKP:
 
     def set_symbology(self, layer, qml):
         uri = os.path.join(os.path.dirname(__file__), "styles/" + qml)
-        print(uri)
+        # print(uri)
         layer.loadNamedStyle(uri)
 
     def set_dimension_style(self):
