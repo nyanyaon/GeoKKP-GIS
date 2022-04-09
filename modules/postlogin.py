@@ -45,6 +45,8 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
         self.project = QgsProject
 
+        
+
         # login_state = app_state.get('logged_in')
 
         for panel in self.iface.mainWindow().findChildren(QDockWidget):
@@ -98,7 +100,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         self.accept()
         if self.atur_lokasi is None:
             self.atur_lokasi = PengaturanLokasiDialog()
-        add_google_basemap()
+        # add_google_basemap()
         self.atur_lokasi.show()
 
     def simpanKantorSettings(self):

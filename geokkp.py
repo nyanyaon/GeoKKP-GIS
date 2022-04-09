@@ -382,6 +382,30 @@ class GeoKKP:
 
         self.popupAddData.addSeparator()
 
+        # ======== Menu: Import Admin ========
+        """
+        self.add_action(
+            iconPath("carialamat.png"),
+            text=self.tr(u"Import Wilayah Administrasi"),
+            callback=self.import_admin,
+            parent=self.iface.mainWindow().menuBar(),
+        )
+        """
+        # -------------------------------------------
+
+        #  --- Sub-menu Import Admin ---
+        self.actionImportAdmin = self.add_action(
+            icon("carialamat.png"),
+            text=self.tr(u"Import Wilayah Administrasi"),
+            callback=self.import_admin,
+            add_to_toolbar=False,
+            parent=self.popupAddData,
+            add_to_menu=False,
+        )
+        self.popupAddData.addAction(self.actionImportAdmin)
+
+        self.popupAddData.addSeparator()
+
         #  --- Sub-menu Tambah Basemap ---
         self.actionTambahBasemap = self.add_action(
             icon("basemap.png"),
@@ -679,14 +703,6 @@ class GeoKKP:
         )
         self.popupPeralatan.addAction(self.actionFeatureSearch)
 
-        # ======== Menu: Import Admin ========
-        self.add_action(
-            iconPath("carialamat.png"),
-            text=self.tr(u"Import Wilayah Administrasi"),
-            callback=self.import_admin,
-            parent=self.iface.mainWindow().menuBar(),
-        )
-        # -------------------------------------------
 
         # ======== Menu: KJSKB ========
         self.add_action(
@@ -927,6 +943,8 @@ class GeoKKP:
             if layer.name() == "(20400) Dimensi Pengukuran":
                 self.dimension_layer = layer
                 break
+        """
+        # debugging this
         if not self.dimension_layer:
             self.iface.messageBar().pushMessage(
                 "Peringatan",
@@ -934,6 +952,7 @@ class GeoKKP:
                 level=Qgis.Warning,
             )
             return
+        """
         # enable last chosen tools as default in toolbar
         self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
         self.actionDistanceDimension.setChecked(True)

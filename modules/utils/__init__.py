@@ -30,7 +30,6 @@ from qgis.core import (
     QgsAuthMethodConfig,
     QgsProcessingFeatureSourceDefinition,
     QgsDxfExport,
-    QgsRectangle,
     QgsFeatureRequest
 )
 from qgis.utils import iface
@@ -188,7 +187,6 @@ def get_tm3_zone(long):
         denom = 1
     return f"{nom}.{denom}"
 
-
 def loadXYZ(url, name):
     """
     Memuat layer dalam bentuk XYZ Tile
@@ -206,17 +204,6 @@ def add_google_basemap():
     """
     url = "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
     loadXYZ(url, "Google Satellite")
-
-def addIndonesia():
-    """
-    batas daerah Indonesia untuk zoom awal
-    """
-    Indonesia = os.path.join(os.path.dirname(__file__), "../../data/indonesia.geojson") 
-    if not QgsProject.instance().mapLayersByName("Indonesia"):
-        Indonesialayer = iface.addVectorLayer(Indonesia, "Indonesia", "ogr")
-    rect = QgsRectangle(95.01465904879074742, -10.92107512532208702, 140.97716190709050466, 5.91010159644157262)
-    iface.mapCanvas().setExtent(rect)
-    iface.mapCanvas().refresh()
 
 def deleteLayerbyName(layername):
     to_be_deleted = QgsProject.instance().mapLayersByName(layername)[0]
@@ -579,7 +566,7 @@ def add_layer(layername, type, symbol=None, fields=None, crs=None, parent=None):
             field_list.append(field)
     if symbol:
         symbolurl = os.path.join(os.path.dirname(__file__), "../../styles/" + symbol)
-        print(symbolurl)
+        # print(symbolurl)
         layer.loadNamedStyle(symbolurl)
 
     layer_dataprovider.addAttributes(field_list)
@@ -595,10 +582,10 @@ def resolve_path(name, basepath=None):
 
 
 def set_project_crs_by_epsg(epsg):
-    print(epsg)
     try:
         crs = QgsCoordinateReferenceSystem(epsg)
         QgsProject.instance().setCrs(crs)
+        # print(epsg)
     except Exception as e:
         print(e)
 
@@ -686,9 +673,9 @@ def draw_rect_bound(xMin, yMin, xMax, yMax, epsg, nama="Blok NLP"):
     QgsProject.instance().addMapLayer(layer)
 
     rect = QgsRectangle(xMin, yMin, xMax, yMax)
-    print(rect)
+    # print(rect)
     polygon = QgsGeometry.fromRect(rect)
-    print(polygon)
+    # print(polygon)
 
     feature = QgsFeature()
     feature.setGeometry(polygon)
@@ -1007,7 +994,7 @@ def add_bintang(coords):
     data_profider = layer.dataProvider()
     features = []
     for coord in coords:
-        print(coord)
+        # print(coord)
         feature = QgsFeature()
         point = QgsPointXY(coord[0], coord[1])
         feature.setGeometry(QgsGeometry.fromPointXY(point))
