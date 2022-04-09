@@ -5,17 +5,18 @@ import json
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
-from qgis.core import Qgis, QgsProject
+from qgis.core import Qgis, QgsProject, QgsRectangle
 from qgis.gui import QgsMessageBar
 
 from .utils import (
     add_google_basemap,
+    get_project_crs,
+    set_project_crs_by_epsg,
     storeSetting,
     logMessage,
     dialogBox,
     get_saved_credentials,
     save_credentials,
-    addIndonesia,
 )
 
 from .api import endpoints
@@ -88,7 +89,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 if self.checkboxSaveLogin.isChecked():
                     save_credentials(username, password)
                     storeSetting("isLoggedIn", content["status"])
-                logMessage(str(content))
+                # logMessage(str(content))
                 self.iface.messageBar().pushMessage(
                     "Login Pengguna Berhasil:", username, level=Qgis.Success
                 )
@@ -97,7 +98,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.getKantorProfile(username)
                 self.get_user(username)
         except Exception as e:
-            print(e)
+            # print(e)
             dialogBox(
                 "Kesalahan koneksi. Periksa sambungan Anda ke server GeoKKP",
                 "Koneksi Bermasalah",
@@ -110,7 +111,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             is_e_sertifikat = response.content == "1"
             storeSetting("isESertifikat", is_e_sertifikat)
         except Exception as e:
-            print(e)
+            # print(e)
             dialogBox(
                 "Gagal mengambil status data e-sertifikat dari server",
                 "Koneksi Bermasalah",
@@ -120,7 +121,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
     def get_user(self, username):
         response = endpoints.get_user_by_username(username)
         response_json = json.loads(response.content)
-        print("get_user_by_username", response_json)
+        # print("get_user_by_username", response_json)
         app_state.set("user", response_json)
 
     def getKantorProfile(self, username):
@@ -131,7 +132,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             response = endpoints.get_entity_by_username(username)
         except Exception as e:
-            print(e)
+            # print(e)
             dialogBox(
                 "Data Pengguna gagal dimuat dari server",
                 "Koneksi Bermasalah",
@@ -155,15 +156,14 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         """
         what to do when user is logged in
         """
-        self.accept()
-        app_state.set("logged_in", True)
         if not QgsProject.instance().mapLayersByName("Google Satellite"):
             add_google_basemap()
-        addIndonesia()
-        #    indonesia = QgsProject.instance().mapLayersByName("Indonesia")[0]
-        #    self.iface.mapCanvas().setExtent(indonesia.extent())
-        #    self.iface.mapCanvas().refresh()
-        # if self.postlogin is None:
-        #     self.postlogin = PostLoginDock()
-        # # show the dialog
-        # self.postlogin.show()
+            set_project_crs_by_epsg("EPSG:4326")    
+        print(get_project_crs())
+        set_project_crs_by_epsg("EPSG:4326")
+        rect = QgsRectangle(95.0146, -10.92107, 140.9771, 5.9101)
+        self.iface.mapCanvas().setExtent(rect)
+        self.iface.mapCanvas().refresh()
+        self.accept()
+        app_state.set("logged_in", True)
+

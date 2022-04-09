@@ -6,7 +6,7 @@ from qgis.core import QgsProject
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-from .utils import dialogBox, logMessage
+from .utils import dialogBox, icon, logMessage
 
 
 FORM_CLASS, _ = uic.loadUiType(
@@ -25,6 +25,7 @@ class OAMDialog(QtWidgets.QDialog, FORM_CLASS):
         super(OAMDialog, self).__init__(parent)
         self.setupUi(self)
         self.project = QgsProject
+        self.setWindowIcon(icon("icon.png"))
 
         # clear
         self.OAMLink.clear()

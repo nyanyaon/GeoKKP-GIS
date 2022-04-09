@@ -353,7 +353,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             gugus_ids=gugus_ids, include_riwayat=riwayat
         )
         response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
-        print(response_spatial_sdo_json)
+        # print(response_spatial_sdo_json)
 
         if not response_spatial_sdo_json["status"]:
             QtWidgets.QMessageBox.critical(None, "Error", "Proses Unduh Geometri gagal")
@@ -361,7 +361,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
 
         epsg = get_project_crs()
         if response_spatial_sdo_json["geoKkpPolygons"]:
-            print(response_spatial_sdo_json["geoKkpPolygons"][0])
+            # print(response_spatial_sdo_json["geoKkpPolygons"][0])
 
             if response_spatial_sdo_json["geoKkpPolygons"]:
                 layer_config = get_layer_config("020100")
