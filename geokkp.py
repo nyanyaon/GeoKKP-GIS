@@ -1129,6 +1129,7 @@ class GeoKKP:
     def add_layers(self):
         if self.addlayeraction is None:
             self.addlayeraction = AddLayerDialog()
+            
         self.addlayeraction.show()
 
     def convert_layers(self):
@@ -1284,7 +1285,7 @@ class GeoKKP:
 
         wilkerLayer = self.iface.addVectorLayer(selectedLocation, "", "ogr")
         wilkerLayer.setName("Wilayah Kerja")
-        self.iface.actionZoomToLayer().trigger()
+        self.iface.actionZoomToLayers().trigger()
         wilkerLayer.renderer().symbol().setColor(QColor("transparent"))
         wilkerLayer.renderer().symbol().symbolLayer(0).setStrokeColor(QColor(255, 0, 0))
         wilkerLayer.renderer().symbol().symbolLayer(0).setStrokeWidth(1)

@@ -145,7 +145,7 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
             layer = sdo_to_layer(response_json["wilayahs"], "Batas Desa", epsg_string)
             layer.setReadOnly(True)
             QgsProject.instance().addMapLayer(layer)
-            iface.actionZoomToLayer().trigger()
+            iface.actionZoomToLayers().trigger()
         else:
             QtWidgets.QMessageBox.warning(
                 None,
