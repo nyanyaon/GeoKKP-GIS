@@ -243,9 +243,19 @@ def readSetting(key, default=None):
         logMessage("gagal memuat data")
     settings.sync()
 
+def select_layer_by_name(project, layername):
+    """
+    pilih semua layer berdasarkan nama layer tertentu
+    """
+    all_layers = project.instance().mapLayers().values()
+    detected_layers = [layer for layer in all_layers if layername in layer.name()]
+    return detected_layers
+
 
 def clear_all_vars():
-    """Hapus semua value dari QgsSettings yang digunakan oleh GeoKKP"""
+    """
+    Hapus semua value dari QgsSettings yang digunakan oleh GeoKKP
+    """
     for key in sorted(settings.allKeys()):
         if key.startswith("geokkp"):
             settings.remove(key)

@@ -45,7 +45,7 @@ from qgis.core import (
     QgsCoordinateReferenceSystem,
     QgsSettings,
 )
-from qgis.gui import QgsMapToolIdentify
+from qgis.gui import QgsMapToolIdentify, QgsMapToolPan
 from qgis import utils as qgis_utils
 
 # import utilities
@@ -55,6 +55,7 @@ from .modules.utils import (
     logMessage,
     activate_editing,
     iconPath,
+    select_layer_by_name,
     icon,
 )
 
@@ -111,6 +112,7 @@ class GeoKKP:
         self.project = QgsProject
         self.root = QgsProject.instance().layerTreeRoot()
         self.mapToolIdentify = QgsMapToolIdentify(self.canvas)
+        self.mapToolPan = QgsMapToolPan(self.canvas)
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -938,29 +940,24 @@ class GeoKKP:
     def dimension_distance(self):
         # get dimension layer by name
         self.dimension_layer = None
-        all_layers = QgsProject.instance().mapLayers().values()
-        for layer in all_layers:
-            if layer.name() == "(20400) Dimensi Pengukuran":
-                self.dimension_layer = layer
-                break
-        """
-        # debugging this
-        if not self.dimension_layer:
-            self.iface.messageBar().pushMessage(
-                "Peringatan",
-                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.",
-                level=Qgis.Warning,
+
+        # refactor layer checking method
+        layername = '(020400) Dimensi Pengukuran'
+        try:
+            self.dimension_layer = select_layer_by_name(self.project, layername)[0]
+             # enable last chosen tools as default in toolbar
+            self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
+            self.actionDistanceDimension.setChecked(True)
+            self.distanceTool = DimensionDistanceTool(
+                self.iface.mapCanvas(), self.dimension_layer
             )
-            return
-        """
-        # enable last chosen tools as default in toolbar
-        self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
-        self.actionDistanceDimension.setChecked(True)
-        self.distanceTool = DimensionDistanceTool(
-            self.iface.mapCanvas(), self.dimension_layer
-        )
-        self.distanceTool.completed.connect(self.dimension_distance_completed)
-        self.iface.mapCanvas().setMapTool(self.distanceTool)
+            self.distanceTool.completed.connect(self.dimension_distance_completed)
+            self.iface.mapCanvas().setMapTool(self.distanceTool)
+        except Exception as e:
+            dialogBox("Layer Dimensi Pengukuran (020400) tidak ditemukan. ")
+            logMessage(str(e), level=Qgis.Warning)
+            self.actionDistanceDimension.setChecked(False)
+            self.iface.mapCanvas().setMapTool(self.mapToolPan)
 
     def dimension_distance_completed(self):
         self.actionDistanceDimension.setChecked(False)
@@ -969,26 +966,24 @@ class GeoKKP:
     def dimension_angle(self):
         # get dimension layer by name
         self.dimension_layer = None
-        all_layers = QgsProject.instance().mapLayers().values()
-        for layer in all_layers:
-            if layer.name() == "(20400) Dimensi Pengukuran":
-                self.dimension_layer = layer
-                break
-        if not self.dimension_layer:
-            self.iface.messageBar().pushMessage(
-                "Peringatan",
-                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.",
-                level=Qgis.Warning,
+
+        # refactor layer checking method
+        layername = '(020400) Dimensi Pengukuran'
+        try:
+            self.dimension_layer = select_layer_by_name(self.project, layername)[0]
+            # enable last chosen tools as default in toolbar
+            self.DimensionButton.setDefaultAction(self.actionAngleDimension)
+            self.actionAngleDimension.setChecked(True)
+            self.angleTool = DimensionAngleTool(
+                self.iface.mapCanvas(), self.dimension_layer
             )
-            return
-        # enable last chosen tools as default in toolbar
-        self.DimensionButton.setDefaultAction(self.actionAngleDimension)
-        self.actionAngleDimension.setChecked(True)
-        self.angleTool = DimensionAngleTool(
-            self.iface.mapCanvas(), self.dimension_layer
-        )
-        self.angleTool.completed.connect(self.dimension_angle_completed)
-        self.iface.mapCanvas().setMapTool(self.angleTool)
+            self.angleTool.completed.connect(self.dimension_angle_completed)
+            self.iface.mapCanvas().setMapTool(self.angleTool)
+        except Exception as e:
+            dialogBox("Layer Dimensi Pengukuran (020400) tidak ditemukan. ")
+            logMessage(str(e), level=Qgis.Warning)
+            self.actionAngleDimension.setChecked(False)
+            self.iface.mapCanvas().setMapTool(self.mapToolPan)
 
     def dimension_angle_completed(self):
         self.actionAngleDimension.setChecked(False)
@@ -997,27 +992,24 @@ class GeoKKP:
     def dimension_point(self):
         # get dimension layer by name
         self.dimension_layer = None
-        all_layers = QgsProject.instance().mapLayers().values()
-        for layer in all_layers:
-            if layer.name() == "(20400) Dimensi Pengukuran":
-                self.dimension_layer = layer
-                break
-        if not self.dimension_layer:
-            self.iface.messageBar().pushMessage(
-                "Peringatan",
-                "Tambahkan layer Dimensi (20400) sebelum menggunakan Tool ini.",
-                level=Qgis.Warning,
-            )
-            return
-        # # enable last chosen tools as default in toolbar
-        self.DimensionButton.setDefaultAction(self.actionPointDimension)
-        self.actionPointDimension.setChecked(True)
 
-        self.pointTool = DimensionPointTool(
-            self.iface.mapCanvas(), self.dimension_layer
-        )
-        self.pointTool.completed.connect(self.dimension_point_completed)
-        self.iface.mapCanvas().setMapTool(self.pointTool)
+        # refactor layer checking method
+        layername = '(020400) Dimensi Pengukuran'
+        try:
+            self.dimension_layer = select_layer_by_name(self.project, layername)[0]
+            # enable last chosen tools as default in toolbar
+            self.DimensionButton.setDefaultAction(self.actionPointDimension)
+            self.actionPointDimension.setChecked(True)
+            self.pointTool = DimensionPointTool(
+                self.iface.mapCanvas(), self.dimension_layer
+            )
+            self.pointTool.completed.connect(self.dimension_point_completed)
+            self.iface.mapCanvas().setMapTool(self.pointTool)
+        except Exception as e:
+            dialogBox("Layer Dimensi Pengukuran (020400) tidak ditemukan. ")
+            logMessage(str(e), level=Qgis.Warning)
+            self.actionPointDimension.setChecked(False)
+            self.iface.mapCanvas().setMapTool(self.mapToolPan)
 
     def dimension_point_completed(self):
         self.actionPointDimension.setChecked(False)
