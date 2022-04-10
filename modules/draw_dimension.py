@@ -276,7 +276,9 @@ class DimensionDistanceTool(QgsMapTool):
             p = self.canvas.getCoordinateTransform().toMapCoordinates(event.pos())
             sqrdist, pt, nid, side = self.main_geom.closestSegmentWithContext(p)
             dist = math.sqrt(sqrdist)
-            self.offset_geom = self.main_geom.offsetCurve(-side * dist, 6, 1, 1)
+            # breaking change since QGIS 3.22
+            # self.offset_geom = self.main_geom.offsetCurve(-side * dist, 6, 'JoinStyleMiter', 1)
+            self.offset_geom = self.main_geom.offsetCurve(-side * dist, 6, QgsGeometry.JoinStyleRound, 1)
             _, offset_start, _, _ = self.offset_geom.closestSegmentWithContext(
                 self.start_point
             )

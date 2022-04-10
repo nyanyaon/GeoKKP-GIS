@@ -5,7 +5,7 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.PyQt.QtWidgets import QDockWidget
 from qgis.utils import iface
-from qgis.core import QgsProject
+from qgis.core import Qgis, QgsProject
 
 from .utils import (
     add_google_basemap,
@@ -53,7 +53,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
             if panel.windowTitle() == "Panel Kerja GeoKKP-GIS":
                 self.panel = panel
             else:
-                logMessage("panel tidak terdeteksi atau tidak aktif")
+                logMessage("panel tidak terdeteksi atau tidak aktif", level=Qgis.Warning)
 
         # read settings: Jumlah Kantah Terdaftar atas nama user yang login
         # if login_state.value:
