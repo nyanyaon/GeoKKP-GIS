@@ -6,7 +6,15 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-from .utils import logMessage, readSetting, add_layer, icon
+from qgis.core import (
+    Qgis,
+    QgsProject,
+    QgsRasterLayer,
+    QgsCoordinateReferenceSystem,
+    QgsSettings,
+)
+
+from .utils import dialogBox, get_project_crs, logMessage, readSetting, add_layer, icon
 
 
 FORM_CLASS, _ = uic.loadUiType(
@@ -28,14 +36,14 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
         self._currentcrs = None
         self.setupUi(self)
 
-        data_layer = readSetting("layers")
+        self.data_layer = readSetting("layers")
         try:
-            self.populateDaftarLayer(data_layer)
+            self.populateDaftarLayer(self.data_layer)
         except Exception:
             logMessage("daftar layer gagal dimuat")
 
         self.cariDaftarLayer.valueChanged.connect(self.findLayer)
-        self.pushButtonAddtoQGIS.clicked.connect(self.addToQGIS)
+        self.pushButtonAddtoQGIS.clicked.connect(self.checkCRS)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -43,7 +51,7 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def set_crs(self):
         self._currentcrs = self.selectProj.crs()
-        # print(self._currentcrs.description())
+        print(self._currentcrs.description())
 
     def populateDaftarLayer(self, data):
         items = []
@@ -77,6 +85,22 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
             self.daftarLayer.scrollToItem(
                 item, QtWidgets.QAbstractItemView.PositionAtTop
             )
+
+    def cleanup(self):
+        self.cariDaftarLayer.clearValue()
+        # self.daftarLayer.collapseAll()
+        self.daftarLayer.clear()
+        self.populateDaftarLayer(self.data_layer)
+
+    def checkCRS(self):
+        epsg = get_project_crs()
+        crs = QgsCoordinateReferenceSystem(epsg)
+        if crs.isGeographic():
+            dialogBox("Sistem Koordinat Proyek saat ini berjenis Geographic. Lakukan perubahan menjadi sistem terproyeksi melalui menu pengaturan lokasi atau pengaturan CRS pada QGIS")
+            self.cleanup()
+            self.accept()
+        else:
+            self.addToQGIS()
 
     def deleteSelection(self):
         root = self.daftarLayer.invisibleRootItem()
@@ -119,3 +143,5 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
                         fields = None
                     print(item.text(0), item.text(1), item.text(2), fields)
                     add_layer(layername, layertype, layersymbology, fields)
+        self.cleanup()
+        self.accept()

@@ -5,9 +5,9 @@ from qgis.PyQt.QtWidgets import QTreeWidgetItem
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal, QVariant
 from qgis.utils import iface
-from qgis.core import QgsWkbTypes, QgsFields, QgsField
+from qgis.core import QgsWkbTypes, QgsFields, QgsField, QgsCoordinateReferenceSystem
 
-from .utils import logMessage, readSetting, add_layer, icon
+from .utils import dialogBox, get_project_crs, logMessage, readSetting, add_layer, icon
 
 
 FORM_CLASS, _ = uic.loadUiType(
@@ -29,14 +29,14 @@ class ConvertLayerDialog(QtWidgets.QDialog, FORM_CLASS):
         self._currentcrs = None
         self.setupUi(self)
 
-        data_layer = readSetting("layers")
+        self.data_layer = readSetting("layers")
         try:
-            self.populateDaftarLayer(data_layer)
+            self.populateDaftarLayer(self.data_layer)
         except Exception:
             logMessage("daftar layer gagal dimuat")
 
         self.cariDaftarLayer.valueChanged.connect(self.findLayer)
-        self.btn_ubah_layer.clicked.connect(self.addToQGIS)
+        self.btn_ubah_layer.clicked.connect(self.checkCRS)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -45,6 +45,22 @@ class ConvertLayerDialog(QtWidgets.QDialog, FORM_CLASS):
     def set_crs(self):
         self._currentcrs = self.selectProj.crs()
         # print(self._currentcrs.description())
+
+    def cleanup(self):
+        self.cariDaftarLayer.clearValue()
+        # self.daftarLayer.collapseAll()
+        self.daftarLayer.clear()
+        self.populateDaftarLayer(self.data_layer)
+
+    def checkCRS(self):
+        epsg = get_project_crs()
+        crs = QgsCoordinateReferenceSystem(epsg)
+        if crs.isGeographic():
+            dialogBox("Sistem Koordinat Proyek saat ini berjenis Geographic. Lakukan perubahan menjadi sistem terproyeksi melalui menu pengaturan lokasi atau pengaturan CRS pada QGIS")
+            self.cleanup()
+            self.accept()
+        else:
+            self.addToQGIS()
 
     def populateDaftarLayer(self, data):
         items = []
@@ -162,3 +178,4 @@ class ConvertLayerDialog(QtWidgets.QDialog, FORM_CLASS):
             adjusted_feature = self.adjust_features_attribute(source_feature, target_fields)
             provider.addFeatures(adjusted_feature)
         layer.commitChanges()
+        self.accept()

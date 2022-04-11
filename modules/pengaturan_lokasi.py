@@ -132,7 +132,7 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
 
         layer.setSubsetString(f"WAK = '{currentKabupaten}'")
         set_symbology(layer, "administrasi.qml")
-        self.iface.actionZoomToLayer().trigger()
+        self.iface.actionZoomToLayers().trigger()
 
         # for feature in layer.getFeatures():
         #    print(feature["WAK"])
