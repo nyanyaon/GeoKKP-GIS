@@ -620,6 +620,18 @@ class GeoKKP:
         # Deklarasi menu Pencetakan
         self.popupPeralatan = QMenu("&Peralatan", self.iface.mainWindow())
 
+        #  --- Sub-menu Pengaturan Lokasi ---
+        self.actionAturLokasi = self.add_action(
+            icon("georef.png"),
+            text=self.tr(u"Atur Lokasi Kerja"),
+            callback=self.aturlokasi,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            need_auth=False,
+            parent=self.popupPeralatan,
+        )
+        self.popupPeralatan.addAction(self.actionAturLokasi)
+
         #  --- Sub-menu Transformasi Koordinat ---
         self.actionTransformasiKoordinat = self.add_action(
             icon("conversion.png"),
@@ -644,18 +656,7 @@ class GeoKKP:
         )
         self.popupPeralatan.addAction(self.actionGotoXY)
 
-        #  --- Sub-menu Pengaturan Lokasi ---
-        self.actionAturLokasi = self.add_action(
-            icon("georef.png"),
-            text=self.tr(u"Atur Lokasi Kerja"),
-            callback=self.aturlokasi,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            need_auth=False,
-            parent=self.popupPeralatan,
-        )
-        self.popupPeralatan.addAction(self.actionAturLokasi)
-
+ 
         #  --- Sub-menu NLP  ---
         self.actionNLP = self.add_action(
             icon("pickuppoint.png"),
