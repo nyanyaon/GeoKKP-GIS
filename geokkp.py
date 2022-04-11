@@ -350,7 +350,7 @@ class GeoKKP:
         # ======== Menu: Buat Layer ========
         self.add_action(
             iconPath("ubahlayer.png"),
-            text=self.tr(u"Ubah ke Layer"),
+            text=self.tr(u"Pindah ke Layer"),
             callback=self.convert_layers,
             parent=self.iface.mainWindow().menuBar(),
         )
@@ -1129,7 +1129,6 @@ class GeoKKP:
     def add_layers(self):
         if self.addlayeraction is None:
             self.addlayeraction = AddLayerDialog()
-            
         self.addlayeraction.show()
 
     def convert_layers(self):

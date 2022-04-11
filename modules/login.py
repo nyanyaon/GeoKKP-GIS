@@ -159,7 +159,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         if not QgsProject.instance().mapLayersByName("Google Satellite"):
             add_google_basemap()
             set_project_crs_by_epsg("EPSG:4326")    
-        print(get_project_crs())
+        # print(get_project_crs())
         set_project_crs_by_epsg("EPSG:4326")
         rect = QgsRectangle(95.0146, -10.92107, 140.9771, 5.9101)
         self.iface.mapCanvas().setExtent(rect)

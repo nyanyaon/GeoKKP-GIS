@@ -162,3 +162,4 @@ class ConvertLayerDialog(QtWidgets.QDialog, FORM_CLASS):
             adjusted_feature = self.adjust_features_attribute(source_feature, target_fields)
             provider.addFeatures(adjusted_feature)
         layer.commitChanges()
+        self.accept()
