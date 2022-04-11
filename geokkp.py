@@ -81,6 +81,7 @@ from .modules.layout_gu import LayoutGUDialog
 from .modules.trilateration import TrilaterationDialog
 from .modules.triangulation import TriangulationDialog
 from .modules.pengaturan_lokasi import PengaturanLokasiDialog
+from .modules.pencarian_fitur import PencarianFiturDialog
 from .modules.draw_nlp import DrawNLPDialog
 from .modules.import_wilayah_admin import ImportWilayahAdmin
 from .modules.create_pbt_kjskb import CreatePBTKJSKB
@@ -186,7 +187,7 @@ class GeoKKP:
         self.azdistanceaction = AzDistanceDialog()
         self.coordinate_transform_dialog = CoordinateTransformDialog()
         self.aturlokasi_action = PengaturanLokasiDialog()
-        self.pencarianlokasi_action = FeatureSearchDialog()
+        self.pencarianfitur_action = PencarianFiturDialog()
         self.inspeksinlp_action = DrawNLPDialog()
         self.import_wilayah_admin = ImportWilayahAdmin()
         self.create_pbt_kjskb_action = CreatePBTKJSKB()
@@ -1039,15 +1040,20 @@ class GeoKKP:
     def open_settings(self):
         if self.setting_action is None:
             self.setting_action = SettingsDialog()
-
         self.setting_action.show()
 
     def search_for_feature(self):
+        if self.pencarianfitur_action is None:
+            self.pencarianfitur_action = SettingsDialog()
+        self.pencarianfitur_action.show()
+        """
         try:
             self.iface.showAttributeTable(self.iface.activeLayer())
         except Exception as e:
             dialogBox("Layer aktif bukan vektor atau tidak ada layer aktif")
 
+        """
+        
     def toggle_titik_persil(self):
         # check whether batas persil layer (020100) is loaded
         persil_layer = None
