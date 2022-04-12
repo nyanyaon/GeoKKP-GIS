@@ -395,7 +395,55 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         pd.show()
 
     def _create_dataset_integration(self):
-        pass
+        self._ent_dataset = Dataset()
+        persil_mati = self._ent_dataset.add_table("PersilMati")
+        persil_mati.add_column("REGID")
+
+        polygon = self._ent_dataset.add_table("Polygon")
+        polygon.add_column("Key")
+        polygon.add_column("Type")
+        polygon.add_column("Label")
+        polygon.add_column("Height")
+        polygon.add_column("Orientation")
+        polygon.add_column("Boundary")
+        polygon.add_column("Text")
+
+        garis = self._ent_dataset.add_table("Garis")
+        garis.add_column("KEY")
+        garis.add_column("TYPE")
+        garis.add_column("LINE")
+
+        teks = self._ent_dataset.add_table("Teks")
+        teks.add_column("Key")
+        teks.add_column("Type")
+        teks.add_column("Height")
+        teks.add_column("Orientation")
+        teks.add_column("Label")
+        teks.add_column("Position")
+
+        titik = self._ent_dataset.add_table("Titik")
+        titik.add_column("Key")
+        titik.add_column("Type")
+        titik.add_column("PointOrientation")
+        titik.add_column("TextOrientation")
+        titik.add_column("Scale")
+        titik.add_column("Height")
+        titik.add_column("Label")
+        titik.add_column("PointPosition")
+        titik.add_column("TextPosition")
+
+        dimensi = self._ent_dataset.add_table("Dimensi")
+        dimensi.add_column("Key")
+        dimensi.add_column("Type")
+        dimensi.add_column("Line")
+        dimensi.add_column("Initialpoint")
+        dimensi.add_column("Labelpoint")
+        dimensi.add_column("Endpoint")
+        dimensi.add_column("Initialorientation")
+        dimensi.add_column("Labelorientation")
+        dimensi.add_column("Endorientation")
+        dimensi.add_column("Height")
+        dimensi.add_column("Label")
 
     def _parcel_designer_clicked(self, pd):
         if pd["ds_parcel"]:
