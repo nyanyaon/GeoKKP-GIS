@@ -19,6 +19,7 @@ from ...utils import (
     add_layer,
     select_layer_by_regex
 )
+from ...utils.draw_entity import DrawEntity
 from ...create_pbt import CreatePBT
 from ...memo import app_state
 from ...topology import quick_check_topology
@@ -320,8 +321,8 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         self._process_available = True
 
         gugus_ids = [response_json["gugusId"]]
-
-        self._load_berkas_spasial(gugus_ids, False)
+        de = DrawEntity(gugus_ids, False)
+        de.draw()
         self._set_button_enabled(True)
 
         disable_link = bool(response_json["mitraKerjaid"])
