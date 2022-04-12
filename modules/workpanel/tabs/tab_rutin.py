@@ -1,6 +1,8 @@
+from datetime import datetime
 import os
 import json
 import hashlib
+from urllib import response
 
 from qgis.PyQt import QtWidgets, uic
 from qgis.core import QgsProject
@@ -9,12 +11,15 @@ from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
 from ...utils import (
+    get_layers_config_by_topology,
     readSetting,
     get_project_crs,
     sdo_to_layer,
     get_layer_config,
     add_layer,
+    select_layer_by_topology,
 )
+from ...utils.draw_entity import DrawEntity
 from ...models.dataset import Dataset
 
 from ...api import endpoints
@@ -48,22 +53,19 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         self._limit = 20
         self._count = -1
         self._berkas_id = ""
-
         self._txt_nomor = ""
         self._txt_tahun = ""
         self._kantor_id = ""
         self._tipe_kantor_id = ""
         self._nomor_berkas = ""
         self._tahun_berkas = ""
-        self._tipe_berkas = ""
         self._ganti_desa = "0"
-        self._kode_sppop = ""
+        self._kode_spopp = ""
         self._wilayah_id = ""
         self._gambar_ukur_id = ""
         self._new_gugus_id = ""
         self._new_parcel_number = ""
         self._new_apartment_number = ""
-
         self._new_parcels = []
         self._old_parcels = []
         self._del_parcels = []
@@ -74,58 +76,28 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         self._error_stack = []
         self._old_gugus_ids = []
 
-        self._parcel_ready_to_map = []
-        self._process_available = False
-
-        self._sts = None
         self._ent_dataset = None
+        self._sts = None
 
-        self.project = QgsProject
-        self._set_initial_state()
+        self._parcels_ready_2_map = []
+        self._process_available = False
+        self._d_set = None
+        self._system_coordinate = "TM3"
 
-        self.current_berkas = None
-        self.current_layers = []
-        self._sistem_koordinat = ""
+        self._layers = []
 
-        self.btn_rutin_cari.clicked.connect(self._handle_cari)
-        self.btn_rutin_mulai.clicked.connect(self.mulai_berkas_rutin)
-        self.btn_rutin_informasi.clicked.connect(self._handle_informasi_berkas_rutin)
-        self.btn_rutin_simpan.clicked.connect(self.simpan_berkas_rutin)
-        self.btn_rutin_tutup.clicked.connect(self.tutup_berkas_rutin)
-        self.btn_rutin_selesai.clicked.connect(self.selesai_berkas_rutin)
-        self.btn_first.clicked.connect(self._handle_first_page)
-        self.btn_last.clicked.connect(self._handle_last_page)
-        self.btn_next.clicked.connect(self._handle_next_page)
-        self.btn_prev.clicked.connect(self._handle_prev_page)
-        self.btn_rutin_di302.clicked.connect(self._handle_update_di302)
+        self.btn_cari.clicked.connect(self._btn_cari_click)
+        self.btn_first.clicked.connect(self._btn_first_click)
+        self.btn_prev.clicked.connect(self._btn_prev_click)
+        self.btn_next.clicked.connect(self._btn_next_click)
+        self.btn_last.clicked.connect(self._btn_last_click)
+        self.btn_start_process.clicked.connect(self._prepare_berkas)
+        self.btn_save_data.clicked.connect(self._submit)
+        self.btn_info_process.clicked.connect(self._get_process_info)
+        self.btn_parcel_mapping.clicked.connect(self._update_di_302)
+        self.btn_pause_process.clicked.connect(self._stop_process)
+        self.btn_finish_process.clicked.connect(self._finish_process)
 
-    def _reset_variable(self):
-        self._txt_nomor = ""
-        self._txt_tahun = ""
-        self._kantor_id = ""
-        self._tipe_kantor_id = ""
-        self._nomor_berkas = ""
-        self._tahun_berkas = ""
-        self._tipe_berkas = ""
-        self._ganti_desa = "0"
-        self._kode_sppop = ""
-        self._wilayah_id = ""
-        self._gambar_ukur_id = ""
-        self._new_gugus_id = ""
-        self._new_parcel_number = ""
-        self._new_apartment_number = ""
-
-        self._new_parcels = []
-        self._old_parcels = []
-        self._del_parcels = []
-        self._new_apartments = []
-        self._old_apartments = []
-        self._del_apartments = []
-        self._gambar_ukurs = []
-        self._error_stack = []
-        self._old_gugus_ids = []
-
-        self._parcel_ready_to_map = []
         self.setup_workpanel()
 
     def closeEvent(self, event):
@@ -145,144 +117,140 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         self._kantor_id = kantor["kantorID"]
         self._tipe_kantor_id = str(kantor["tipeKantorId"])
 
-    def _set_initial_state(self):
-        self.btn_rutin_cari.setDisabled(False)
-        self.btn_rutin_mulai.setDisabled(False)
-        self.btn_rutin_simpan.setDisabled(True)
-        self.btn_rutin_informasi.setDisabled(True)
-        self.btn_rutin_di302.setDisabled(True)
-        self.btn_rutin_layout.setDisabled(True)
-        self.btn_rutin_tutup.setDisabled(True)
-        self.btn_rutin_selesai.setDisabled(True)
-        self.input_rutin_no_berkas.setDisabled(False)
-        self.input_rutin_th_berkas.setDisabled(False)
+        self.txt_tahun.setText(datetime.now().strftime("%Y"))
 
-    def _cari_berkas_rutin(self):
+    def _btn_cari_click(self):
+        self._start = 0
+        self._count = -1
+        self._txt_nomor = self.txt_nomor.text()
+        self._txt_tahun = self.txt_tahun.text()
+
+        self.btn_first.setDisabled(False)
+        self.btn_first.setDisabled(False)
+
+        self._refresh_grid()
+
+    def _refresh_grid(self):
         response = endpoints.get_berkas(
-            nomor_berkas=self._txt_nomor,
-            tahun_berkas=self._txt_tahun,
-            kantor_id=self._kantor_id,
-            tipe_kantor_id=self._tipe_kantor_id,
-            start=self._start,
-            limit=self._limit,
-            count=self._count,
+            self._txt_nomor,
+            self._txt_tahun,
+            self._kantor_id,
+            self._tipe_kantor_id,
+            self._start,
+            self._limit,
+            self._count
         )
-        response_json = Dataset(response.content)
+        self._d_set = Dataset(response.content)
 
-        print("cari", response_json)
-        self._setup_pagination(response_json)
-        response_json.render_to_qtable_widget("BERKASSPATIAL", self.table_rutin, [0, 4])
-
-    def _setup_pagination(self, data):
         if self._count == -1:
-            self._count = data["JUMLAHTOTAL"].rows[0]["COUNT(1)"]
+            self._count = int(self._d_set["JUMLAHTOTAL"].rows[0][0])
 
         if self._count > 0:
             if self._start + self._limit >= self._count:
                 page = f"{self._start + 1} - {self._count} dari {self._count}"
+                self.txt_paging.setText(page)
                 self.btn_next.setDisabled(True)
-                self.btn_last.setDisabled(True)
             else:
                 page = f"{self._start + 1} - {self._start + self._limit} dari {self._count}"
-                self.btn_next.setDisabled(False)
-                self.btn_last.setDisabled(False)
+                self.txt_paging.setText(page)
+                self.btn_next.setDisabled(True)
+            if self._d_set["BERKASSPATIAL"]:
+                self._d_set["BERKASSPATIAL"].render_to_qtable_widget(
+                    self.dgv_inbox,
+                    [0, 4]
+                )
         else:
-            page = "0"
+            self.txt_paging.setText("0")
             self.btn_next.setDisabled(True)
             self.btn_prev.setDisabled(True)
-            self.btn_first.setDisabled(True)
-            self.btn_last.setDisabled(True)
+            self.dgv_inbox.setRowCount(0)
 
-        prev_btn_disabled = self._start == 0 or self._count == 0
-        self.btn_prev.setDisabled(prev_btn_disabled)
-        self.btn_first.setDisabled(self._start == 0)
-        self.input_page.setText(page)
+        if self._start == 0 or self._count == 0:
+            self.btn_prev.setDisabled(True)
+        else:
+            self.btn_prev.setDisabled(False)
 
-    def _handle_first_page(self):
+    def _btn_first_click(self):
         self._start = 0
-        self._cari_berkas_rutin()
+        self.btn_prev.setDisabled(True)
+        self.btn_next.setDisabled(False)
+        self._refresh_grid()
 
-    def _handle_next_page(self):
-        self._start += self._limit
-        self._cari_berkas_rutin()
-
-    def _handle_prev_page(self):
+    def _btn_prev_click(self):
         self._start -= self._limit
-        self._cari_berkas_rutin()
+        if self._start <= 0:
+            self.btn_prev.setDisabled(True)
+        self.btn_next.setDisabled(False)
+        self._refresh_grid()
 
-    def _handle_last_page(self):
+    def _btn_next_click(self):
+        self._start += self._limit
+        if self._start + self._limit >= self._count:
+            self.btn_next.setDisabled(True)
+        self.btn_prev.setDisabled(False)
+        self._refresh_grid()
+
+    def _btn_last_click(self):
         self._start = (self._count // self._limit) * self._limit
         if self._start >= self._count:
             self._start -= self._limit
-        self._cari_berkas_rutin()
+            self.btn_prev.setDisabled(True)
+        else:
+            self.btn_prev.setDisabled(False)
 
-    def _handle_cari(self):
-        self._start = 0
-        self._count = -1
-        self._txt_nomor = self.input_rutin_no_berkas.text()
-        self._txt_tahun = self.input_rutin_th_berkas.text()
-
+        self.btn_next.setDisabled(True)
         self.btn_first.setDisabled(False)
-        self.btn_last.setDisabled(False)
+        self._refresh_grid()
 
-        self._cari_berkas_rutin()
+    def _prepare_berkas(self):
+        if self._d_set['BERKASSPATIAL'] and self._d_set['BERKASSPATIAL'].get_selected_qtable_widget():
+            selected = self._d_set['BERKASSPATIAL'].get_selected_qtable_widget()
+            self._nomor_berkas = selected[1].text()
+            self._tahun_berkas = selected[2].text()
+            self._tipe_berkas = selected[3].text()
+            self._berkas_id = selected[0].text()
+            self._start_berkas()
+        else:
+            QtWidgets.QMessageBox.warning(
+                None, "Perhatian", "Pilih Sebuah Berkas Yang Akan Diproses"
+            )
 
-    def mulai_berkas_rutin(self):
-        self.table_rutin.setColumnHidden(0, False)
-        selected_row = self.table_rutin.selectedItems()
-        self.table_rutin.setColumnHidden(0, True)
-        self._nomor_berkas = selected_row[1].text()
-        self._tahun_berkas = selected_row[2].text()
-        self._tipe_berkas = selected_row[3].text()
-        self._berkas_id = selected_row[0].text()
-        username = app_state.get("username").value
-
-        response_start_berkas = endpoints.start_berkas_spasial(
-            nomor_berkas=self._nomor_berkas,
-            tahun_berkas=self._tahun_berkas,
-            kantor_id=self._kantor_id,
-            tipe_kantor_id=self._tipe_kantor_id,
-            username=username,
+    def _start_berkas(self):
+        username_state = app_state.get("username", "")
+        username = username_state.value
+        response = endpoints.start_berkas_spasial(
+            self._nomor_berkas,
+            self._tahun_berkas,
+            self._kantor_id,
+            self._tipe_kantor_id,
+            username
         )
-        bs = json.loads(response_start_berkas.content)
+        bs = json.loads(response.content)
         print(bs)
         if bs["valid"]:
             lanjut_blanko = True
-            is_e_sertifikat = readSetting("isESertifikat")
             response = endpoints.get_is_e_sertifikat(self._kantor_id)
-            print("e_cert", is_e_sertifikat)
-            print("e_cert2", response.content)
-            print("tipe_kantor", self._tipe_kantor_id)
-
-            if not is_e_sertifikat and self._tipe_kantor_id not in ["1", "2"]:
-                response_blanko = endpoints.get_blanko_by_berkas_id(
-                    berkas_id=bs["berkasId"]
-                )
-                response_blanko_json = json.loads(response_blanko.content)
-                print("blanko", response_blanko_json)
-                if len(response_blanko_json["BLANKO"]) > 0:
+            is_e_sertifikat = readSetting("isESertifikat")
+            if is_e_sertifikat and self._tipe_kantor_id != "1" and self._tipe_kantor_id != "2":
+                response = endpoints.get_blanko_by_berkas_id(self._berkas_id, "P")
+                blanko_dataset = json.loads(response.content)
+                if blanko_dataset["BLANKO"]:
                     lanjut_blanko = True
                 else:
                     lanjut_blanko = False
-
-            if (
-                bs["kodeSpopp"]
-                in [
-                    "SPOPP-3.46.3",
-                    "SPOPP-3.09.9",
-                    "SPOPP-3.09.1",
-                    "SPOPP-3.09.2",
-                    "SPOPP-3.18.1",
-                    "SPOPP-3.12.1",
-                ]
-                or lanjut_blanko
-            ):
+            if bs["kodeSpopp"] == "SPOPP-3.46.3" \
+                    or bs["kodeSpopp"] == "SPOPP-3.09.9" \
+                    or bs["kodeSpopp"] == "SPOPP-3.09.1" \
+                    or bs["kodeSpopp"] == "SPOPP-3.09.2" \
+                    or bs["kodeSpopp"] == "SPOPP-3.18.1" \
+                    or bs["kodeSpopp"] == "SPOPP-3.12.1" \
+                    or lanjut_blanko:
                 self._wilayah_id = bs["wilayahId"]
                 self._new_parcel_number = bs["newParcelNumber"]
                 self._new_apartment_number = bs["newApartmentNumber"]
                 self._new_gugus_id = bs["newGugusId"]
                 self._ganti_desa = bs["gantiDesa"]
-                self._kode_sppop = bs["kodeSpopp"]
+                self._kode_spopp = bs["kodeSpopp"]
 
                 if bs["gambarUkurs"]:
                     self._gambar_ukurs = bs["gambarUkurs"]
@@ -303,90 +271,93 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
 
                 if self._new_gugus_id:
                     if self._tipe_berkas != "DAG":
-                        gugus_id = str(self._new_gugus_id)
-                        # TODO: refactor to draw entity
-                        self._load_berkas_spasial([gugus_id], False)
+                        de = DrawEntity([self._new_gugus_id], True)
+                        de.draw()
                 else:
                     if self._old_gugus_ids:
-                        gugus_ids = [str(id) for id in self._old_gugus_ids]
-                        self._load_berkas_spasial(gugus_ids, True)
+                        str = [str(s) for s in self._old_gugus_ids]
+                        de = DrawEntity(str, True)
+                        de.draw()
                     else:
-                        layer_config = get_layer_config("020100")
-                        add_layer(
-                            layer_config["Nama Layer"],
-                            layer_config["Tipe Layer"],
-                            layer_config["Style Path"],
-                            layer_config["Attributes"][0],
+                        QtWidgets.QMessageBox.information(
+                            None, "GeoKKP", "Data kosong, silahkan buat layer baru melalui menu \"Layer Baru\""
                         )
 
                 self._set_button(True)
                 self._process_available = True
-                self.input_rutin_no_berkas.setText(self._nomor_berkas)
-                self.input_rutin_th_berkas.setText(self._tahun_berkas)
-                self.input_rutin_no_berkas.setDisabled(True)
-                self.input_rutin_th_berkas.setDisabled(True)
-                self.btn_rutin_mulai.setDisabled(True)
+                self.txt_nomor.setText(self._nomor_berkas)
+                self.txt_tahun.setText(self._tahun_berkas)
+                self.txt_nomor.setDisabled(True)
+                self.txt_tahun.setDisabled(True)
+                self.btn_cari.setDisabled(True)
 
-                self.btn_rutin_cari.setDisabled(True)
+                self.btn_start_process.setDisabled(True)
 
                 if self._tipe_berkas != "DAG":
-                    # TODO: refactor to static storage
-                    self._sistem_koordinat = "TM3"
+                    self._system_coordinate = "TM3"
                 else:
-                    self.input_gambar_denah()
+                    self._input_gambar_denah()
             else:
                 QtWidgets.QMessageBox.warning(
                     None, "Perhatian", "Lakukan registrasi blanko terlebih dahulu"
                 )
+                return
         else:
-            message = "\n".join(bs["errorStack"])
-            QtWidgets.QMessageBox.critical(None, "Error", message)
+            msg = " \n".join(bs["errorStack"])
+            QtWidgets.QMessageBox.critical(
+                None, "GeoKKPWeb", msg
+            )
+            return
 
     def _set_button(self, enabled):
-        disabled = not enabled
-        self.btn_rutin_simpan.setDisabled(disabled)
-        self.btn_rutin_informasi.setDisabled(disabled)
-        self.btn_rutin_tutup.setDisabled(disabled)
+        self.btn_save_data.setDisabled(not enabled)
+        self.btn_info_process.setDisabled(not enabled)
+        self.btn_pause_process.setDisabled(not enabled)
 
-    def _load_berkas_spasial(self, gugus_ids, riwayat=False):
-        response_spatial_sdo = endpoints.get_spatial_document_sdo(
-            gugus_ids=gugus_ids, include_riwayat=riwayat
+    def _input_gambar_denah(self):
+        fgd = InputDenah(
+            self._nomor_berkas,
+            self._tahun_berkas,
+            self._berkas_id,
+            self._kantor_id,
+            self._tipe_berkas,
+            self._wilayah_id,
+            self._new_parcel_number,
+            self._new_apartment_number,
+            self._new_parcels,
+            self._old_parcels,
+            self._new_apartments,
+            self._old_apartments,
+            self._ganti_desa,
         )
-        response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
-        # print(response_spatial_sdo_json)
+        fgd.done.connect(self._handle_input_gambar_denah)
+        fgd.show()
 
-        if not response_spatial_sdo_json["status"]:
-            QtWidgets.QMessageBox.critical(None, "Error", "Proses Unduh Geometri gagal")
-            return
+    def _show_topo_not_found(self, topology):
+        layers_config = get_layers_config_by_topology(topology)
+        layer_name = "\n".join([layer["Nama Layer"] for layer in layers_config])
+        msg = f"Harus ada minimal satu dari layer berikut di project:\n{layer_name}"
 
-        epsg = get_project_crs()
-        if response_spatial_sdo_json["geoKkpPolygons"]:
-            # print(response_spatial_sdo_json["geoKkpPolygons"][0])
+        QtWidgets.QMessageBox.critical(None, "Perhatian", msg)
 
-            if response_spatial_sdo_json["geoKkpPolygons"]:
-                layer_config = get_layer_config("020100")
-                print(layer_config)
-                layer = sdo_to_layer(
-                    response_spatial_sdo_json["geoKkpPolygons"],
-                    name=layer_config["Nama Layer"],
-                    symbol=layer_config["Style Path"],
-                    crs=epsg,
-                    coords_field="boundary",
-                )
-                self.current_layers.append(layer)
-
-    def simpan_berkas_rutin(self):
+    def _submit(self):
         if self._tipe_berkas == "DAG":
-            self.input_gambar_denah()
+            self._input_gambar_denah()
             return
 
-        # TODO: handle topology logic as layer
-        # NOTE: check topology
-        
+        if self._old_apartments or self._del_apartments:
+            topology = "Gambar_Denah"
+        else:
+            topology = "Batas_Persil"
+
+        self._layers = select_layer_by_topology(topology)
+        if not self._layers:
+            self._show_topo_not_found(topology)
+            return
+
         topo_error_message = []
-        for layer in self.current_layers:
+        for layer in self._layers:
             valid, num = quick_check_topology(layer)
-            print(valid, num)
             if not valid:
                 message = f"Ada {num} topology error di layer {layer.name()}"
                 topo_error_message.append(message)
@@ -398,8 +369,10 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             return
 
         self._create_dataset_integration()
+        g_ukur_id = ""
+        if self._gambar_ukurs:
+            g_ukur_id = str(self._gambar_ukurs[0])
 
-        g_ukur_id = str(self._gambar_ukurs[0]) if self._gambar_ukurs else ""
         pd = DesainPersil(
             parent=self,
             nomor_berkas=self._nomor_berkas,
@@ -409,100 +382,116 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             tipe_berkas=self._tipe_berkas,
             gambar_ukur_id=g_ukur_id,
             wilayah_id=self._wilayah_id,
-            tipe_sistem_koordinat="TM3",
+            tipe_sistem_koordinat=self._system_coordinate,
             new_parcel_number=self._new_parcel_number,
             new_apartment_number=self._new_apartment_number,
             new_parcels=self._new_parcels,
             old_parcels=self._old_parcels,
             new_apartments=self._new_apartments,
             old_apartments=self._old_apartments,
+            ganti_desa=self._ganti_desa
         )
+        pd.integrasi.connect(self._parcel_designer_clicked)
         pd.show()
-        pd.integrasi.connect(self._process_integration)
 
-    def _process_integration(self, payload):
-        if not payload["ds_parcel"]:
-            return
+    def _create_dataset_integration(self):
+        pass
 
-        self._wilayah_id = payload["wilayah_id"]
-        self._sts = {}
+    def _parcel_designer_clicked(self, pd):
+        if pd["ds_parcel"]:
+            self._wilayah_id = pd["wilayah_id"]
+            lspb = []
+            self._sts = {}
+            for data in pd["ds_parcel"]["PersilBaru"]:
+                spb = {
+                    "OID": data["OID"],
+                    "Label": data["LABEL"],
+                    "Area": float(str(data["AREA"]).replace(",", ".")),
+                    "Boundary": data["BOUNDARY"],
+                    "Text": data["TEXT"],
+                    "Keterangan": data["KETERANGAN"],
+                    "Height": data["HEIGHT"],
+                    "Orientation": data["ORIENTATION"],
+                }
+                lspb.append(spb)
+            self._sts["PersilBaru"] = lspb
 
-        list_data = []
-        print("integrasi", payload)
-        for data in payload["ds_parcel"]["PersilBaru"]:
-            temp = {
-                "OID": data["OID"],
-                "Label": data["LABEL"],
-                "Area": float(str(data["AREA"]).replace(",", ".")),
-                "Boundary": data["BOUNDARY"],
-                "Text": data["TEXT"],
-                "Keterangan": data["KETERANGAN"],
-                "Height": data["HEIGHT"],
-                "Orientation": data["ORIENTATION"],
-            }
-            list_data.append(temp)
-        self._sts["PersilBaru"] = list_data
+            lspe = []
+            self._sts = {}
+            for data in pd["ds_parcel"]["PersilEdit"]:
+                spe = {
+                    "OID": data["OID"],
+                    "REGID": data["REGID"],
+                    "NIB": data["NIB"],
+                    "Luast": float(str(data["LUAST"]).replace(",", ".")),
+                    "Label": data["LABEL"],
+                    "Area": float(str(data["AREA"]).replace(",", ".")),
+                    "Boundary": data["BOUNDARY"],
+                    "Text": data["TEXT"],
+                    "Keterangan": data["KETERANGAN"],
+                    "Height": data["HEIGHT"],
+                    "Orientation": data["ORIENTATION"],
+                }
+                lspe.append(spe)
+            self._sts["PersilEdit"] = lspb
 
-        list_data = []
-        for data in payload["ds_parcel"]["PersilEdit"]:
-            temp = {
-                "OID": data["OID"],
-                "REGID": data["REGID"],
-                "NIB": data["NIB"],
-                "Luast": float(str(data["LUAST"]).replace(",", ".")),
-                "Label": data["LABEL"],
-                "Area": float(str(data["AREA"]).replace(",", ".")),
-                "Boundary": data["BOUNDARY"],
-                "Text": data["TEXT"],
-                "Keterangan": data["KETERANGAN"],
-                "Height": data["HEIGHT"],
-                "Orientation": data["ORIENTATION"],
-            }
-            list_data.append(temp)
-        self._sts["PersilEdit"] = list_data
+            lspi = []
+            for data in pd["ds_parcel"]["PersilInduk"]:
+                if data["OID"] is None:
+                    continue
 
-        list_data = []
-        for data in payload["ds_parcel"]["PersilInduk"]:
-            if data["OID"] is None:
-                continue
+                spi = {
+                    "OID": data["OID"],
+                    "REGID": data["REGID"],
+                    "NIB": data["NIB"],
+                    "Luast": float(str(data["LUAST"]).replace(",", ".")),
+                    "Label": data["LABEL"],
+                    "Area": float(str(data["AREA"]).replace(",", ".")),
+                    "Boundary": data["BOUNDARY"],
+                    "Text": data["TEXT"],
+                    "Keterangan": data["KETERANGAN"],
+                    "Height": data["HEIGHT"],
+                    "Orientation": data["ORIENTATION"],
+                }
+                lspi.append(spi)
+            self._sts["PersilInduk"] = lspi
 
-            temp = {
-                "OID": data["OID"],
-                "REGID": data["REGID"],
-                "NIB": data["NIB"],
-                "Luast": float(str(data["LUAST"]).replace(",", ".")),
-                "Label": data["LABEL"],
-                "Area": float(str(data["AREA"]).replace(",", ".")),
-                "Boundary": data["BOUNDARY"],
-                "Text": data["TEXT"],
-                "Keterangan": data["KETERANGAN"],
-                "Height": data["HEIGHT"],
-                "Orientation": data["ORIENTATION"],
-            }
-            list_data.append(temp)
-        self._sts["PersilInduk"] = list_data
+            if self._tipe_berkas in ["SUB", "UNI"]:
+                for p in self._del_parcels:
+                    row = self._ent_dataset["PersilMati"].new_row()
+                    row[0] = str(p)
 
-        if self._tipe_berkas in ["SUB", "UNI"]:
-            for p in self._del_parcels:
-                row = self._ent_dataset["PersilMati"].new_row()
-                row[0] = str(p)
+            self._fill_entity_datatable()
+            self._fill_text_entity()
+            self._fill_point_entity()
+            self._fill_dimensi_entity()
 
-        self._fill_entity_datatable()
-        self._fill_text_entity()
-        self._fill_point_entity()
-        self._fill_dimensi_entity()
+            self._run_integration(pd["reset_302"])
 
-        self._run_integration(payload["reset_302"])
+    def _fill_entity_datatable(self):
+        pass
+
+    def _fill_text_entity(self):
+        pass
+
+    def _fill_point_entity(self):
+        pass
+
+    def _fill_dimensi_entity(self):
+        pass
 
     def _run_integration(self, reset302):
         gu_reg_id = ""
         if self._gambar_ukurs:
             gu_reg_id = str(self._gambar_ukurs[0])
 
-        # TODO: implement staticstorage
-        skb = "NonTM3" if self._sistem_koordinat not in ["TM3", "NonTM3"] else "TM3"
+        skb = ""
+        if self._system_coordinate == "TM3":
+            skb = "TM3"
+        else:
+            skb = "NonTM3"
+
         user = app_state.get("pegawai", {})
-        print("user", user)
         user_id = (
             user.value["userId"]
             if user.value and "userId" in user.value.keys() and user.value["userId"]
@@ -524,34 +513,26 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
                 reset302=reset302,
                 user_id=user_id,
             )
-            response_json = json.loads(response.content)
-            print(response_json)
-            if not response_json:
-                QtWidgets.QMessageBox.critical(
-                    None,
-                    "Integrasi",
-                    "Integrasi gagal!\nCek service berkas spatial di server sudah dijalankan!",
-                )
-
-            if response_json["Error"]:
-                if response_json["Error"][0]["message"].startswith(
+            ds = json.loads(response.content)
+            if ds["Error"]:
+                if ds["Error"][0]["message"].startswith(
                     "Geometri persil dengan ID"
-                ) or response_json["Error"][0]["message"].startswith(
+                ) or ds["Error"][0]["message"].startswith(
                     "Geometri apartemen dengan ID"
                 ):
                     # TODO: zoom to object
-                    msg = str(response_json["Error"][0]["message"]).split("|")[0]
+                    msg = str(ds["Error"][0]["message"]).split("|")[0]
                     QtWidgets.QMessageBox.critical(None, "GeoKKP Web", msg)
                 else:
-                    msg = str(response_json["Error"][0]["message"])
+                    msg = str(ds["Error"][0]["message"])
                     QtWidgets.QMessageBox.critical(None, "GeoKKP Web", msg)
                 return
 
-            self._parcel_ready_to_map = []
+            self._parcels_ready_2_map = []
             self._new_parcels = []
 
             result_oid_map = {}
-            for persil in response_json["PersilBaru"]:
+            for persil in ds["PersilBaru"]:
                 regid = persil["regid"]
                 self._parcel_ready_to_map.append(regid)
 
@@ -566,14 +547,12 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
                 result_oid_map[persil["oid"]] = persil["nib"]
 
             # update nib to layer
-            for layer in self.current_layers:
+            for layer in self._layers:
                 field_index = layer.fields().indexOf("label")
-                print("field_index", field_index)
                 features = layer.getFeatures()
                 for feature in features:
                     identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
                     objectid = hashlib.md5(identifier).hexdigest().upper()
-                    print("objectid", objectid)
                     if objectid not in result_oid_map:
                         continue
 
@@ -583,9 +562,9 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
                     )
                     layer.commitChanges()
 
-            self.btn_rutin_selesai.setDisabled(False)
-            self.btn_rutin_layout.setDisabled(False)
-            self.btn_rutin_di302.setDisabled(False)
+            self.btn_finish_process.setDisabled(False)
+            self.btn_create_layout.setDisabled(False)
+            self.btn_parcel_mapping.setDisabled(False)
 
             QtWidgets.QMessageBox.information(
                 None,
@@ -595,165 +574,61 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         except Exception as e:
             self._process_available = False
             self._set_button(False)
-            self.input_rutin_no_berkas.setDisabled(False)
-            self.input_rutin_th_berkas.setDisabled(False)
-            self.btn_rutin_cari.setDisabled(False)
+            self.txt_nomor.setDisabled(False)
+            self.txt_tahun.setDisabled(False)
+            self.btn_cari.setDisabled(False)
 
-            self.btn_rutin_mulai.setDisabled(False)
-            self.btn_rutin_selesai.setDisabled(True)
-            self.btn_rutin_layout.setDisabled(True)
-            self.btn_rutin_di302.setDisabled(True)
+            self.btn_start_process.setDisabled(False)
+            self.btn_finish_process.setDisabled(False)
+            self.btn_create_layout.setDisabled(False)
+            self.btn_parcel_mapping.setDisabled(False)
 
-            self._reset_variable()
+            self._reset_variables()
             QtWidgets.QMessageBox.information(
                 None,
                 "Informasi",
-                "Proses telah dihentikan",
+                "Proses telah dihentikan, berkas anda akan dikunci oleh sistem",
             )
 
-    def _fill_entity_datatable(self):
-        # TODO: add layer query by code
-        pass
+    def _reset_variables(self):
+        self._txt_nomor = ""
+        self._txt_tahun = ""
+        self._nomor_berkas = ""
+        self._tahun_berkas = ""
+        self._tipe_berkas = ""
+        self._ganti_desa = "0"
 
-    def _fill_text_entity(self):
-        # TODO: add layer query by code
-        pass
+        self._wilayah_id = ""
+        self._gambar_ukur_id = ""
+        self._new_gugus_id = ""
+        self._new_parcel_number = ""
+        self._old_parcel_number = ""
+        self._old_parcels = []
+        self._del_parcels = []
+        self._old_apartments = []
+        self._del_apartments = []
+        self._new_parcels = []
+        self._new_apartments = []
+        self._gambar_ukurs = []
+        self._error_stack = []
+        self._old_gugus_ids = []
+        self._parcels_ready_2_map = []
+        self._layers = []
 
-    def _fill_point_entity(self):
-        # TODO: add layer query by code
-        pass
-
-    def _fill_dimensi_entity(self):
-        # TODO: add layer query by code
-        pass
-
-    def _process_ganti_desa(self, payload):
-        pass
-
-    def _create_dataset_integration(self):
-        self._ent_dataset = Dataset()
-        persil_mati = self._ent_dataset.add_table("PersilMati")
-        persil_mati.add_column("REGID")
-
-        polygon = self._ent_dataset.add_table("Polygon")
-        polygon.add_column("Key")
-        polygon.add_column("Type")
-        polygon.add_column("Label")
-        polygon.add_column("Height")
-        polygon.add_column("Orientation")
-        polygon.add_column("Boundary")
-        polygon.add_column("Text")
-
-        garis = self._ent_dataset.add_table("Garis")
-        garis.add_column("KEY")
-        garis.add_column("TYPE")
-        garis.add_column("LINE")
-
-        teks = self._ent_dataset.add_table("Teks")
-        teks.add_column("Key")
-        teks.add_column("Type")
-        teks.add_column("Height")
-        teks.add_column("Orientation")
-        teks.add_column("Label")
-        teks.add_column("Position")
-
-        titik = self._ent_dataset.add_table("Titik")
-        titik.add_column("Key")
-        titik.add_column("Type")
-        titik.add_column("PointOrientation")
-        titik.add_column("TextOrientation")
-        titik.add_column("Scale")
-        titik.add_column("Height")
-        titik.add_column("Label")
-        titik.add_column("PointPosition")
-        titik.add_column("TextPosition")
-
-        dimensi = self._ent_dataset.add_table("Dimensi")
-        dimensi.add_column("Key")
-        dimensi.add_column("Type")
-        dimensi.add_column("Line")
-        dimensi.add_column("Initialpoint")
-        dimensi.add_column("Labelpoint")
-        dimensi.add_column("Endpoint")
-        dimensi.add_column("Initialorientation")
-        dimensi.add_column("Labelorientation")
-        dimensi.add_column("Endorientation")
-        dimensi.add_column("Height")
-        dimensi.add_column("Label")
-
-    def _handle_informasi_berkas_rutin(self):
-        gambar_ukur_id = self._gambar_ukurs[0] if self._gambar_ukurs else ""
-
-        informasi_persil = InformasiPersil(
-            self._nomor_berkas,
-            self._tahun_berkas,
-            self._kantor_id,
-            self._tipe_berkas,
-            self._sistem_koordinat,
-            self._new_parcel_number,
-            self._wilayah_id,
-            gambar_ukur_id,
-            self._new_parcels,
-            self._old_parcels,
-        )
-        informasi_persil.show()
-
-    def _handle_update_di302(self):
-        ucl = LinkDI302(self._berkas_id, self._kode_sppop)
-        if self._kode_sppop in [
-            "SPOPP-3.13",
-            "SPOPP-3.12.1",
-            "SPOPP-2.03",
-            "SPOPP-3.17.3",
-        ]:
-            ucl = LinkDI302A(self._berkas_id)
-        ucl.show()
-
-    def input_gambar_denah(self):
-        fgd = InputDenah(
-            self._nomor_berkas,
-            self._tahun_berkas,
-            self._berkas_id,
-            self._kantor_id,
-            self._tipe_berkas,
-            self._wilayah_id,
-            self._new_parcel_number,
-            self._new_apartment_number,
-            self._new_parcels,
-            self._old_parcels,
-            self._new_apartments,
-            self._old_apartments,
-            self._ganti_desa,
-        )
-        fgd.done.connect(self._handle_input_gambar_denah)
-        fgd.show()
-
-    def _handle_input_gambar_denah(self, success):
-        if success:
-            self.btn_rutin_simpan.setDisabled(False)
-
-    def tutup_berkas_rutin(self):
-        response_tutup_berkas = endpoints.stop_berkas(
-            nomor_berkas=self._nomor_berkas,
-            tahun_berkas=self._tahun_berkas,
-            kantor_id=self._kantor_id,
-        )
-        response_tutup_berkas_json = json.loads(response_tutup_berkas.content)
-        if response_tutup_berkas_json:
+    def _stop_process(self):
+        if self._tutup_proses():
             self._process_available = False
             self._set_button(False)
-            self.input_rutin_no_berkas.setDisabled(False)
-            self.input_rutin_th_berkas.setDisabled(False)
-            self.btn_rutin_cari.setDisabled(False)
+            self.txt_nomor.setDisabled(False)
+            self.txt_tahun.setDisabled(False)
+            self.btn_cari.setDisabled(False)
 
-            self._reset_variable()
+            self.btn_start_process.setDisabled(False)
+            self.btn_finish_process.setDisabled(True)
+            self.btn_create_layout.setDisabled(True)
+            self.btn_parcel_mapping.setDisabled(True)
 
-            layer_ids = [layer.id() for layer in self.current_layers]
-            self.project.instance().removeMapLayers(layer_ids)
-            iface.mapCanvas().refresh()
-            self.current_layers = []
-
-            self._set_initial_state()
+            self._reset_variables()
 
             QtWidgets.QMessageBox.information(
                 None,
@@ -763,19 +638,23 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         else:
             QtWidgets.QMessageBox.critical(
                 None,
-                "Error",
+                "Informasi",
                 "Proses tidak berhasil dihentikan",
             )
 
-    def selesai_berkas_rutin(self):
-        if self._tipe_berkas != "DAG" and self._parcel_ready_to_map:
-            if self._old_apartments and self._del_apartments:
-                parcels = [str(p) for p in self._parcel_ready_to_map]
+    def _finish_process(self):
+        if self._tipe_berkas != "DAG" and not self._parcels_ready_2_map:
+            if self._old_apartments or self._del_apartments:
+                pass
+            else:
+                parcels = [str(p) for p in self._parcels_ready_2_map]
+
                 force_mapping = True
+
                 response = endpoints.cek_mapping(parcels)
-                already_mapped = bool(response.content)
+                already_mapped = json.loads(response.content)
                 if not already_mapped:
-                    if force_mapping:
+                    if not force_mapping:
                         result = QtWidgets.QMessageBox.question(
                             None,
                             "Selesai Berkas",
@@ -789,3 +668,120 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
                             "Selesai Berkas",
                             "Persil belum dipetakan\nUntuk menyelesaikan berkas lakukan proses Map Placing terlebih dahulu",
                         )
+
+        if self._tipe_berkas == "NPG":
+            response = endpoints.check_peta_bidang(self._berkas_id)
+            d_table = json.loads(response.content)
+            jumlah_persil_tanpa_pbt = int(d_table[0]["jumlahpersiltanpapbt"])
+
+            if jumlah_persil_tanpa_pbt:
+                QtWidgets.QMessageBox.warning(
+                    None,
+                    "Selesai Berkas",
+                    "Masih ada persil yang belum memiliki Peta Bidang\nSilahkan membuat peta bidang dari menu pencetakan",
+                )
+                return
+
+        if self._tipe_berkas == "SUB" or self._tipe_berkas == "NPG":
+            response = endpoints.check_peta_tematik(self._berkas_id)
+            d_table = json.loads(response.content)
+            print(d_table)
+            jumlah_persil_tanpa_ptbt = int(d_table[0]["JUMLAHPERSILTANPAPTBT"])
+
+            if jumlah_persil_tanpa_ptbt != 0 and d_table[0]["KODESPOPP"] in ("SPOPP-3.13", "SPOPP-3.12.1"):
+                QtWidgets.QMessageBox.warning(
+                    None,
+                    "Selesai Berkas",
+                    "Masih ada persil yang belum memiliki Peta Tematik\nSilahkan membuat peta tematik terlebih dahulu",
+                )
+                return
+
+        response = endpoints.check_di302(self._berkas_id)
+        d302_table = json.loads(response.content)
+
+        jumlah_di302_unlinked = int(d302_table[0]["DI302"])
+        jumlah_di302a_unlinked = int(d302_table[0]["DI302A"])
+
+        if jumlah_di302_unlinked:
+            QtWidgets.QMessageBox.warning(
+                None,
+                "Selesai Berkas",
+                "Masih ada persil yang belum memiliki DI302",
+            )
+            return
+
+        if jumlah_di302a_unlinked:
+            QtWidgets.QMessageBox.warning(
+                None,
+                "Selesai Berkas",
+                "Masih ada persil yang belum memiliki DI302A",
+            )
+            return
+
+        user = app_state.get("pegawai", {})
+        response = endpoints.finish_berkas(
+            self._nomor_berkas,
+            self._tahun_berkas,
+            self._kantor_id,
+            self._tipe_kantor_id,
+            user.value
+        )
+        result = response.content.decode("utf-8")
+
+        if result.split(":")[0] == "OK":
+            self._process_available = False
+            self._set_button(False)
+            self.txt_nomor.setDisabled(False)
+            self.txt_tahun.setDisabled(False)
+            self.btn_cari.setDisabled(False)
+
+            self.btn_start_process.setDisabled(False)
+            self.btn_finish_process.setDisabled(True)
+            self.btn_create_layout.setDisabled(True)
+            self.btn_parcel_mapping.setDisabled(True)
+
+            self._reset_variables()
+            QtWidgets.QMessageBox.information(
+                None,
+                "Selesai Berkas",
+                "Proses berkas spasial sudah selesai dan terkirim ke " + result.split(":".ToCharArray())[1],
+            )
+            self._refresh_grid()
+        else:
+            QtWidgets.QMessageBox.information(
+                None,
+                "Error",
+                "Proses berkas spasial tidak berhasil diselesaikan",
+            )
+
+    def _tutup_proses(self):
+        response = endpoints.stop_berkas(self._nomor_berkas, self._tahun_berkas, self._kantor_id)
+        return bool(response.content)
+
+    def _update_di_302(self):
+        ucl = LinkDI302(self._berkas_id, self._kode_spopp)
+        if self._kode_spopp in [
+            "SPOPP-3.13",
+            "SPOPP-3.12.1",
+            "SPOPP-2.03",
+            "SPOPP-3.17.3",
+        ]:
+            ucl = LinkDI302A(self._berkas_id)
+        ucl.show()
+
+    def _get_process_info(self):
+        gambar_ukur_id = self._gambar_ukurs[0] if self._gambar_ukurs else ""
+
+        pi = InformasiPersil(
+            self._nomor_berkas,
+            self._tahun_berkas,
+            self._kantor_id,
+            self._tipe_berkas,
+            self._system_coordinate,
+            self._new_parcel_number,
+            self._wilayah_id,
+            gambar_ukur_id,
+            self._new_parcels,
+            self._old_parcels,
+        )
+        pi.show()

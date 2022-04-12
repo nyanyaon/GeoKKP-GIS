@@ -32,7 +32,7 @@ class API:
     ):
         request_url = self._build_url(endpoint)
         request_body = self.build_api_payload(body)
-        # print("api", request_url, request_body)
+        print("api", request_url, request_body)
         (response, content) = self._client.request(
             url=request_url,
             method=method,
