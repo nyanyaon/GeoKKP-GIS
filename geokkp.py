@@ -1248,6 +1248,11 @@ class GeoKKP:
                 action.trigger()
 
     def geocoding(self):
+        if self.geocodingaction is None:
+            self.geocodingaction = GeocodingDialog()
+        self.geocodingaction.show()
+
+        """
         try:
             for action in self.iface.mainWindow().findChildren(QAction):
                 # print(action.text())
@@ -1255,6 +1260,7 @@ class GeoKKP:
                     action.trigger()
         except:
             dialogBox("Aktifkan terlebih dahulu tool Geocoding dari Plugin Manager QGIS")
+        """
 
     def geomchecker(self):
         for action in self.iface.mainWindow().findChildren(QAction):

@@ -16,7 +16,7 @@ Fungsi-fungsi GeoKKP-GIS saat ini antara lain:
 * Fungsi Editing dengan tiga mode penggambaran: Manual (GIS), Sudut-jarak dan Mode CAD
 * Auto-adjust dan koreksi topologi otomatis
 * Layout peta otomatis
-* Unggah persil ke server GeoKKP (*incoming feature*)
+* Integrasi panel-panel pemetaan GeoKKP
 
 
 ## Kontribusi

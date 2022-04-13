@@ -15,16 +15,15 @@ by ItOpen (info@itopen.it)
 """
 
 import sys, os, json
-from modules.utils import logMessage
+from .utils import logMessage
 from qgis.core import QgsSettings, QgsMessageLog
 
-
-from .api import NetworkAccessManager, DEFAULT_MAX_REDIRECTS
+from .api.networkaccessmanager import NetworkAccessManager, DEFAULT_MAX_REDIRECTS
 
 NAM = NetworkAccessManager()
 
 class OsmGeoCoder():
-    url = 'https://nominatim.openstreetmap.org/search?format=json&q={address}'
+    url = 'https://nominatim.openstreetmap.org/search?format=json&q={address}&countrycodes=id'
     reverse_url = 'https://nominatim.openstreetmap.org/reverse?format=json&lat={lat}&lon={lon}'
 
     def geocode(self, address):
