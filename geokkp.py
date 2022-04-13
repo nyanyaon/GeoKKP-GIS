@@ -64,7 +64,7 @@ from .modules.workpanel import Workpanel
 
 # GeoKKP-GIS Modules
 from .modules.initialization import Initialize
-from .modules.featuresearch import FeatureSearchDialog
+from .modules.geocoding import GeocodingDialog
 from .modules.add_layer import AddLayerDialog
 from .modules.convert_layer import ConvertLayerDialog
 from .modules.add_basemap import AddBasemapDialog
@@ -191,6 +191,7 @@ class GeoKKP:
         self.inspeksinlp_action = DrawNLPDialog()
         self.import_wilayah_admin = ImportWilayahAdmin()
         self.create_pbt_kjskb_action = CreatePBTKJSKB()
+        self.geocodingaction = GeocodingDialog()
         # self.loginaction.loginChanged.connect()
 
     # noinspection PyMethodMayBeStatic
@@ -673,7 +674,7 @@ class GeoKKP:
         #  --- Sub-menu Geocoding ---
         # Sementara disembunyikan, diarahkan untuk menggunakan QGIS Locator
         self.actionGeocoding = self.add_action(
-            icon("carialamat.png"),
+            icon("geocode.png"),
             text=self.tr(u"Pencarian Alamat"),
             callback=self.geocoding,
             add_to_toolbar=False,
@@ -681,7 +682,7 @@ class GeoKKP:
             need_auth=False,
             parent=self.popupPeralatan,
         )
-        # self.popupPeralatan.addAction(self.actionGeocoding)
+        self.popupPeralatan.addAction(self.actionGeocoding)
 
         #  --- Sub-menu Georeferencing/Rubbersheet ---
         self.actionGeoreference = self.add_action(
@@ -1247,10 +1248,13 @@ class GeoKKP:
                 action.trigger()
 
     def geocoding(self):
-        for action in self.iface.mainWindow().findChildren(QAction):
-            # print(action.text())
-            if action.text() == "&GeoCoding":
-                action.trigger()
+        try:
+            for action in self.iface.mainWindow().findChildren(QAction):
+                # print(action.text())
+                if action.text() == "&GeoCoding":
+                    action.trigger()
+        except:
+            dialogBox("Aktifkan terlebih dahulu tool Geocoding dari Plugin Manager QGIS")
 
     def geomchecker(self):
         for action in self.iface.mainWindow().findChildren(QAction):
