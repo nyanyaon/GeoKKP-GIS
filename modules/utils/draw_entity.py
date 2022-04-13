@@ -18,86 +18,104 @@ class DrawEntity:
             return
 
         if self._udr["geoKkpPolygons"]:
-            sdo_by_type = {}
+            sdo_boundary_by_type = {}
+            sdo_text_by_type = {}
             for p in self._udr["geoKkpPolygons"]:
-                sdo_by_type[p["type"]] = p
-            for type, sdo in sdo_by_type.items():
-                layer_config = get_layer_config_by_type(type)
+                boundary_type = p["type"]
+                if boundary_type in sdo_boundary_by_type:
+                    sdo_boundary_by_type[boundary_type].append(p)
+                else:
+                    sdo_boundary_by_type[boundary_type] = [p]
 
-                if sdo["boundary"]:
-                    epsg = get_project_crs()
-                    sdo_to_layer(
-                        sdo=sdo,
-                        name=layer_config["Nama Layer"],
-                        symbol=layer_config["Style Path"],
-                        crs=epsg,
-                        coords_field="boundary"
-                    )
-                if sdo["text"]:
-                    label = sdo["label"].lower()
-                    if type == "BidangTanah":
-                        if label.startswith("m.") or label.startswith("u.") or label.startswith("b.") or label.startswith("p.") or label.startswith("l.") or label.startswith("w."):
-                            layer_config = get_layer_config_by_type("NomorHak")
-                        elif label.startswith("su.") or label.startswith("gs.") or label.startswith("pll.") or label.startswith("gt.") or label.startswith("sus."):
-                            layer_config = get_layer_config_by_type("NomorGSSU")
-                        else:
-                            layer_config = get_layer_config_by_type("NomorBidang")
+                teks_type = "TeksLain"
+                label = p["label"].lower()
+                if boundary_type == "BidangTanah":
+                    if label.startswith("m.") or label.startswith("u.") or label.startswith("b.") or label.startswith("p.") or label.startswith("l.") or label.startswith("w."):
+                        teks_type = "NomorHak"
+                    elif label.startswith("su.") or label.startswith("gs.") or label.startswith("pll.") or label.startswith("gt.") or label.startswith("sus."):
+                        teks_type = "NomorGSSU"
                     else:
-                        layer_config = get_layer_config_by_type("TeksLain")
-                    print("teks")
-                    print(layer_config)
+                        teks_type = "NomorBidang"
+                else:
+                    teks_type = "TeksLain"
+                if teks_type in sdo_text_by_type:
+                    sdo_text_by_type[teks_type].append(p)
+                else:
+                    sdo_text_by_type[teks_type] = [p]
 
-                    sdo_to_layer(
-                        sdo=sdo,
-                        name=layer_config["Nama Layer"],
-                        symbol=layer_config["Style Path"],
-                        crs=epsg,
-                        coords_field="text"
-                    )
+            for type, sdo in sdo_boundary_by_type.items():
+                layer_config = get_layer_config_by_type(type)
+                epsg = get_project_crs()
+                sdo_to_layer(
+                    sdo=sdo,
+                    name=layer_config["Nama Layer"],
+                    symbol=layer_config["Style Path"],
+                    crs=epsg,
+                    coords_field="boundary"
+                )
+
+            for type, sdo in sdo_text_by_type.items():
+                layer_config = get_layer_config_by_type(type)
+                epsg = get_project_crs()
+                sdo_to_layer(
+                    sdo=sdo,
+                    name=layer_config["Nama Layer"],
+                    symbol=layer_config["Style Path"],
+                    crs=epsg,
+                    coords_field="text"
+                )
 
         if self._udr["geoKkpTitiks"]:
-            for p in self._udr["geoKkpGariss"]:
-                sdo_by_type[p["type"]] = p
+            sdo_by_type = {}
+            for p in self._udr["geoKkpTitiks"]:
+                type = p["type"]
+                if type in sdo_boundary_by_type:
+                    sdo_boundary_by_type[type].append(p)
+                else:
+                    sdo_boundary_by_type[type] = [p]
             for type, sdo in sdo_by_type.items():
                 layer_config = get_layer_config_by_type(type)
 
-                if sdo["pointPosition"]:
-                    block_config = get_block_definition_by_type(type)
+                block_config = get_block_definition_by_type(type)
 
-                    epsg = get_project_crs()
-                    if block_config:
-                        nama_layer = f"({block_config['pointName']}) {block_config['remark']}"
-                        sdo_to_layer(
-                            sdo=sdo,
-                            name=nama_layer,
-                            symbol="simpletitik.qml",
-                            crs=epsg,
-                            coords_field="pointPosition"
-                        )
-                    else:
-                        sdo_to_layer(
-                            sdo=sdo,
-                            name=layer_config["Nama Layer"],
-                            symbol=layer_config["Style Path"],
-                            crs=epsg,
-                            coords_field="pointPosition"
-                        )
-
-        if self._udr["geoKkpGariss"]:
-            for p in self._udr["geoKkpGariss"]:
-                sdo_by_type[p["type"]] = p
-            for type, sdo in sdo_by_type.items():
-                layer_config = get_layer_config_by_type(type)
-
-                if sdo["line"]:
-                    epsg = get_project_crs()
+                epsg = get_project_crs()
+                if block_config:
+                    nama_layer = f"({block_config['pointName']}) {block_config['remark']}"
+                    sdo_to_layer(
+                        sdo=sdo,
+                        name=nama_layer,
+                        symbol="simpletitik.qml",
+                        crs=epsg,
+                        coords_field="pointPosition"
+                    )
+                else:
                     sdo_to_layer(
                         sdo=sdo,
                         name=layer_config["Nama Layer"],
                         symbol=layer_config["Style Path"],
                         crs=epsg,
-                        coords_field="line"
+                        coords_field="pointPosition"
                     )
+
+        if self._udr["geoKkpGariss"]:
+            sdo_by_type = {}
+            for p in self._udr["geoKkpGariss"]:
+                type = p["type"]
+                if type in sdo_boundary_by_type:
+                    sdo_boundary_by_type[type].append(p)
+                else:
+                    sdo_boundary_by_type[type] = [p]
+            for type, sdo in sdo_by_type.items():
+                layer_config = get_layer_config_by_type(type)
+
+                epsg = get_project_crs()
+                sdo_to_layer(
+                    sdo=sdo,
+                    name=layer_config["Nama Layer"],
+                    symbol=layer_config["Style Path"],
+                    crs=epsg,
+                    coords_field="line"
+                )
 
         # TODO: support dimensi type
         # TODO: support setting orientation, height, etc
