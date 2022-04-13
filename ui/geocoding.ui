@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Pencarian Lokasi (Geocoding)</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -98,15 +98,15 @@
            </spacer>
           </item>
           <item>
-           <widget class="QToolButton" name="terapkan_lokasi">
-            <property name="minimumSize">
-             <size>
-              <width>80</width>
-              <height>30</height>
-             </size>
+           <widget class="QPushButton" name="terapkan_lokasi">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
             <property name="text">
-             <string>Terapkan</string>
+             <string>Terapkan Pencarian</string>
             </property>
            </widget>
           </item>
