@@ -327,7 +327,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         min_y = 0
         max_x = 0
         max_y = 0
-        for layer in self._parent.current_layers:
+        for layer in self._parent._layers:
             if not layer.name().startswith("(020100)"):
                 continue
             extent = layer.extent()
@@ -491,7 +491,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         return self._wilayah_prior
 
     def _autofill_persil_data(self):
-        for layer in self._parent.current_layers:
+        for layer in self._parent._layers:
             if layer.name().startswith("(020100)"):
                 features = layer.getFeatures()
                 for feature in features:
@@ -612,7 +612,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
             self._ds_parcel[DS_PERSIL_BARU] = persil_baru_sorted
 
     def _autofill_apartemen_data(self):
-        for layer in self._parent.current_layers:
+        for layer in self._parent._layers:
             if layer.name().startswith("(020100)"):
                 features = layer.getFeatures()
                 for feature in features:
@@ -994,9 +994,9 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                     "reset_302": False,
                 }
                 if len(self._wilayah_prior) > 2:
-                    parcel_design["wilayah_id"] = self.current_kelurahan["DESAID"]
+                    parcel_design["wilayah_id"] = self.combo_kelurahan.currentData()
                 else:
-                    parcel_design["wilayah_id"] = self.current_kabupaten["KABUPATENID"]
+                    parcel_design["wilayah_id"] = self.combo_kabupaten.currentData()
 
                 parcel_design["ds_parcel"] = self._ds_parcel
                 parcel_design["old_parcel"] = self._old_parcels

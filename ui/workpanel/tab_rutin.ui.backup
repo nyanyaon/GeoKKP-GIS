@@ -22,7 +22,7 @@
         <number>1</number>
        </property>
        <item>
-        <widget class="QToolButton" name="btn_start_process">
+        <widget class="QToolButton" name="btn_rutin_mulai">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -54,10 +54,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="btn_save_data">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
+        <widget class="QToolButton" name="btn_rutin_simpan">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -83,10 +80,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="btn_info_process">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
+        <widget class="QToolButton" name="btn_rutin_informasi">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -112,10 +106,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="btn_parcel_mapping">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
+        <widget class="QToolButton" name="btn_rutin_di302">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -141,10 +132,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="btn_create_layout">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
+        <widget class="QToolButton" name="btn_rutin_layout">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -170,10 +158,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="btn_pause_process">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
+        <widget class="QToolButton" name="btn_rutin_tutup">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -199,10 +184,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QToolButton" name="btn_finish_process">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
+        <widget class="QToolButton" name="btn_rutin_selesai">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -244,7 +226,7 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QgsFilterLineEdit" name="txt_nomor">
+          <widget class="QgsFilterLineEdit" name="input_rutin_no_berkas">
            <property name="showSearchIcon">
             <bool>true</bool>
            </property>
@@ -261,7 +243,7 @@
           </widget>
          </item>
          <item row="1" column="1">
-          <widget class="QgsFilterLineEdit" name="txt_tahun">
+          <widget class="QgsFilterLineEdit" name="input_rutin_th_berkas">
            <property name="showSearchIcon">
             <bool>true</bool>
            </property>
@@ -272,7 +254,7 @@
          </item>
         </layout>
        </widget>
-       <widget class="QToolButton" name="btn_cari">
+       <widget class="QToolButton" name="btn_rutin_cari">
         <property name="sizePolicy">
          <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
           <horstretch>0</horstretch>
@@ -299,7 +281,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QTableWidget" name="dgv_inbox">
+      <widget class="QTableWidget" name="table_rutin">
        <property name="horizontalScrollBarPolicy">
         <enum>Qt::ScrollBarAlwaysOff</enum>
        </property>
@@ -393,7 +375,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="txt_paging">
+      <widget class="QLineEdit" name="input_page">
        <property name="enabled">
         <bool>false</bool>
        </property>
