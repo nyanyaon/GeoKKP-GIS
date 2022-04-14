@@ -9,6 +9,7 @@ from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
 from ...utils import (
+    dialogBox,
     readSetting,
     storeSetting,
     get_tm3_zone,
@@ -44,8 +45,13 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
         self.current_tipe_kantor_id = None
         self.current_kantor = {}
         self.list_kantor = []
+
+        self.populateTM3()
+
         self.combo_kantor.currentIndexChanged.connect(self.kantor_changed)
         self.btn_simpan_area_kerja.clicked.connect(self.simpan_area_kerja)
+
+        self.btn_simpan_zonatm3.clicked.connect(self.simpan_tm3)
 
         self.setup_workpanel()
 
@@ -72,7 +78,8 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
             if kantor["kantorID"] == prev_id:
                 current_index = index
             self.combo_kantor.addItem(kantor["nama"])
-        self.combo_kantor.setCurrentIndex(current_index)
+        # hide kantor first to avoid confusion
+        self.combo_kantor.setCurrentIndex(-1)
 
     def kantor_changed(self, index):
         self.current_kantor = self.list_kantor[index]
@@ -152,3 +159,20 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
                 "Perhatian",
                 "Batas Desa tidak ditemukan,\nBatas desa tidak akan ditampilkan di QGIS",
             )
+
+    def populateTM3(self):
+        for i in range(46, 55):
+            for j in range(2, 0, -1):
+                self.combo_tm3.addItem(f"{i}.{j}")
+        self.combo_tm3.setCurrentIndex(-1)
+
+    def simpan_tm3(self):
+        selectedTM3 = get_epsg_from_tm3_zone(self.combo_tm3.currentText())
+        try:
+            print(selectedTM3)
+            set_project_crs_by_epsg(selectedTM3)
+        except Exception as e:
+            logMessage("pengaturan CRS Project Gagal")
+            pass
+        dialogBox("Berhasil mengatur CRS Project")
+

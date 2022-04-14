@@ -634,6 +634,19 @@ class GeoKKP:
         )
         self.popupPeralatan.addAction(self.actionAturLokasi)
 
+        #  --- Sub-menu Geocoding ---
+        self.actionGeocoding = self.add_action(
+            icon("geocode.png"),
+            text=self.tr(u"Pencarian Alamat"),
+            callback=self.geocoding,
+            add_to_toolbar=False,
+            add_to_menu=False,
+            need_auth=False,
+            parent=self.popupPeralatan,
+        )
+        self.popupPeralatan.addAction(self.actionGeocoding)
+
+
         #  --- Sub-menu Transformasi Koordinat ---
         self.actionTransformasiKoordinat = self.add_action(
             icon("conversion.png"),
@@ -670,19 +683,6 @@ class GeoKKP:
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionNLP)
-
-        #  --- Sub-menu Geocoding ---
-        # Sementara disembunyikan, diarahkan untuk menggunakan QGIS Locator
-        self.actionGeocoding = self.add_action(
-            icon("geocode.png"),
-            text=self.tr(u"Pencarian Alamat"),
-            callback=self.geocoding,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            need_auth=False,
-            parent=self.popupPeralatan,
-        )
-        self.popupPeralatan.addAction(self.actionGeocoding)
 
         #  --- Sub-menu Georeferencing/Rubbersheet ---
         self.actionGeoreference = self.add_action(
@@ -796,13 +796,13 @@ class GeoKKP:
 
         # Disembunyikan, sampai ada kejelasan tentang apa saja yang diatur / diminta
         # ========== Menu: Pengaturan ==========
-        # self.add_action(
-        #     iconPath("settings.png"),
-        #     text=self.tr(u"Pengaturan"),
-        #     callback=self.open_settings,
-        #     parent=self.iface.mainWindow(),
-        #     need_auth=False,
-        # )
+        self.add_action(
+            iconPath("settings.png"),
+            text=self.tr(u"Pengaturan"),
+            callback=self.open_settings,
+            parent=self.iface.mainWindow(),
+            need_auth=False,
+        )
         # -------------------------------------------
 
         # ========== Menu: Bantuan ==========
