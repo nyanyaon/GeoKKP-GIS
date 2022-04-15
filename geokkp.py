@@ -702,15 +702,18 @@ class GeoKKP:
         )
         self.popupPeralatan.addAction(self.actionGeoreference)
 
-        #  --- Sub-menu Pencarian Fitur ---
-        # dipakai untuk menggantikan menu DXP(?)
-        self.add_action(
-            iconPath("exportcsv.png"),
+
+        #  --- Sub-menu Export Layer as CSV ---
+        self.actionExportCSV = self.add_action(
+            icon("exportcsv.png"),
             text=self.tr(u"Export Layer ke CSV"),
             callback=self.export_csv,
-            parent=self.iface.mainWindow().menuBar(),
+            add_to_toolbar=False,
+            add_to_menu=False,
+            need_auth=False,
+            parent=self.popupPeralatan,
         )
-        # -------------------------------------------
+        self.popupPeralatan.addAction(self.actionExportCSV)
 
         #  --- Sub-menu Pencarian Fitur ---
         self.actionFeatureSearch = self.add_action(
@@ -813,7 +816,6 @@ class GeoKKP:
         )
         # -------------------------------------------
 
-        # Disembunyikan, sampai ada kejelasan tentang apa saja yang diatur / diminta
         # ========== Menu: Pengaturan ==========
         self.add_action(
             iconPath("settings.png"),
