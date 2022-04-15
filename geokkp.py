@@ -22,6 +22,9 @@
 """
 import os
 import json
+import csv
+
+from PyQt5.QtWidgets import QFileDialog
 
 from qgis.PyQt.QtCore import QTranslator, QCoreApplication, Qt, QSize, QUrl
 
@@ -44,6 +47,8 @@ from qgis.core import (
     QgsRasterLayer,
     QgsCoordinateReferenceSystem,
     QgsSettings,
+    QgsVectorFileWriter,
+    QgsCoordinateTransformContext
 )
 from qgis.gui import QgsMapToolIdentify, QgsMapToolPan
 from qgis import utils as qgis_utils
@@ -377,25 +382,26 @@ class GeoKKP:
         self.actionImportCSV = self.add_action(
             icon("importcsv.png"),
             text=self.tr(u"Import CSV/TXT"),
-            callback=self.import_file,
+            callback=self.import_csv,
             add_to_toolbar=False,
             parent=self.popupAddData,
             add_to_menu=False,
         )
         self.popupAddData.addAction(self.actionImportCSV)
 
-        self.popupAddData.addSeparator()
-
-        # ======== Menu: Import Admin ========
-        """
-        self.add_action(
-            iconPath("carialamat.png"),
-            text=self.tr(u"Import Wilayah Administrasi"),
-            callback=self.import_admin,
-            parent=self.iface.mainWindow().menuBar(),
+        
+        #  --- Sub-menu Import DXF ---
+        self.actionImportDXF = self.add_action(
+            icon("importdxf.png"),
+            text=self.tr(u"Import DXF/DWG"),
+            callback=self.import_dxf,
+            add_to_toolbar=False,
+            parent=self.popupAddData,
+            add_to_menu=False,
         )
-        """
-        # -------------------------------------------
+        self.popupAddData.addAction(self.actionImportDXF)
+
+        self.popupAddData.addSeparator()
 
         #  --- Sub-menu Import Admin ---
         self.actionImportAdmin = self.add_action(
@@ -697,6 +703,16 @@ class GeoKKP:
         self.popupPeralatan.addAction(self.actionGeoreference)
 
         #  --- Sub-menu Pencarian Fitur ---
+        # dipakai untuk menggantikan menu DXP(?)
+        self.add_action(
+            iconPath("exportcsv.png"),
+            text=self.tr(u"Export Layer ke CSV"),
+            callback=self.export_csv,
+            parent=self.iface.mainWindow().menuBar(),
+        )
+        # -------------------------------------------
+
+        #  --- Sub-menu Pencarian Fitur ---
         self.actionFeatureSearch = self.add_action(
             icon("findatribute.png"),
             text=self.tr(u"Pencarian Atribut"),
@@ -707,17 +723,6 @@ class GeoKKP:
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionFeatureSearch)
-
-
-        # ======== Menu: KJSKB ========
-        self.add_action(
-            # TODO: replace icon
-            iconPath("checked.png"),
-            text=self.tr(u"Persetujuan Peta Bidang KJSKB"),
-            callback=self.create_pbt_kjskb,
-            parent=self.iface.mainWindow().menuBar(),
-        )
-        # -------------------------------------------
 
         
         # ======== Menu: Layout ========
@@ -740,6 +745,20 @@ class GeoKKP:
         self.toolbar.addWidget(self.PeralatanButton)
         self.menu.addMenu(self.popupPeralatan)
         # -------------------------------------------
+
+        self.toolbar.addSeparator()
+        self.menu.addSeparator()
+
+        # ======== Menu: KJSKB ========
+        self.add_action(
+            iconPath("checked.png"),
+            text=self.tr(u"Persetujuan Peta Bidang KJSKB"),
+            callback=self.create_pbt_kjskb,
+            parent=self.iface.mainWindow().menuBar(),
+        )
+        # -------------------------------------------
+
+
 
         # ========== Label Toolbar GeoKKP ==========
         self.judul_aplikasi()
@@ -1159,10 +1178,14 @@ class GeoKKP:
             None, "Plugin tidak ditemukan", "Plugin QAD perlu diaktifkan lebih dahulu"
         )
 
-    def import_file(self):
+    def import_csv(self):
         if self.import_from_file_widget is None:
             self.import_from_file_widget = ImportGeomFromFile()
         self.import_from_file_widget.show()
+
+    def import_dxf(self):
+        self.iface.mainWindow().findChildren(QAction,"mActionDwgImport")[0].trigger()
+        pass
 
     def login_geokkp(self):
         if self.loginaction is None:
@@ -1252,15 +1275,15 @@ class GeoKKP:
             self.geocodingaction = GeocodingDialog()
         self.geocodingaction.show()
 
-        """
-        try:
-            for action in self.iface.mainWindow().findChildren(QAction):
-                # print(action.text())
-                if action.text() == "&GeoCoding":
-                    action.trigger()
-        except:
-            dialogBox("Aktifkan terlebih dahulu tool Geocoding dari Plugin Manager QGIS")
-        """
+    def export_csv(self):
+        layer = self.iface.activeLayer()
+        if not layer.type()==0:
+            dialogBox("Layer aktif bukan vektor") 
+        csvSaveOptions = QgsVectorFileWriter.SaveVectorOptions()
+        csvSaveOptions.driverName = "CSV"
+        csvSaveOptions.fileEncoding = "UTF-8"
+        name = QFileDialog.getSaveFileName(self.iface.mainWindow(), 'Simpan Layer sebagai CSV')
+        QgsVectorFileWriter.writeAsVectorFormatV2(layer, name[0], QgsCoordinateTransformContext(), csvSaveOptions)       
 
     def geomchecker(self):
         for action in self.iface.mainWindow().findChildren(QAction):
