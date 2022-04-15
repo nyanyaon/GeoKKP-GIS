@@ -3,7 +3,7 @@ import json
 from queue import Empty
 
 from osgeo import ogr
-from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt import QtWidgets, uic, QtGui
 from qgis.core import QgsProject, QgsCoordinateReferenceSystem
 from qgis.gui import QgsTableWidgetItem
 from qgis.PyQt.QtCore import pyqtSignal
@@ -193,6 +193,10 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
 
 
     def populateRekapitulasi(self):
+        username_not_done = True
+        kantor_not_done = True
+        crs_not_done = True
+
         # username
         login_state = app_state.get("logged_in")
         if not login_state.value:
@@ -200,11 +204,16 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
         else:
             username = str(app_state.get("username"))
             str_username = username
+            username_not_done = False
         print("str", str_username)
         item = QgsTableWidgetItem(str_username)
         #print(item)
         self.tabelRekapitulasi.setItem(0, 0, QgsTableWidgetItem("Pengguna GeoKKP"))
         self.tabelRekapitulasi.setItem(0, 1, item)
+        if username_not_done:
+            item.setBackground(QtGui.QColor(255,0,0))
+        else:
+            item.setBackground(QtGui.QColor(0,255,0))
 
         # kantor
         kantor = readSetting("kantorterpilih", {})
@@ -214,9 +223,14 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
             str_kantor = "Anda belum memilih lokasi kantor"
         else:
             str_kantor = kantor
+            kantor_not_done = False
         item = QgsTableWidgetItem(str_kantor)
         self.tabelRekapitulasi.setItem(1, 0, QgsTableWidgetItem("Kantor Terpilih"))
         self.tabelRekapitulasi.setItem(1, 1, item)
+        if kantor_not_done:
+            item.setBackground(QtGui.QColor(255,0,0))
+        else:
+            item.setBackground(QtGui.QColor(0,255,0))
 
         # CRS
         epsg = get_project_crs()
@@ -225,9 +239,14 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
             str_crs = "Anda belum mengatur sistem koordinat TM-3"
         else:
             str_crs = crs.description()
+            crs_not_done = False
         item = QgsTableWidgetItem(str_crs)
         self.tabelRekapitulasi.setItem(2, 0, QgsTableWidgetItem("Sistem Proyeksi"))
         self.tabelRekapitulasi.setItem(2, 1, item)
+        if crs_not_done:
+            item.setBackground(QtGui.QColor(255,0,0))
+        else:
+            item.setBackground(QtGui.QColor(0,255,0))
         
 
         
