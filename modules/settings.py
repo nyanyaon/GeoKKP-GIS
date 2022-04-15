@@ -28,6 +28,9 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
  
         self.populateEndpoint()
+        self.populateTemplate()
+
+
         self.simpanAturServer.clicked.connect(self.aturServer)
 
 
@@ -42,6 +45,19 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
                     ]
         for i in endpoints:
             self.comboBoxEndpoint.addItem(i)
+
+    def populateTemplate(self):
+        folder_template = os.path.join(os.path.dirname(__file__), "../template/")
+        self.direktoriTemplate.setFilePath(folder_template)
+
+    def populateKonfigurasi(self):
+        folder_config = os.path.join(os.path.dirname(__file__), "../config/")
+        self.direktoriKonfigurasi.setFilePath(folder_config)
+
+    def populateData(self):
+        folder_data = os.path.join(os.path.dirname(__file__), "../data/")
+        self.direktoriBatasWilayah.setFilePath(folder_data)
+
 
     def aturServer(self):
         selectedEndpoint = self.comboBoxEndpoint.currentText()
