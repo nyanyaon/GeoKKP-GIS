@@ -1,15 +1,17 @@
 import os
 import json
+from queue import Empty
 
 from osgeo import ogr
 from qgis.PyQt import QtWidgets, uic
 from qgis.core import QgsProject, QgsCoordinateReferenceSystem
-
+from qgis.gui import QgsTableWidgetItem
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
 from ...utils import (
     dialogBox,
+    get_project_crs,
     readSetting,
     storeSetting,
     get_tm3_zone,
@@ -55,6 +57,16 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
 
         self.setup_workpanel()
 
+        # setup tabel rekap
+        self.tabelRekapitulasi.setRowCount(3)
+        self.tabelRekapitulasi.setColumnCount(2)
+
+        header = self.tabelRekapitulasi.horizontalHeader()       
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+
+        
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         self.stackedWidget.setCurrentIndex(0)
@@ -67,6 +79,7 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
     def setup_workpanel(self):
         self.read_settings()
         self.populate_kantor()
+        self.populateRekapitulasi()
 
     def populate_kantor(self):
         self.combo_kantor.clear()
@@ -89,6 +102,7 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
     def simpan_area_kerja(self):
         storeSetting("kantorterpilih", self.current_kantor)
         self.get_pagawai()
+        self.populateRekapitulasi()
         # self.set_project_crs()
 
     def get_pagawai(self):
@@ -175,4 +189,50 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
             logMessage("pengaturan CRS Project Gagal")
             pass
         dialogBox("Berhasil mengatur CRS Project")
+        self.populateRekapitulasi()
+
+
+    def populateRekapitulasi(self):
+        # username
+        login_state = app_state.get("logged_in")
+        if not login_state.value:
+            str_username = "Anda belum melakukan login ke aplikasi GeoKKP"
+        else:
+            username = str(app_state.get("username"))
+            str_username = username
+        print("str", str_username)
+        item = QgsTableWidgetItem(str_username)
+        #print(item)
+        self.tabelRekapitulasi.setItem(0, 0, QgsTableWidgetItem("Pengguna GeoKKP"))
+        self.tabelRekapitulasi.setItem(0, 1, item)
+
+        # kantor
+        kantor = readSetting("kantorterpilih", {})
+        try:
+            kantor = kantor['nama']
+        except:
+            str_kantor = "Anda belum memilih lokasi kantor"
+        else:
+            str_kantor = kantor
+        item = QgsTableWidgetItem(str_kantor)
+        self.tabelRekapitulasi.setItem(1, 0, QgsTableWidgetItem("Kantor Terpilih"))
+        self.tabelRekapitulasi.setItem(1, 1, item)
+
+        # CRS
+        epsg = get_project_crs()
+        crs = QgsCoordinateReferenceSystem(epsg)
+        if crs.isGeographic():
+            str_crs = "Anda belum mengatur sistem koordinat TM-3"
+        else:
+            str_crs = crs.description()
+        item = QgsTableWidgetItem(str_crs)
+        self.tabelRekapitulasi.setItem(2, 0, QgsTableWidgetItem("Sistem Proyeksi"))
+        self.tabelRekapitulasi.setItem(2, 1, item)
+        
+
+        
+
+        
+
+        
 
