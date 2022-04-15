@@ -6,9 +6,21 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>561</width>
-    <height>301</height>
+    <width>800</width>
+    <height>500</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>648</width>
+    <height>0</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Pengaturan GeoKKP</string>
@@ -103,14 +115,20 @@
               </item>
               <item>
                <widget class="QgsFileWidget" name="direktoriTemplate">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="minimumSize">
                  <size>
-                  <width>350</width>
+                  <width>500</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="useLink">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="dialogTitle">
                  <string>Direktori Template Layout</string>
@@ -127,7 +145,7 @@
               <item>
                <widget class="QLabel" name="label_2">
                 <property name="text">
-                 <string>File Konfigurasi</string>
+                 <string>Folder Konfigurasi</string>
                 </property>
                </widget>
               </item>
@@ -146,17 +164,23 @@
               </item>
               <item>
                <widget class="QgsFileWidget" name="direktoriKonfigurasi">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="minimumSize">
                  <size>
-                  <width>350</width>
+                  <width>500</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="useLink">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="fullUrl">
-                 <bool>true</bool>
+                 <bool>false</bool>
                 </property>
                 <property name="defaultRoot">
                  <string>Direktori Konfigurasi</string>
@@ -192,17 +216,23 @@
               </item>
               <item>
                <widget class="QgsFileWidget" name="direktoriBatasWilayah">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="minimumSize">
                  <size>
-                  <width>350</width>
+                  <width>500</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="useLink">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="fullUrl">
-                 <bool>true</bool>
+                 <bool>false</bool>
                 </property>
                 <property name="dialogTitle">
                  <string>Direktori Data</string>
@@ -228,7 +258,7 @@
            <property name="sizeHint" stdset="0">
             <size>
              <width>20</width>
-             <height>21</height>
+             <height>105</height>
             </size>
            </property>
           </spacer>
@@ -263,21 +293,244 @@
         <attribute name="title">
          <string>Basemap</string>
         </attribute>
-       </widget>
-       <widget class="QWidget" name="tab_2">
-        <attribute name="title">
-         <string>Layout</string>
-        </attribute>
+        <layout class="QGridLayout" name="gridLayout_5">
+         <item row="0" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout_7">
+           <item>
+            <widget class="QLabel" name="label_4">
+             <property name="text">
+              <string>Pengaturan basemap</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_6">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QgsFileWidget" name="fileBasemap">
+             <property name="minimumSize">
+              <size>
+               <width>450</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="fullUrl">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="1" column="0">
+          <widget class="QTextEdit" name="textEditBasemap">
+           <property name="documentTitle">
+            <string>File basemap.json</string>
+           </property>
+           <property name="readOnly">
+            <bool>false</bool>
+           </property>
+           <property name="overwriteMode">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <spacer name="horizontalSpacer_5">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="editBerkasBasemap">
+             <property name="text">
+              <string>Simpan pengaturan</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </widget>
        <widget class="QWidget" name="layer">
         <attribute name="title">
          <string>Daftar Layer</string>
         </attribute>
+        <layout class="QGridLayout" name="gridLayout_6">
+         <item row="0" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout_8">
+           <item>
+            <widget class="QLabel" name="label_5">
+             <property name="text">
+              <string>Pengaturan layer</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_7">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QgsFileWidget" name="fileLayer">
+             <property name="minimumSize">
+              <size>
+               <width>450</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="fullUrl">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="1" column="0">
+          <widget class="QTextEdit" name="textEditLayer">
+           <property name="documentTitle">
+            <string>File basemap.json</string>
+           </property>
+           <property name="readOnly">
+            <bool>false</bool>
+           </property>
+           <property name="overwriteMode">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout_9">
+           <item>
+            <spacer name="horizontalSpacer_8">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="editBerkasLayer">
+             <property name="text">
+              <string>Simpan pengaturan</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </widget>
-       <widget class="QWidget" name="tab">
+       <widget class="QWidget" name="kantor">
         <attribute name="title">
          <string>Daftar Kantor</string>
         </attribute>
+        <layout class="QGridLayout" name="gridLayout_7">
+         <item row="0" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout_10">
+           <item>
+            <widget class="QLabel" name="label_6">
+             <property name="text">
+              <string>Pengaturan kantor</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <spacer name="horizontalSpacer_9">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QgsFileWidget" name="fileKantor">
+             <property name="minimumSize">
+              <size>
+               <width>450</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="fullUrl">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item row="1" column="0">
+          <widget class="QTextEdit" name="textEditKantor">
+           <property name="documentTitle">
+            <string>File basemap.json</string>
+           </property>
+           <property name="readOnly">
+            <bool>false</bool>
+           </property>
+           <property name="overwriteMode">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="0">
+          <layout class="QHBoxLayout" name="horizontalLayout_11">
+           <item>
+            <spacer name="horizontalSpacer_10">
+             <property name="orientation">
+              <enum>Qt::Horizontal</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>20</height>
+              </size>
+             </property>
+            </spacer>
+           </item>
+           <item>
+            <widget class="QPushButton" name="editBerkasKantor">
+             <property name="text">
+              <string>Simpan pengaturan</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
        </widget>
       </widget>
      </item>
