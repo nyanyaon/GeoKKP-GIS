@@ -1281,11 +1281,11 @@ class GeoKKP:
         layer = self.iface.activeLayer()
         if not layer.type()==0:
             dialogBox("Layer aktif bukan vektor") 
-        csvSaveOptions = QgsVectorFileWriter.SaveVectorOptions()
-        csvSaveOptions.driverName = "CSV"
-        csvSaveOptions.fileEncoding = "UTF-8"
-        name = QFileDialog.getSaveFileName(self.iface.mainWindow(), 'Simpan Layer sebagai CSV')
-        QgsVectorFileWriter.writeAsVectorFormatV2(layer, name[0], QgsCoordinateTransformContext(), csvSaveOptions)       
+            csvSaveOptions = QgsVectorFileWriter.SaveVectorOptions()
+            csvSaveOptions.driverName = "CSV"
+            csvSaveOptions.fileEncoding = "UTF-8"
+            name = QFileDialog.getSaveFileName(self.iface.mainWindow(), 'Simpan Layer sebagai CSV')
+            QgsVectorFileWriter.writeAsVectorFormatV2(layer, name[0], QgsCoordinateTransformContext(), csvSaveOptions)       
 
     def geomchecker(self):
         for action in self.iface.mainWindow().findChildren(QAction):
