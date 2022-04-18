@@ -45,6 +45,7 @@ from qgis.core import (
     Qgis,
     QgsProject,
     QgsRasterLayer,
+    QgsVectorLayer,
     QgsCoordinateReferenceSystem,
     QgsSettings,
     QgsVectorFileWriter,
@@ -62,6 +63,8 @@ from .modules.utils import (
     iconPath,
     select_layer_by_name,
     icon,
+    enable_snapping
+
 )
 
 # Import the code for the DockWidget
@@ -389,6 +392,17 @@ class GeoKKP:
         )
         self.popupAddData.addAction(self.actionImportCSV)
 
+        #  --- Sub-menu Import GPX ---
+        self.actionImportGPX = self.add_action(
+            icon("importgpx.png"),
+            text=self.tr(u"Import GPX"),
+            callback=self.import_gpx,
+            add_to_toolbar=False,
+            parent=self.popupAddData,
+            add_to_menu=False,
+        )
+        self.popupAddData.addAction(self.actionImportGPX)
+
         
         #  --- Sub-menu Import DXF ---
         self.actionImportDXF = self.add_action(
@@ -458,7 +472,7 @@ class GeoKKP:
         self.actionManualDraw = self.add_action(
             icon("manualedit.png"),
             text=self.tr(u"Gambar Manual"),
-            callback=self.edit_parcel_attribute,
+            callback=self.start_editing,
             add_to_toolbar=False,
             add_to_menu=False,
             parent=self.popupDraw,
@@ -702,15 +716,18 @@ class GeoKKP:
         )
         self.popupPeralatan.addAction(self.actionGeoreference)
 
-        #  --- Sub-menu Pencarian Fitur ---
-        # dipakai untuk menggantikan menu DXP(?)
-        self.add_action(
-            iconPath("exportcsv.png"),
+
+        #  --- Sub-menu Export Layer as CSV ---
+        self.actionExportCSV = self.add_action(
+            icon("exportcsv.png"),
             text=self.tr(u"Export Layer ke CSV"),
             callback=self.export_csv,
-            parent=self.iface.mainWindow().menuBar(),
+            add_to_toolbar=False,
+            add_to_menu=False,
+            need_auth=False,
+            parent=self.popupPeralatan,
         )
-        # -------------------------------------------
+        self.popupPeralatan.addAction(self.actionExportCSV)
 
         #  --- Sub-menu Pencarian Fitur ---
         self.actionFeatureSearch = self.add_action(
@@ -813,7 +830,6 @@ class GeoKKP:
         )
         # -------------------------------------------
 
-        # Disembunyikan, sampai ada kejelasan tentang apa saja yang diatur / diminta
         # ========== Menu: Pengaturan ==========
         self.add_action(
             iconPath("settings.png"),
@@ -1187,6 +1203,18 @@ class GeoKKP:
         self.iface.mainWindow().findChildren(QAction,"mActionDwgImport")[0].trigger()
         pass
 
+    def import_gpx(self):
+        filter = "gpx(*.gpx)"
+        path = QFileDialog.getOpenFileName(self.iface.mainWindow(), 'Buka File GPX', self.plugin_dir, filter)[0]
+        names = ["waypoint", "route", "track", "route_point", "track_point"]
+        for name in names:
+            layer = self.iface.addVectorLayer(path+"?type="+name, name, "gpx")
+            if not layer or not layer.isValid():
+                dialogBox("Layer gagal dibaca dari Plugin GeoKKP!")
+            crs = QgsCoordinateReferenceSystem("EPSG:4326")
+            layer.setCrs(crs)
+            self.iface.actionZoomToLayers().trigger()
+
     def login_geokkp(self):
         if self.loginaction is None:
             self.loginaction = LoginDialog()
@@ -1206,7 +1234,10 @@ class GeoKKP:
         # layer = self.iface.activeLayer()
 
     def edit_parcel_attribute(self):
-        self.layer = self.iface.activeLayer()
+        layer = self.iface.activeLayer()
+        self.project.instance().setTopologicalEditing(True)
+        self.project.instance().setAvoidIntersectionsMode("AvoidIntersectionsLayers")
+        self.project.instance().setAvoidIntersectionsLayers([layer])
         # print(is_layer_exist(self.project, 'Persil'))
 
         # if self.actionAttribute.isChecked():
@@ -1222,9 +1253,12 @@ class GeoKKP:
         for x in self.iface.advancedDigitizeToolBar().actions():
             if x.text() == "Enable advanced digitizing tools":
                 x.trigger()
+        layer.startEditing()
+        self.iface.actionAddFeature().trigger()
+        # activate_editing(layer, self.project)
         #   print("stop editing")
 
-        # self.layer.startEditing()
+        #   self.layer.startEditing()
         # f = self.layer.selectedFeatures()[0]
 
         # fid = feature.id()
@@ -1232,14 +1266,39 @@ class GeoKKP:
         # print ("feature selected : " + str(fid))
 
     def start_editing(self):
-        if self.actionDrawPoly.isChecked():
-            # print("it is checked")
-            layer = self.project.instance().mapLayersByName("Persil")[0]
-            self.project.instance().setAvoidIntersectionsLayers([layer])
-            activate_editing(layer)
-        else:
-            # print("unchecked")
-            self.stop_editing()
+        # enable snapping
+        enable_snapping()
+
+        # find all polygon layers
+        all_layers = self.project.instance().mapLayers().values()
+        vector_layers = [layer for layer in all_layers if isinstance(layer, QgsVectorLayer)]
+        poly_layers = [layer for layer in vector_layers if layer.geometryType()==2]
+
+        # set as intersection avoidance with active layer
+        self.project.instance().setTopologicalEditing(True)
+        self.project.instance().setAvoidIntersectionsMode(QgsProject.AvoidIntersectionsMode.AvoidIntersectionsLayers)
+        self.project.instance().setAvoidIntersectionsLayers(poly_layers)
+
+        # enable CAD Tools for advanced editing
+        self.iface.cadDockWidget().show()
+        for x in self.iface.advancedDigitizeToolBar().actions():
+            if x.text() == "Enable advanced digitizing tools":
+                x.trigger()
+
+        # detect active layers and start editing
+        layer = self.iface.activeLayer()
+
+        def feature_added():
+            # Disconnect from the signal
+            layer.featureAdded.disconnect()
+            # Save changes and end edit mode
+            layer.commitChanges()
+
+        layer.featureAdded.connect(feature_added)
+        # Set the layer in edit mode
+        layer.startEditing()
+        self.iface.actionAddFeature().trigger()
+
 
     def stop_editing(self):
         self.iface.mainWindow().findChild(QAction, "mActionToggleEditing").trigger()
@@ -1278,12 +1337,14 @@ class GeoKKP:
     def export_csv(self):
         layer = self.iface.activeLayer()
         if not layer.type()==0:
-            dialogBox("Layer aktif bukan vektor") 
-        csvSaveOptions = QgsVectorFileWriter.SaveVectorOptions()
-        csvSaveOptions.driverName = "CSV"
-        csvSaveOptions.fileEncoding = "UTF-8"
-        name = QFileDialog.getSaveFileName(self.iface.mainWindow(), 'Simpan Layer sebagai CSV')
-        QgsVectorFileWriter.writeAsVectorFormatV2(layer, name[0], QgsCoordinateTransformContext(), csvSaveOptions)       
+            dialogBox("Layer aktif bukan vektor")
+            pass
+        else: 
+            csvSaveOptions = QgsVectorFileWriter.SaveVectorOptions()
+            csvSaveOptions.driverName = "CSV"
+            csvSaveOptions.fileEncoding = "UTF-8"
+            name = QFileDialog.getSaveFileName(self.iface.mainWindow(), 'Simpan Layer sebagai CSV')
+            QgsVectorFileWriter.writeAsVectorFormatV2(layer, name[0], QgsCoordinateTransformContext(), csvSaveOptions)       
 
     def geomchecker(self):
         for action in self.iface.mainWindow().findChildren(QAction):
