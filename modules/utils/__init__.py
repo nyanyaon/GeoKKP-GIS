@@ -49,6 +49,7 @@ TODO: Pindah variabel & konstanta global ke modul terpisah
 """
 
 layer_json_file = os.path.join(os.path.dirname(__file__), "../../config/layers.json")
+block_json_file = os.path.join(os.path.dirname(__file__), "../../config/block_definition.json")
 
 epsg4326 = QgsCoordinateReferenceSystem("EPSG:4326")
 
@@ -110,7 +111,7 @@ SDO_GTYPE_MAP = {
     "09": "MultiSolid",
 }
 
-SDO_FIELD_EXCLUDE = ["text", "boundary", "line","position"]
+SDO_FIELD_EXCLUDE = ["text", "boundary", "line", "position"]
 
 
 # constants for processing snap parameter (auto-adjust)
@@ -189,6 +190,7 @@ def get_tm3_zone(long):
         denom = 1
     return f"{nom}.{denom}"
 
+
 def loadXYZ(url, name):
     """
     Memuat layer dalam bentuk XYZ Tile
@@ -207,12 +209,14 @@ def add_google_basemap():
     url = "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
     loadXYZ(url, "Google Satellite")
 
+
 def deleteLayerbyName(layername):
     to_be_deleted = QgsProject.instance().mapLayersByName(layername)[0]
     # QgsProject.instance().layerTreeRoot().removeLayer(to_be_deleted)
     QgsProject.instance().removeMapLayer(to_be_deleted.id())
 
-def activate_editing(layer, project):
+    
+def activate_editing(layer):
     """
     Activate layer editing tools
     TODO: fix conflicts with built-in layer editing in QGIS
@@ -245,6 +249,7 @@ def readSetting(key, default=None):
     except Exception:
         logMessage("gagal memuat data")
     settings.sync()
+
 
 def select_layer_by_name(project, layername):
     """
@@ -489,6 +494,36 @@ def get_layer_config(kode):
         for layer in layers:
             if layer["Kode"] == kode:
                 return layer
+    return None
+
+
+def get_layer_config_by_type(tipe):
+    with open(layer_json_file, "r") as f:
+        layer_config = json.loads(f.read())
+    for layers in layer_config["layers"].values():
+        for layer in layers:
+            if "Tipe Objek" in layer and layer["Tipe Objek"] == tipe:
+                return layer
+    return None
+
+
+def get_layers_config_by_topology(topology):
+    results = []
+    with open(layer_json_file, "r") as f:
+        layer_config = json.loads(f.read())
+    for layers in layer_config["layers"].values():
+        for layer in layers:
+            if "Topologi" in layer and layer["Topologi"] == topology:
+                results.append(layer)
+    return results
+
+
+def get_block_definition_by_type(tipe):
+    with open(block_json_file, "r") as f:
+        block_config = json.loads(f.read())
+    for block in block_config:
+        if "pointName" in block and block["pointName"] == tipe:
+            return block
     return None
 
 
@@ -990,6 +1025,16 @@ def select_layer_by_regex(regex):
             results.append(layer)
 
     return results
+
+
+def select_layer_by_topology(topology):
+    layers_config = get_layers_config_by_topology(topology)
+    list_pattern = [f"^\({layer['Kode']}\)" for layer in layers_config]
+
+    if list_pattern:
+        regex = "|".join(list_pattern)
+        return select_layer_by_regex(regex)
+    return None
 
 
 def get_feature_object_id(layer_id, feature_id):
