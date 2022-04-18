@@ -10,6 +10,8 @@
          },
          {
             "Kode": "010200",
+            "Topologi": "Batas_Propinsi",
+            "Tipe Objek": "Propinsi",
             "Nama Layer": "(010200) Batas Propinsi",
             "Tipe Layer": "1",
             "Style Path": "administrasi.qml",
@@ -17,6 +19,8 @@
          },
          {
             "Kode": "010300",
+            "Topologi": "Batas_Kabupaten",
+            "Tipe Objek": "Kabupaten",
             "Nama Layer": "(010300) Batas Kabupaten / Kotamadya",
             "Tipe Layer": "Polygon",
             "Style Path": "administrasi.qml",
@@ -24,6 +28,8 @@
          },
          {
             "Kode": "010400",
+            "Topologi": "Batas_Kecamatan",
+            "Tipe Objek": "Kecamatan",
             "Nama Layer": "(010400) Batas Kecamatan",
             "Tipe Layer": "Polygon",
             "Style Path": "administrasi.qml",
@@ -31,6 +37,8 @@
          },
          {
             "Kode": "010500",
+            "Topologi": "Batas_Desa",
+            "Tipe Objek": "Desa",
             "Nama Layer": "(010500) Batas Kelurahan",
             "Tipe Layer": "Polygon",
             "Style Path": "administrasi.qml",
@@ -54,6 +62,8 @@
       "Layer Kadastral": [
          {
             "Kode": "020100",
+            "Tipe Objek": "BidangTanah",
+            "Topologi": "Batas_Persil",
             "Nama Layer": "(020100) Batas Persil",
             "Tipe Layer": "Polygon",
             "Style Path": "simplepersil2.qml",
@@ -76,6 +86,8 @@
          },
          {
             "Kode": "020300",
+            "Topologi": "GarisUkur",
+            "Tipe Objek": "GarisUkur",
             "Nama Layer": "(020300) Garis Garis Gambar Ukur",
             "Tipe Layer": "LineString",
             "Style Path": "",
@@ -89,6 +101,8 @@
          },
          {
             "Kode": "020400",
+            "Topologi": "Dimensi",
+            "Tipe Objek": "Dimensi",
             "Nama Layer": "(020400) Dimensi Pengukuran",
             "Tipe Layer": "LineString",
             "Style Path": "dimension.qml",
@@ -138,6 +152,8 @@
       "Layer Perairan": [
          {
             "Kode": "030100",
+            "Topologi": "BatasHidrologi",
+            "Tipe Objek": "TepiHidrologi",
             "Nama Layer": "(030100) Batas Sungai",
             "Tipe Layer": "LineString",
             "Style Path": "",
@@ -145,6 +161,8 @@
          },
          {
             "Kode": "030200",
+            "Topologi": "AsHidrologi",
+            "Tipe Objek": "AsHidrologi",
             "Nama Layer": "(030200) Garis Tengah Sungai",
             "Tipe Layer": "LineString",
             "Style Path": "",
@@ -210,6 +228,8 @@
       "Layer Transportasi": [
          {
             "Kode": "040100",
+            "Topologi": "BatasJalan",
+            "Tipe Objek": "TepiJalan",
             "Nama Layer": "(040100) Batas Jalan Diperkeras",
             "Tipe Layer": "LineString",
             "Style Path": "transportasi.qml",
@@ -217,6 +237,8 @@
          },
          {
             "Kode": "040200",
+            "Topologi": "AsJalan",
+            "Tipe Objek": "AsJalan",
             "Nama Layer": "(040200) Garis Tengah Jalan Diperkeras",
             "Tipe Layer": "LineString",
             "Style Path": "transportasi.qml",
@@ -280,6 +302,8 @@
          },
          {
             "Kode": "041100",
+            "Topologi": "AsRel",
+            "Tipe Objek": "AsRel",
             "Nama Layer": "(041100) Garis Tengah Rel Kereta Api",
             "Tipe Layer": "LineString",
             "Style Path": "transportasi.qml",
@@ -400,6 +424,8 @@
       "Layer Bangunan": [
          {
             "Kode": "070100",
+            "Topologi": "Bangunan",
+            "Tipe Objek": "Bangunan",
             "Nama Layer": "(070100) Bangunan Rumah",
             "Tipe Layer": "Polygon",
             "Style Path": "",
@@ -407,6 +433,8 @@
          },
          {
             "Kode": "020110",
+            "Topologi": "Gambar_Denah",
+            "Tipe Objek": "Apartemen",
             "Nama Layer": "(020110) Apartemen",
             "Tipe Layer": "Polygon",
             "Style Path": "simplepersil.qml",
@@ -422,6 +450,8 @@
          },
          {
             "Kode": "080210",
+            "Topologi": "Apartemen",
+            "Tipe Objek": "NomorApartemen",
             "Nama Layer": "(080210) Nomor Apartemen",
             "Tipe Layer": "Point",
             "Style Path": "",
@@ -496,6 +526,8 @@
          },
          {
             "Kode": "080102",
+            "Topologi": "Batas_Propinsi",
+            "Tipe Objek": "NamaPropinsi",
             "Nama Layer": "(080102) Nama Propinsi",
             "Tipe Layer": "Point",
             "Style Path": "",
@@ -511,6 +543,8 @@
          },
          {
             "Kode": "080103",
+            "Topologi": "Batas_Kabupaten",
+            "Tipe Objek": "NamaKabupaten",
             "Nama Layer": "(080103) Nama Kabupaten / Kotamadya",
             "Tipe Layer": "Point",
             "Style Path": "",
@@ -526,6 +560,8 @@
          },
          {
             "Kode": "080104",
+            "Topologi": "Batas_Kecamatan",
+            "Tipe Objek": "NamaKecamatan",
             "Nama Layer": "(080104) Nama Kecamatan",
             "Tipe Layer": "Point",
             "Style Path": "",
@@ -533,6 +569,8 @@
          },
          {
             "Kode": "080105",
+            "Topologi": "Batas_Desa",
+            "Tipe Objek": "NamaDesa",
             "Nama Layer": "(080105) Nama Desa",
             "Tipe Layer": "Point",
             "Style Path": "",
@@ -554,9 +592,11 @@
          },
          {
             "Kode": "080201",
+            "Topologi": "Batas_Persil",
+            "Tipe Objek": "NomorBidang",
             "Nama Layer": "(080201) NIB",
             "Tipe Layer": "Point",
-            "Style Path": "",
+            "Style Path": "simpletitik.qml",
             "Attributes": [
                {
                   "key": "String",
@@ -569,9 +609,11 @@
          },
          {
             "Kode": "080202",
+            "Topologi": "Persil",
+            "Tipe Objek": "NomorGSSU",
             "Nama Layer": "(080202) Nomor SU",
             "Tipe Layer": "Point",
-            "Style Path": "",
+            "Style Path": "simpletitik.qml",
             "Attributes": [
                {
                   "key": "String",
@@ -584,9 +626,11 @@
          },
          {
             "Kode": "080203",
+            "Topologi": "Batas_Persil",
+            "Tipe Objek": "NomorHak",
             "Nama Layer": "(080203) Nomor Hak",
             "Tipe Layer": "Point",
-            "Style Path": "",
+            "Style Path": "simpletitik.qml",
             "Attributes": [
                {
                   "key": "String",
@@ -606,6 +650,8 @@
          },
          {
             "Kode": "080301",
+            "Topologi": "TeksHidrologi",
+            "Tipe Objek": "TeksHidrologi",
             "Nama Layer": "(080301) Nama Sungai",
             "Tipe Layer": "Point",
             "Style Path": "",
@@ -662,6 +708,8 @@
          },
          {
             "Kode": "080401",
+            "Topologi": "TeksJalan",
+            "Tipe Objek": "TeksJalan",
             "Nama Layer": "(080401) Nama Jalan Diperkeras",
             "Tipe Layer": "Point",
             "Style Path": "",
@@ -781,6 +829,8 @@
          },
          {
             "Kode": "080701",
+            "Topologi": "Bangunan",
+            "Tipe Objek": "NamaBangunan",
             "Nama Layer": "(080701) Identitas Bangunan Rumah",
             "Tipe Layer": "Point",
             "Style Path": "",
@@ -915,13 +965,17 @@
       "Layer Lain": [
          {
             "Kode": "Tn_lai",
+            "Topologi": "TeksLain",
+            "Tipe Objek": "TeksLain",
             "Nama Layer": "(Tn_lai) Teks Lain",
             "Tipe Layer": "Point",
-            "Style Path": "",
+            "Style Path": "simpletitik.qml",
             "Attributes": ""
          },
          {
             "Kode": "Lb_lai",
+            "Topologi": "GarisLain",
+            "Tipe Objek": "GarisLain",
             "Nama Layer": "(Lb_lai) Garis Lain",
             "Tipe Layer": "LineString",
             "Style Path": "",
