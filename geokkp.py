@@ -607,7 +607,7 @@ class GeoKKP:
         #  --- Sub-menu Cek Topologi ---
         self.actionCekTopologi = self.add_action(
             icon("validasi.png"),
-            text=self.tr(u"Validasi"),
+            text=self.tr(u"Validasi Topologi"),
             callback=self.geomchecker,
             add_to_toolbar=False,
             add_to_menu=False,
