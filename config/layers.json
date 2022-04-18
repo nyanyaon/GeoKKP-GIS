@@ -56,7 +56,7 @@
             "Kode": "020100",
             "Nama Layer": "(020100) Batas Persil",
             "Tipe Layer": "Polygon",
-            "Style Path": "simplepersil.qml",
+            "Style Path": "simplepersil2.qml",
             "Attributes": [
                {
                   "key": "String",

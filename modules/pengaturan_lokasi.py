@@ -139,8 +139,8 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
 
         epsg = get_epsg_from_tm3_zone(self.zone)
         crs = QgsCoordinateReferenceSystem(str(epsg))
-        print(crs.isValid())
-        print(self.project.crs())
+        # print(crs.isValid())
+        # print(self.project.crs())
         self.project.instance().setCrs(crs)
 
         try:

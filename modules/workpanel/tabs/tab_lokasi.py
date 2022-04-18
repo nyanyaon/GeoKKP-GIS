@@ -112,7 +112,7 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
             return
         response = endpoints.get_user_entity_by_username(username.value, kantor_id)
         response_json = json.loads(response.content)
-        print("get_user_entity_by_username", response_json)
+        # print("get_user_entity_by_username", response_json)
         app_state.set("pegawai", response_json)
 
         # add notif for succesful setting loaction
@@ -121,7 +121,7 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
             None, "GeoKKP - Informasi", "Berhasil mengatur lokasi")
 
     def _set_crs_by_local_data(self):
-        print("using local data")
+        # print("using local data")
         iface.mainWindow().blockSignals(True)
         driver = ogr.GetDriverByName("TopoJSON")
         dataSource = driver.Open(adm_district_file, 0)
@@ -183,7 +183,7 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
     def simpan_tm3(self):
         selectedTM3 = get_epsg_from_tm3_zone(self.combo_tm3.currentText())
         try:
-            print(selectedTM3)
+            # print(selectedTM3)
             set_project_crs_by_epsg(selectedTM3)
         except Exception as e:
             logMessage("pengaturan CRS Project Gagal")
@@ -205,7 +205,7 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
             username = str(app_state.get("username"))
             str_username = username
             username_not_done = False
-        print("str", str_username)
+        # print("str", str_username)
         item = QgsTableWidgetItem(str_username)
         #print(item)
         self.tabelRekapitulasi.setItem(0, 0, QgsTableWidgetItem("Pengguna GeoKKP"))
