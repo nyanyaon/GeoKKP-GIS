@@ -43,7 +43,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         self.iface = iface
         self.canvas = iface.mapCanvas()
         self.setupUi(self)
-        self.project = QgsProject
+        # self.project = QgsProject()
 
         
 

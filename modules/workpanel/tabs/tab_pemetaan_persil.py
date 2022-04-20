@@ -645,7 +645,6 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             )
             self._toggle_select_feature(False)
 
-    
     def _clear_all_selections(self):
         mc = self._iface.mapCanvas()
 
@@ -950,3 +949,4 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
         self._pp = {}
         self.txt_nis.setText("")
         self.txt_luas_peta.setText("")
+    

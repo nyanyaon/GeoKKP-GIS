@@ -98,7 +98,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         self.btn_pause_process.clicked.connect(self._stop_process)
         self.btn_finish_process.clicked.connect(self._finish_process)
 
-        self.setup_workpanel()
+        # self.setup_workpanel()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -110,7 +110,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
 
         if not kantor:
             QtWidgets.QMessageBox.warning(
-                None, "GeoKKP", "Pilih lokasi kantor lebih dahulu"
+                None, "GeoKKP", "Pilih lokasi kantor lebih dahulu: Rutin"
             )
             return
 

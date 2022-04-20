@@ -35,7 +35,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         self.layer_acuan.setFilters(QgsMapLayerProxyModel.VectorLayer)
         self.iface = iface
         self.canvas = iface.mapCanvas()
-        self.project = QgsProject
+        self.project = QgsProject()
         self._active = False
         self._orig_cursor = None
 
