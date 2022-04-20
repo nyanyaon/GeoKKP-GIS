@@ -46,7 +46,7 @@ STACKWIDGET_RUTIN = 1
 
 
 class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
-    """Dialog for Peta Bidang"""
+    """Main Workpanel Settings"""
 
     closingPlugin = pyqtSignal()
 
@@ -61,6 +61,8 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
 
         self._main_dock = None
         self._main_tab = None
+        self.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.adjustSize()
         self._setup_workpanel()
 
         config = configparser.ConfigParser()
