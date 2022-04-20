@@ -25,6 +25,7 @@ from .tabs.tab_unduh_persil import TabUnduhPersil
 
 # using utils
 from ..utils import (
+    dialogBox,
     icon,
     readSetting,
     storeSetting,
@@ -55,7 +56,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
         self.setWindowIcon(icon("icon.png"))
         self.stackedWidget.setCurrentIndex(0)
 
-        self.project = QgsProject
+        # self.project = QgsProject
         self.loginaction = LoginDialog()
 
         self._main_dock = None

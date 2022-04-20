@@ -22,11 +22,9 @@
 """
 import os
 import json
-import csv
+# import csv
 
-from numpy import False_
-
-from PyQt5.QtWidgets import QFileDialog
+# from numpy import False_
 
 from qgis.PyQt.QtCore import QTranslator, QCoreApplication, Qt, QSize, QUrl
 
@@ -39,6 +37,7 @@ from qgis.PyQt.QtWidgets import (
     QToolButton,
     QMessageBox,
     QSizePolicy,
+    QFileDialog,
     QHBoxLayout,
     QLabel,
 )
@@ -61,7 +60,7 @@ from .modules.utils import (
     clear_all_vars,
     dialogBox,
     logMessage,
-    activate_editing,
+    # activate_editing,
     iconPath,
     select_layer_by_name,
     icon,
@@ -120,8 +119,8 @@ class GeoKKP:
         # Save reference to the QGIS interface
         self.iface = iface
         self.canvas = iface.mapCanvas()
-        self.project = QgsProject
-        self.root = QgsProject.instance().layerTreeRoot()
+        self.project = QgsProject()
+        self.root = self.project.instance().layerTreeRoot()
         self.mapToolIdentify = QgsMapToolIdentify(self.canvas)
         self.mapToolPan = QgsMapToolPan(self.canvas)
 
@@ -165,7 +164,6 @@ class GeoKKP:
             self.iface.mainWindow().menuBar().insertMenu(lastAction, self.menu)
         else:
             self.menu.clear()
-            
 
         # Change QGIS Title and Default Icon to GeoKKP
         title = iface.mainWindow().windowTitle()
@@ -311,6 +309,12 @@ class GeoKKP:
         """================== GeoKKP-GIS Main Interface =================="""
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
+        
+        # This is a workaround to prevent annoying dialog everytime qgis starts
+        # TODO: find the actual culprit and erase this line
+        self.iface.newProject()
+
+
         # start the deck
         self.run()
 
@@ -336,7 +340,7 @@ class GeoKKP:
             text=self.tr(u"Logout Pengguna"),
             callback=self.logout_user,
             parent=self.iface.mainWindow().menuBar(),
-            add_to_toolbar = True,
+            add_to_toolbar=True,
             add_to_menu=False,
             need_auth=False,
         )
@@ -360,7 +364,7 @@ class GeoKKP:
             iconPath("buatlayer.png"),
             text=self.tr(u"Layer Baru"),
             callback=self.add_layers,
-            add_to_toolbar = True,
+            add_to_toolbar=True,
             add_to_menu=True,
             parent=self.iface.mainWindow().menuBar(),
         )
@@ -1077,7 +1081,7 @@ class GeoKKP:
     def toggle_titik_persil(self):
         # check whether batas persil layer (020100) is loaded
         persil_layer = None
-        all_layers = QgsProject.instance().mapLayers().values()
+        all_layers = self.project.instance().mapLayers().values()
         for layer in all_layers:
             if layer.name() == "(020100) Batas Persil":
                 persil_layer = layer
@@ -1260,7 +1264,7 @@ class GeoKKP:
 
         # set as intersection avoidance with active layer
         self.project.instance().setTopologicalEditing(True)
-        self.project.instance().setAvoidIntersectionsMode(QgsProject.AvoidIntersectionsMode.AvoidIntersectionsLayers)
+        self.project.instance().setAvoidIntersectionsMode(self.project.instance().AvoidIntersectionsMode.AvoidIntersectionsLayers)
         self.project.instance().setAvoidIntersectionsLayers(poly_layers)
 
         # enable CAD Tools for advanced editing

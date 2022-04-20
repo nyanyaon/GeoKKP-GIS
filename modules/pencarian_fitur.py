@@ -32,7 +32,7 @@ class PencarianFiturDialog(QtWidgets.QDialog, FORM_CLASS):
         super(PencarianFiturDialog, self).__init__(parent)
         self.setWindowIcon(icon("icon.png"))
         self.setupUi(self)
-        self.project = QgsProject()
+        # self.project = QgsProject()
 
         # watching event
         self.layerAsal.layerChanged.connect(self.populateColumn)
