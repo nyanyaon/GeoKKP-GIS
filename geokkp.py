@@ -309,11 +309,9 @@ class GeoKKP:
         """================== GeoKKP-GIS Main Interface =================="""
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        
         # This is a workaround to prevent annoying dialog everytime qgis starts
         # TODO: find the actual culprit and erase this line
         self.iface.newProject()
-
 
         # start the deck
         self.run()
