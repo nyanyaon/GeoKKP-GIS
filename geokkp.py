@@ -24,6 +24,8 @@ import os
 import json
 import csv
 
+from numpy import False_
+
 from PyQt5.QtWidgets import QFileDialog
 
 from qgis.PyQt.QtCore import QTranslator, QCoreApplication, Qt, QSize, QUrl
@@ -152,15 +154,18 @@ class GeoKKP:
         self.toolbar.setObjectName(u"GeoKKP")
 
         # Add GeoKKP Main Menu
-        self.menu = self.iface.mainWindow().findChild(QMenu, "GeoKKPGIS")
+        self.menu = self.iface.mainWindow().findChild(QMenu, "GeoKKP-GIS")
         if not self.menu:
             self.menu = QMenu(
                 self.tr(u"&GeoKKP-GIS"), self.iface.mainWindow().menuBar()
             )
-            self.menu.setObjectName("GeoKKPGIS")
+            self.menu.setObjectName("GeoKKP-GIS")
             actions = self.iface.mainWindow().menuBar().actions()
             lastAction = actions[-1]
             self.iface.mainWindow().menuBar().insertMenu(lastAction, self.menu)
+        else:
+            self.menu.clear()
+            
 
         # Change QGIS Title and Default Icon to GeoKKP
         title = iface.mainWindow().windowTitle()
@@ -223,8 +228,8 @@ class GeoKKP:
         text,
         callback,
         enabled_flag=True,
-        add_to_menu=True,
-        add_to_toolbar=True,
+        add_to_menu=False,
+        add_to_toolbar=False,
         status_tip=None,
         whats_this=None,
         parent=None,
@@ -321,7 +326,8 @@ class GeoKKP:
             text=self.tr(u"Login Pengguna"),
             callback=self.login_geokkp,
             parent=self.iface.mainWindow().menuBar(),
-            add_to_menu=True,
+            add_to_toolbar = True,
+            add_to_menu=False,
             need_auth=False,
         )
 
@@ -330,7 +336,8 @@ class GeoKKP:
             text=self.tr(u"Logout Pengguna"),
             callback=self.logout_user,
             parent=self.iface.mainWindow().menuBar(),
-            add_to_menu=True,
+            add_to_toolbar = True,
+            add_to_menu=False,
             need_auth=False,
         )
         self.actionLogoutUser.setEnabled(False)
@@ -346,25 +353,31 @@ class GeoKKP:
         # -------------------------------------------
 
         self.toolbar.addSeparator()
-        self.menu.addSeparator()
+        # self.menu.addSeparator()
 
         # ======== Menu: Buat Layer ========
         self.add_action(
             iconPath("buatlayer.png"),
             text=self.tr(u"Layer Baru"),
             callback=self.add_layers,
+            add_to_toolbar = True,
+            add_to_menu=True,
             parent=self.iface.mainWindow().menuBar(),
         )
         # -------------------------------------------
 
-        # ======== Menu: Buat Layer ========
+        # ======== Menu: Ubah Layer ========
         self.add_action(
             iconPath("ubahlayer.png"),
             text=self.tr(u"Pindah ke Layer"),
             callback=self.convert_layers,
+            add_to_toolbar = True,
+            add_to_menu=True,
             parent=self.iface.mainWindow().menuBar(),
         )
         # -------------------------------------------
+
+        self.menu.addSeparator()
 
         # ======== Dropdown Menu: Tambah Data ========
         # Deklarasi menu tambah data
@@ -583,7 +596,6 @@ class GeoKKP:
             add_to_toolbar=False,
             add_to_menu=False,
             checkable=True,
-            need_auth=False,
             parent=self.popupDimension,
         )
         self.popupDimension.addAction(self.actionTitikPersil)
@@ -607,7 +619,7 @@ class GeoKKP:
         #  --- Sub-menu Cek Topologi ---
         self.actionCekTopologi = self.add_action(
             icon("validasi.png"),
-            text=self.tr(u"Validasi"),
+            text=self.tr(u"Validasi Topologi"),
             callback=self.geomchecker,
             add_to_toolbar=False,
             add_to_menu=False,
@@ -638,13 +650,25 @@ class GeoKKP:
         self.menu.addMenu(self.popupValidasi)
         # -------------------------------------------
 
+        
+        # ======== Menu: Layout ========
+        self.add_action(
+            iconPath("layout.png"),
+            text=self.tr(u"Buat Layout Pencetakan"),
+            callback=self.print_layout,
+            add_to_toolbar = True,
+            parent=self.iface.mainWindow().menuBar(),
+        )
+        # -------------------------------------------
+
+
         # ======== Dropdown Menu: Peralatan ========
         # Deklarasi menu Pencetakan
         self.popupPeralatan = QMenu("&Peralatan", self.iface.mainWindow())
 
         #  --- Sub-menu Pengaturan Lokasi ---
         self.actionAturLokasi = self.add_action(
-            icon("georef.png"),
+            icon("nailer.png"),
             text=self.tr(u"Atur Lokasi Kerja"),
             callback=self.aturlokasi,
             add_to_toolbar=False,
@@ -706,7 +730,7 @@ class GeoKKP:
 
         #  --- Sub-menu Georeferencing/Rubbersheet ---
         self.actionGeoreference = self.add_action(
-            icon("nailer.png"),
+            icon("georef.png"),
             text=self.tr(u"Georeference/Rubbersheet"),
             callback=self.georeferencer,
             add_to_toolbar=False,
@@ -741,22 +765,12 @@ class GeoKKP:
         )
         self.popupPeralatan.addAction(self.actionFeatureSearch)
 
-        
-        # ======== Menu: Layout ========
-        self.add_action(
-            iconPath("layout.png"),
-            text=self.tr(u"Buat Layout Pencetakan"),
-            callback=self.print_layout,
-            parent=self.iface.mainWindow().menuBar(),
-        )
-        # -------------------------------------------
-
         # Pengaturan Dropdown menu Peralatan
         self.PeralatanButton = QToolButton()
         self.PeralatanButton.setMenu(self.popupPeralatan)
         self.PeralatanButton.setIcon(icon("perangkat.png"))
         self.PeralatanButton.setToolTip("Perangkat")
-        self.PeralatanButton.setDefaultAction(self.actionTransformasiKoordinat)
+        self.PeralatanButton.setDefaultAction(self.actionAturLokasi)
         self.PeralatanButton.setPopupMode(QToolButton.MenuButtonPopup)
         # Register menu to toolbar
         self.toolbar.addWidget(self.PeralatanButton)
@@ -771,60 +785,26 @@ class GeoKKP:
             iconPath("checked.png"),
             text=self.tr(u"Persetujuan Peta Bidang KJSKB"),
             callback=self.create_pbt_kjskb,
+            add_to_toolbar = True,
+            add_to_menu=True,
             parent=self.iface.mainWindow().menuBar(),
         )
         # -------------------------------------------
 
-
+        self.menu.addSeparator()
 
         # ========== Label Toolbar GeoKKP ==========
         self.judul_aplikasi()
-
-        # ======== Dropdown Menu: Workspace GeoKKP ========
-        # Deklarasi menu Workspace
-        """
-        self.popupWorkspace = QMenu("&Workspace", self.iface.mainWindow())
-
-        #  --- Sub-menu Workspace Rutin ---
-        self.actionWorkspaceRutin = self.add_action(
-            icon(""),
-            text=self.tr(u"Workspace Rutin"),
-            callback=self.gotoxy,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            parent=self.popupWorkspace
-        )
-        self.popupWorkspace.addAction(self.actionWorkspaceRutin)
-
-        #  --- Sub-menu Workspace Partisipatif ---
-        self.actionWorkspacePartisipatif = self.add_action(
-            icon(""),
-            text=self.tr(u"Partisipatif"),
-            callback=self.gotoxy,
-            add_to_toolbar=False,
-            add_to_menu=False,
-            parent=self.popupWorkspace
-        )
-        self.popupWorkspace.addAction(self.actionWorkspacePartisipatif)
-
-        # Pengaturan Dropdown menu Workspace
-        self.WorkspaceButton = QToolButton()
-        self.WorkspaceButton.setMenu(self.popupWorkspace)
-        self.WorkspaceButton.setToolTip("Perangkat")
-        self.WorkspaceButton.setDefaultAction(self.actionWorkspaceRutin)
-        self.WorkspaceButton.setPopupMode(QToolButton.MenuButtonPopup)
-        self.WorkspaceButton.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-        # Register menu to toolbar
-        self.toolbar.addWidget(self.WorkspaceButton)
-        self.menu.addMenu(self.popupWorkspace)
         # -------------------------------------------
-        """
+
+        self.menu.addSeparator()
 
         # ========== Menu: CADMode ==========
         self.add_action(
             iconPath("cad.png"),
             text=self.tr(u"CAD Mode"),
             callback=self.toggle_cad_mode,
+            add_to_toolbar = True,
             parent=self.iface.mainWindow(),
             need_auth=False,
         )
@@ -835,6 +815,8 @@ class GeoKKP:
             iconPath("settings.png"),
             text=self.tr(u"Pengaturan"),
             callback=self.open_settings,
+            add_to_toolbar = True,
+            add_to_menu=True,
             parent=self.iface.mainWindow(),
             need_auth=False,
         )
@@ -845,6 +827,8 @@ class GeoKKP:
             iconPath("help.png"),
             text=self.tr(u"Bantuan"),
             callback=self.openhelp,
+            add_to_toolbar = True,\
+            add_to_menu=True,
             parent=self.iface.mainWindow(),
             need_auth=False,
         )
