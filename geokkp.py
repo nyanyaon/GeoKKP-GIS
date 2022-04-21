@@ -55,6 +55,8 @@ from qgis.core import (
 from qgis.gui import QgsMapToolIdentify, QgsMapToolPan
 from qgis import utils as qgis_utils
 
+from qgis.utils import active_plugins
+
 # import utilities
 from .modules.utils import (
     clear_all_vars,
@@ -806,7 +808,7 @@ class GeoKKP:
             iconPath("cad.png"),
             text=self.tr(u"CAD Mode"),
             callback=self.toggle_cad_mode,
-            add_to_toolbar = True,
+            add_to_toolbar=True,
             parent=self.iface.mainWindow(),
             need_auth=False,
         )
@@ -817,7 +819,7 @@ class GeoKKP:
             iconPath("settings.png"),
             text=self.tr(u"Pengaturan"),
             callback=self.open_settings,
-            add_to_toolbar = True,
+            add_to_toolbar=True,
             add_to_menu=True,
             parent=self.iface.mainWindow(),
             need_auth=False,
@@ -1171,14 +1173,15 @@ class GeoKKP:
         self.addbasemapaction.show()
 
     def toggle_cad_mode(self):
-        if "qad" in qgis_utils.active_plugins:
+        if "qad" in active_plugins:
             for panel in self.iface.mainWindow().findChildren(QDockWidget):
                 if panel.windowTitle() == "QAD Text Window - 3.0.4":
                     panel.setVisible(not panel.isVisible())
                     return
-        QMessageBox.warning(
-            None, "Plugin tidak ditemukan", "Plugin QAD perlu diaktifkan lebih dahulu"
-        )
+        else:
+            QMessageBox.warning(
+                None, "Plugin tidak ditemukan", "Plugin QAD perlu diaktifkan lebih dahulu"
+            )
 
     def import_csv(self):
         if self.import_from_file_widget is None:
