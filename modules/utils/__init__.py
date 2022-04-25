@@ -289,7 +289,11 @@ def set_symbology(layer, qml):
     Set layer symbology based on QML files in ./styles folder
     """
     uri = os.path.join(os.path.dirname(__file__), "../styles/" + qml)
-    layer.loadNamedStyle(uri)
+    print(uri)
+    try:
+        layer.loadNamedStyle(uri)
+    except Exception as e:
+        logMessage(str(e))
 
 
 def properify(self, text):

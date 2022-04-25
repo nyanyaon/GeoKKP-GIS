@@ -95,8 +95,8 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
     def checkCRS(self):
         epsg = get_project_crs()
         crs = QgsCoordinateReferenceSystem(epsg)
-        if crs.isGeographic():
-            dialogBox("Sistem Koordinat Proyek saat ini berjenis Geographic. Lakukan perubahan menjadi sistem terproyeksi melalui menu pengaturan lokasi atau pengaturan CRS pada QGIS")
+        if crs.isGeographic() or crs.authid() == "EPSG:3857":
+            dialogBox("Sistem Koordinat Proyek saat ini berjenis Geographic atau Pseudo-Mercator. Lakukan perubahan menjadi sistem terproyeksi melalui menu pengaturan lokasi atau pengaturan CRS pada QGIS")
             self.cleanup()
             self.accept()
         else:

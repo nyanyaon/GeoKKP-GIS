@@ -9,6 +9,7 @@ from qgis.utils import iface
 # using utils
 from .utils import (
     icon,
+    add_layer,
     validate_raw_coordinates,
     parse_raw_coordinate,
     display_message_bar,
@@ -122,7 +123,8 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
         # extract coordinate pairs
         coords = parse_raw_coordinate(raw_coords)
 
-        layer = self.project.instance().mapLayersByName("Persil")[0]
+        # layer = self.project.instance().mapLayersByName("Persil")[0]
+        layer = add_layer("import titik", type="Polygon", crs=source_crs)
         feat = QgsFeature()
         feat.setGeometry(QgsGeometry.fromPolygonXY([coords]))
         prov = layer.dataProvider()
@@ -136,8 +138,9 @@ class PlotCoordinateDialog(QtWidgets.QDialog, FORM_CLASS):
         # self.project.instance().addMapLayers([layer])
         self.close()
         layer.triggerRepaint()
-        extent = layer.extent()
-        self.canvas.setExtent(tr.transform(extent))
+        # extent = layer.extent()
+        iface.actionZoomToLayers().trigger()
+        # self.canvas.setExtent(tr.transform(extent))
         # polygon = QgsRubberBand(self.canvas)
         # polygon.setToGeometry(QgsGeometry.fromPolygonXY([list_coordinates]), None)
         # polygon.setColor(QColor(0, 0, 255))

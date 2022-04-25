@@ -54,13 +54,16 @@ from qgis.core import (
 )
 from qgis.gui import QgsMapToolIdentify, QgsMapToolPan
 from qgis import utils as qgis_utils
+from qgis import processing
+
+from qgis.utils import active_plugins
 
 # import utilities
 from .modules.utils import (
     clear_all_vars,
     dialogBox,
     logMessage,
-    # activate_editing,
+    set_symbology,
     iconPath,
     select_layer_by_name,
     icon,
@@ -94,6 +97,7 @@ from .modules.pencarian_fitur import PencarianFiturDialog
 from .modules.draw_nlp import DrawNLPDialog
 from .modules.import_wilayah_admin import ImportWilayahAdmin
 from .modules.create_pbt_kjskb import CreatePBTKJSKB
+from .modules.processing_printout import MyFeedBack
 from .modules.draw_dimension import (
     DimensionDistanceTool,
     DimensionAngleTool,
@@ -123,6 +127,7 @@ class GeoKKP:
         self.root = self.project.instance().layerTreeRoot()
         self.mapToolIdentify = QgsMapToolIdentify(self.canvas)
         self.mapToolPan = QgsMapToolPan(self.canvas)
+        self.feed = MyFeedBack()
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -622,7 +627,7 @@ class GeoKKP:
         self.actionCekTopologi = self.add_action(
             icon("validasi.png"),
             text=self.tr(u"Validasi Topologi"),
-            callback=self.geomchecker,
+            callback=self.reclean,
             add_to_toolbar=False,
             add_to_menu=False,
             parent=self.popupValidasi,
@@ -806,7 +811,7 @@ class GeoKKP:
             iconPath("cad.png"),
             text=self.tr(u"CAD Mode"),
             callback=self.toggle_cad_mode,
-            add_to_toolbar = True,
+            add_to_toolbar=True,
             parent=self.iface.mainWindow(),
             need_auth=False,
         )
@@ -817,7 +822,7 @@ class GeoKKP:
             iconPath("settings.png"),
             text=self.tr(u"Pengaturan"),
             callback=self.open_settings,
-            add_to_toolbar = True,
+            add_to_toolbar=True,
             add_to_menu=True,
             parent=self.iface.mainWindow(),
             need_auth=False,
@@ -1171,14 +1176,15 @@ class GeoKKP:
         self.addbasemapaction.show()
 
     def toggle_cad_mode(self):
-        if "qad" in qgis_utils.active_plugins:
+        if "qad" in active_plugins:
             for panel in self.iface.mainWindow().findChildren(QDockWidget):
                 if panel.windowTitle() == "QAD Text Window - 3.0.4":
                     panel.setVisible(not panel.isVisible())
                     return
-        QMessageBox.warning(
-            None, "Plugin tidak ditemukan", "Plugin QAD perlu diaktifkan lebih dahulu"
-        )
+        else:
+            QMessageBox.warning(
+                None, "Plugin tidak ditemukan", "Plugin QAD perlu diaktifkan lebih dahulu"
+            )
 
     def import_csv(self):
         if self.import_from_file_widget is None:
@@ -1218,6 +1224,72 @@ class GeoKKP:
         # self.mapToolIdentify.activate()
         # edit_by_identify(self.canvas, layer)
         # layer = self.iface.activeLayer()
+
+    def reclean(self):
+        layer = self.iface.activeLayer()
+        if layer is None:
+            dialogBox("Pilih salah satu layer vektor pada daftar")
+            pass
+        if not layer.type() == 0:
+            dialogBox("Layer aktif bukan vektor")
+            pass
+
+        basename = layer.name()
+        # basecrs = layer.crs().authid()
+
+        # TODO: make all this parameterized
+        parameters = {
+            'input': layer,
+            'type': [0, 1, 2, 3, 4, 5, 6],
+            'tool': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+            'threshold': [
+                        5,   # 0-break
+                        5,   # 1-snap
+                        5,   # 2-rmdangle
+                        0,   # 3-chdangle
+                        0,   # 4-rmbridge
+                        0,   # 5-chbridge
+                        0,   # 6-rmdupl
+                        0,   # 7-rmdac
+                        0,   # 8-bpol
+                        5,   # 9-prune
+                        10,  # 10-rmarea
+                        0,   # 11-rmline
+                        0    # 12- rmsa
+                        ],
+            '-b': False,
+            '-c': True,
+            'GRASS_SNAP_TOLERANCE_PARAMETER': 1,
+            'GRASS_REGION_PARAMETER': "%f, %f, %f, %f" % (
+                layer.extent().xMinimum(),
+                layer.extent().xMaximum(),
+                layer.extent().yMinimum(),
+                layer.extent().yMaximum()),
+            'GRASS_MIN_AREA_PARAMETER': 0.0001,
+            'GRASS_OUTPUT_TYPE_PARAMETER': 0,
+            'output': 'TEMPORARY_OUTPUT',
+            'GRASS_VECTOR_DSCO': '',
+            'GRASS_VECTOR_EXPORT_NOCAT': False,
+            'GRASS_VECTOR_LCO': '',
+            'error': 'TEMPORARY_OUTPUT'
+            }
+
+        result = processing.runAndLoadResults(
+                "grass7:v.clean",
+                parameters, feedback=self.feed)
+
+        try:
+            cleaned_layer = select_layer_by_name(self.project, 'Cleaned')
+            print(cleaned_layer)
+            # cleaned_layer = QgsVectorLayer(result['output'], basename, "ogr")
+            uri = os.path.join(os.path.dirname(__file__), "styles/" + "persil_cleaned.qml")
+            # print(uri)
+            cleaned_layer[0].loadNamedStyle(uri)
+            cleaned_layer[0].setName(basename)
+
+            # self.project.instance().addMapLayer(cleaned_layer)
+        except Exception as e:
+            print(str(e))
 
     def edit_parcel_attribute(self):
         layer = self.iface.activeLayer()
@@ -1273,6 +1345,16 @@ class GeoKKP:
 
         # detect active layers and start editing
         layer = self.iface.activeLayer()
+        if layer is None:
+            dialogBox("Pilih salah satu layer vektor pada daftar")
+            pass
+        if not layer.type() == 0:
+            dialogBox("Layer aktif bukan vektor")
+            pass
+
+        formConfig = layer.editFormConfig()
+        formConfig.setSuppress(1)
+        layer.setEditFormConfig(formConfig)
 
         def feature_added():
             # Disconnect from the signal
@@ -1285,7 +1367,7 @@ class GeoKKP:
         layer.startEditing()
         self.iface.actionAddFeature().trigger()
 
-
+        
     def stop_editing(self):
         self.iface.mainWindow().findChild(QAction, "mActionToggleEditing").trigger()
         # print("stop editing")
@@ -1319,6 +1401,7 @@ class GeoKKP:
         if self.geocodingaction is None:
             self.geocodingaction = GeocodingDialog()
         self.geocodingaction.show()
+
 
     def export_csv(self):
         layer = self.iface.activeLayer()
