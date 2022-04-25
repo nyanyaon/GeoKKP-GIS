@@ -6,15 +6,17 @@ import re
 import processing
 
 from qgis.PyQt import QtWidgets, uic
-from qgis.core import QgsProject
+from qgis.core import QgsProject, QgsMapLayer
 from qgis.PyQt.QtGui import QDesktopServices
 
 from qgis.PyQt.QtCore import pyqtSignal, QUrl, Qt
 from qgis.utils import iface
 
+from qgis.PyQt.QtWidgets import QAction
+
 from ...memo import app_state
 from ...api import endpoints
-from ...utils import readSetting, select_layer_by_regex
+from ...utils import add_bintang, readSetting, select_layer_by_regex
 from ...utils.geometry import get_sdo_point, get_sdo_polygon
 from ...models.dataset import Dataset
 
@@ -37,13 +39,13 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
         self.setupUi(self)
 
         self._iface = iface
-        self._current_layer = self._iface.activeLayer()
-        self._canvas = self._iface.mapCanvas()
-        self._txt = None
+        # self._current_layer = self._iface.activeLayer()
+        # self._canvas = self._iface.mapCanvas()
 
-        if self._current_layer:
-            if self._current_layer.name().startswith("(080201)") or self._current_layer.name().startswith("(080202)") or self._current_layer.name().startswith("(080203)"):
-                self._txt = self._current_layer
+        self._current_layer = None
+        self._txt = None
+        
+        # TODO: refactor current layer use, maybe can be clear in the end of function
 
         self._srid_code = [
             23838,
@@ -73,6 +75,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
         self.cmb_desa.currentIndexChanged.connect(self._cmb_desa_selected_index_changed)
         self.cmb_nib.currentIndexChanged.connect(self._cmb_nib_selected_index_changed)
         self.chb_per_kabupaten.stateChanged.connect(self._chb_per_kabupaten_state_changed)
+        self.cmb_coordinate_system.currentIndexChanged.connect(self._cmb_coordinate_system_selected_index_changed)
 
         self.toolbar_pick.clicked.connect(self._pick_text)
         self.toolbar_import_bidang.clicked.connect(self._do_update)
@@ -219,6 +222,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             self.cmb_desa.addItem(des["DESANAMA"], des["DESAID"])
 
     def _detect_nib(self, value, is_persil_id=False):
+        print("detect NIB")
         wilayah_id = ""
         if self.chb_per_kabupaten.isChecked():
             wilayah_id = self.cmb_kabupaten.currentData()
@@ -296,7 +300,9 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             self.txt_berlaku_surat_ukur.setText("")
 
     def _detect_su(self, txt_su):
+        print("detect SU")
         str_array = txt_su.split(".")
+        print(str_array)
         if len(str_array) != 2:
             QtWidgets.QMessageBox.warning(
                 None, "GeoKKP Web", "Penulisan text gu/su tidak benar"
@@ -358,6 +364,9 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
         )
 
         d_set = Dataset(response.content)
+        print(response.content)
+
+        # TODO: check response then refactor the if d_set:
 
         self.cmb_nib.clear()
         if d_set["PERSIL"].rows:
@@ -387,7 +396,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             self.txt_alamat.setText("")
             self.txt_validator.setText("")
 
-        if d_set["SERTIPIKAT"].rows:
+        if "SERTIPIKAT" in d_set and d_set["SERTIPIKAT"].rows:
             self.cmb_hak.clear()
             for row in d_set["SERTIPIKAT"].rows:
                 self.cmb_hak.addItem(row["NOMOR"], row["DOKUMENHAKID"])
@@ -407,7 +416,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             self.dgv_pemilik.setRowCount(0)
             self.txt_berlaku_hak.setText("")
 
-        if d_set["SURATUKUR"].rows:
+        if "SURATUKUR" in d_set and d_set["SURATUKUR"].rows:
             for row in d_set["SURATUKUR"].rows:
                 self.cmb_surat_ukur.addItem(row["NOMOR"], row["DOKUMENPENGUKURANID"])
 
@@ -524,10 +533,24 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
         else:
             self.cmb_surat_ukur.clear()
             self.txt_berlaku_surat_ukur.setText("")
-
+    
     def _pick_text(self):
         # TODO: add cancel pick text mode
-        self._clear_selections()
+
+        self._clear_all_selections()
+
+        self._current_layer = self._iface.activeLayer()
+        self._txt = None
+
+        if self._current_layer.type() != QgsMapLayer.VectorLayer:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Layer aktif harus bertipe vektor"
+            )
+            return
+
+        if self._current_layer.name().startswith("(080201)") or self._current_layer.name().startswith("(080202)") or self._current_layer.name().startswith("(080203)"):
+            self._txt = self._current_layer
+
         self._iface.actionSelect().trigger()
         self._toggle_select_feature(True)
 
@@ -547,21 +570,19 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
 
     def _unlisten_layer_change(self):
         try:
-            self._iface.currentLayerChanged.disconnect(self._handle_layer_change)
+            self._iface.currentLayerChanged.disconnect()
         except:
             pass
 
     def _handle_layer_change(self):
+        # self._clear_selections()
+        self._current_layer = self._iface.activeLayer()
         layer_name = self._current_layer.name()
-        self._clear_selections()
-        self._unlisten_feature_select()
-
         if layer_name.startswith("(080201)") or layer_name.startswith("(080202)") or layer_name.startswith("(080203)"):
-            self._unlisten_layer_change()
-            self._current_layer = self._iface.activeLayer()
             self._txt = self._current_layer
-            self._listen_layer_change()
-            self._listen_feature_select()
+        else:
+            self._txt = None
+        print("current:",self._current_layer,"txt:",self._txt)
 
     def _listen_feature_select(self):
         if not self._current_layer:
@@ -575,40 +596,66 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
         if not self._current_layer:
             return
         try:
-            self._current_layer.selectionChanged.disconnect(self._handle_feature_select, Qt.UniqueConnection)
+            self._current_layer.selectionChanged.disconnect(self._handle_feature_select)
         except TypeError:
             pass
 
     def _handle_feature_select(self):
+        if self._current_layer.type() != QgsMapLayer.VectorLayer:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Layer aktif harus bertipe vektor"
+            )
+            self._toggle_select_feature(False)
+            return
+            
         self._clear_selections([0], True)
         selected_feature = self._current_layer.selectedFeatures()
         if not selected_feature:
+            # self._toggle_select_feature(False)
             return
         feature = selected_feature[0]
 
         layer_name = self._current_layer.name()
-
+        print("here")
         if layer_name.startswith("(080201)") or layer_name.startswith("(080202)") or layer_name.startswith("(080203)"):
             label = feature.attribute("label") if feature.attribute("label") else ""
+            self.tabWidget.setCurrentIndex(0)
             if layer_name.startswith("(080201)"):
                 if label.startswith("#"):
+                    self.tabWidget.setCurrentIndex(1)
                     self._new_nib(label)
                 else:
                     self._detect_nib(label)
-            elif layer_name.startswith("(082002)"):
+            elif layer_name.startswith("(080202)"):
                 self._detect_su(label)
-            elif layer_name.startswith("(082003)"):
+            elif layer_name.startswith("(080203)"):
                 self._detect_hak(label)
 
             if not label.startswith("#") and self.cmb_nib.currentData() and self.txt_validator.text() == "":
                 self.toolbar_import_bidang.setDisabled(False)
             else:
                 self.toolbar_import_bidang.setDisabled(True)
+            print("here it is")
+            self._toggle_select_feature(False)
+            self._current_layer = None
+            # self._txt = None
         else:
             QtWidgets.QMessageBox.warning(
                 None, "GeoKKP", "Objek yang dipilih harus pada layer NIB / Hak / SU"
             )
-            return
+            self._toggle_select_feature(False)
+
+    def _clear_all_selections(self):
+        mc = self._iface.mapCanvas()
+
+        for layer in mc.layers():
+            if layer.type() == layer.VectorLayer:
+                layer.removeSelection()
+
+        mc.refresh()
+
+        # self._iface.mainWindow().findChild(QAction,'mActionDeselectAll').trigger()
+
 
     def _clear_selections(self, except_index=[], block_signal=False):
         if block_signal:
@@ -619,6 +666,11 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             if index in except_index:
                 f_ids.append(feat.id())
         self._current_layer.removeSelection()
+        mc = self._iface.mapCanvas()
+        for layer in mc.layers():
+            if layer.type() == layer.VectorLayer:
+                layer.removeSelection()
+        mc.refresh()
         if f_ids:
             self._current_layer.selectByIds(f_ids)
 
@@ -659,12 +711,14 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             )
             return
         else:
-            identifier = f"{self._current_layer.id()}|{point.id()}".encode("utf-8")
-            objectid = hashlib.md5(identifier).hexdigest().upper()
+            print("new nib")
 
             poly = selected_poly[0]
             point = selected_point[0]
             point_geom = point.geometry().asPoint()
+
+            identifier = f"{self._current_layer.id()}|{point.id()}".encode("utf-8")
+            objectid = hashlib.md5(identifier).hexdigest().upper()
 
             crs_index = self.cmb_coordinate_system.currentIndex()
             epsg = self._srid_code[crs_index]
@@ -705,7 +759,8 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             pp["UserUpdate"] = pegawai["userId"]
 
             self._pp = pp
-            self.txt_luas_peta.setText(round(poli["luas"], 3))
+            text_luas = str(round(poli["luas"], 3))
+            self.txt_luas_peta.setText(text_luas)
             self.toolbar_new_bidang.setDisabled(False)
 
     def _do_update(self):
@@ -746,8 +801,8 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             point = selected_point[0]
             point_geom = point.geometry().asPoint()
 
-            identifier = f"{self._current_layer.id()}|{point.id()}".encode("utf-8")
-            objectid = hashlib.md5(identifier).hexdigest().upper()
+            persil_id = str(self.cmb_nib.currentData())
+            print("persil_ID:",persil_id)
 
             crs_index = self.cmb_coordinate_system.currentIndex()
             epsg = self._srid_code[crs_index]
@@ -785,7 +840,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
                 if self.cmb_nib.currentData():
                     teks_geom = get_sdo_point(point_geom, epsg)
 
-                    pp["PersilId"] = objectid
+                    pp["PersilId"] = persil_id
                     pp["Boundary"] = poli["batas"]
                     pp["Text"] = teks_geom
                     pp["Height"] = height
@@ -799,17 +854,28 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
                     response_str = response.content.decode("utf-8")
 
                     if response_str == "OK":
-                        field_index = self._txt.fields().indexOf("label")
-                        self._txt.startEditing()
-                        self._txt.changeAttributeValue(
-                            point.id(), field_index, f"OK: {label}"
-                        )
-                        self._txt.commitChanges()
+                        # field_index = self._txt.fields().indexOf("label")
+                        # self._txt.startEditing()
+                        # self._txt.changeAttributeValue(
+                        #     point.id(), field_index, f"OK: {label}"
+                        # )
+                        # self._txt.commitChanges()
+                        coords = []
+                        coord = [
+                            point_geom.x(),
+                            point_geom.y()
+                            ]
+                        coords.append(coord)
+                        add_bintang(coords)
+
                     else:
                         QtWidgets.QMessageBox.critical(
                             None, "Kesalahan", response_str
                         )
                         return
+        # delete point layer variable, so the layer can be removed safely
+        self._txt = None
+
 
     def _do_create_persil(self):
         wilayah_id = ""
@@ -819,38 +885,68 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             wilayah_id = self.cmb_desa.currentData()
 
         if "Boundary" in self._pp and self._pp["Boundary"]:
-            self._pp["nama"] = self.cmb_nama_persil.text()
+            self._pp["Nama"] = self.cmb_nama_persil.currentText()
             response = endpoints.create_persil_map_sdo(wilayah_id, self._pp)
             response_str = response.content.decode("utf-8")
+            print(response.content)
 
             if response_str.startswith("OK"):
                 strspl = response_str.split("-")
-                nib = strspl[0]
+                nib = strspl[1]
 
                 field_index = self._txt.fields().indexOf("label")
                 print("field_index", field_index)
                 features = self._txt.getFeatures()
+
+                txt_pos = []
+
                 for feature in features:
                     identifier = f"{self._txt.id()}|{feature.id()}".encode("utf-8")
                     objectid = hashlib.md5(identifier).hexdigest().upper()
 
-                    if objectid == self._pp["persilId"]:
+                    txt_point = feature.geometry().asPoint()
+                    coord = [
+                        txt_point.x(),
+                        txt_point.y()
+                        ]
+                    txt_pos.append(coord)
+
+
+                    if objectid == self._pp["PersilId"]:
                         self._txt.startEditing()
                         self._txt.changeAttributeValue(
                             feature.id(), field_index, nib
                         )
                         self._txt.commitChanges()
+                        
                     else:
                         QtWidgets.QMessageBox.critical(
-                            None, "Kesalahan", response_str
+                            None, "Kesalahan", "objectid tidak cocok, gagal mengubah nib"
                         )
                         return
-                else:
-                    QtWidgets.QMessageBox.warning(
-                        None, "Kesalahan", "Harus ada persil yang diimport"
-                    )
-                    return
+                
+                add_bintang(txt_pos)
+            else:
+                QtWidgets.QMessageBox.critical(
+                    None, "Kesalahan", response_str
+                )
+                return
+        else:
+            QtWidgets.QMessageBox.warning(
+                None, "Kesalahan", "Harus ada persil yang diimport"
+            )
+            return
+
+        self._pp = {}
+        # delete point layer variable, so the layer can be removed safely
+        self._txt = None
 
     def _multi_upload(self):
         up = UploadPersilMasif()
         up.show()
+
+    def _cmb_coordinate_system_selected_index_changed(self):
+        self._pp = {}
+        self.txt_nis.setText("")
+        self.txt_luas_peta.setText("")
+    

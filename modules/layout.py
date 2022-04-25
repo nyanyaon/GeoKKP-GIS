@@ -43,7 +43,7 @@ class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
 
         self.tipe_layout()
         # self.pick_size()
-        self.pick_layout()
+        # self.pick_layout()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -98,14 +98,14 @@ class LayoutDialog(QtWidgets.QDialog, FORM_CLASS):
                     layout_exist = True
                     self.dialog_bar.pushMessage(
                         "Info",
-                        "Opening existing layout in Layout Manager.",
+                        "Layout sudah dibuat pada layout manager",
                         duration=0,
                         level=Qgis.Info,
                     )
                     layout = existing_layout
         else:
             self.dialog_bar.pushMessage(
-                "Warning", "Unable to locate default template.", level=Qgis.Warning
+                "Warning", "Template default tidak ditemukan pada direktori plugin.", level=Qgis.Warning
             )
 
         return layout, layout_exist

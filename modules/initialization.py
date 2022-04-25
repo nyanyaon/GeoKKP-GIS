@@ -3,6 +3,7 @@ import json
 import locale
 
 from qgis.utils import iface
+from qgis.core import QgsRectangle
 from .utils import (
     dialogBox,
     storeSetting,
@@ -38,6 +39,10 @@ class Initialize:
         self.simpan_boundary_settings()
         self.simpan_default_layout_settings()
 
+        # a workaround
+        # self.iface.mainWindow().showMaximized()
+        
+
     def set_locale(self):
         locale.setlocale(locale.LC_NUMERIC, "en_US")
 
@@ -50,7 +55,8 @@ class Initialize:
         )
         data = json.load(f)
 
-        print("initt", data)
+        # print("initt", data)
+        # dialogBox("Plugin GeoKKP berhasil dimuat")
         f.close()
         storeSetting("layers", data["layers"])
 

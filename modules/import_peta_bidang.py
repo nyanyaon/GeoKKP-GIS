@@ -130,9 +130,6 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
         self.setupUi(self)
 
         self.combo_lihat_data.currentIndexChanged.connect(self._lihat_data_changed)
-        self.combo_provinsi.currentIndexChanged.connect(self._provinsi_changed)
-        self.combo_kabupaten.currentIndexChanged.connect(self._kabupaten_changed)
-        self.combo_kecamatan.currentIndexChanged.connect(self._kecamatan_changed)
         self.btn_validasi.clicked.connect(self._handle_validasi)
         self.btn_proses.clicked.connect(self._handle_process)
 
@@ -166,7 +163,8 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
 
         print(self._dt_wilayah)
 
-        if not self._desa_id and len(self._dt_wilayah) == 4:
+        if self._desa_id and len(self._dt_wilayah) == 4:
+            print("populate otomatis")
             provinsi = [f for f in self._dt_wilayah if f["TIPEWILAYAHID"] == 1]
             if provinsi:
                 self.combo_provinsi.addItem(
@@ -191,6 +189,9 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                     kelurahan[0]["NAMA"], kelurahan[0]["WILAYAHID"]
                 )
         else:
+            self.combo_provinsi.currentIndexChanged.connect(self._provinsi_changed)
+            self.combo_kabupaten.currentIndexChanged.connect(self._kabupaten_changed)
+            self.combo_kecamatan.currentIndexChanged.connect(self._kecamatan_changed)
             self._populate_provinsi(
                 self._current_kantor_id, self._current_tipe_kantor_id
             )
@@ -251,6 +252,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             combo[i].blockSignals(False)
 
     def _populate_provinsi(self, kantor_id, tipe_kantor_id):
+        print("populate provinsi")
         self._clear_combobox(4)
         if (
             kantor_id in self._provinsi_by_kantor.keys()
@@ -503,15 +505,16 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
         parcels = [str(f) for f in self._new_parcels]
         response = endpoints.get_parcels(parcels)
         response_json = json.loads(response.content)
+        print("respon get parcel:",response_json)
 
         for persil in response_json["PERSILBARU"]:
             columns = list(persil.keys())
             self._ent_dataset["PersilEdit"].append(
                 {
-                    "OID": persil[columns[0]],
-                    "REGID": persil[columns[1]],
-                    "NIB": persil[columns[2]],
-                    "LUAST": 0,
+                    "OID": "",
+                    "REGID": persil[columns[0]],
+                    "NIB": persil[columns[1]][9:],
+                    "LUAST": persil[columns[2]],
                     "LABEL": "",
                     "AREA": 0,
                     "BOUNDARY": None,
@@ -556,6 +559,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                     else 0
                 )
 
+                print(self._ent_dataset["PersilEdit"])
                 if poli["batas"]:
                     row = {}
                     if len(self._ent_dataset["PersilEdit"]):
@@ -587,8 +591,9 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                         row[DS_PERSIL_EDIT_COLUMNS[10]] = orientation
                         row[DS_PERSIL_EDIT_COLUMNS[11]] = sheet_number
                         row[DS_PERSIL_EDIT_COLUMNS[12]] = box_number
-                        self._ent_dataset["PersilEdit"].append(row)
+                        # self._ent_dataset["PersilEdit"].append(row)
                     else:
+                        print("jalan persil baru")
                         row[DS_PERSIL_BARU_COLUMNS[0]] = objectid
                         row[DS_PERSIL_BARU_COLUMNS[1]] = nib
                         row[DS_PERSIL_BARU_COLUMNS[2]] = luas_round
@@ -610,7 +615,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
 
     def _hapus_persil_terdaftar(self):
         for layer in self._current_layers:
-            # TODO: remove the usage of current layer
+
             try:
                 layer.id()
             except RuntimeError:
@@ -703,6 +708,12 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
         msg = ""
         # TODO: extent check
 
+        if(self._current_table == "PersilInventaris"):
+            if(self.validateCoordsExtend() == False):
+                valid = False
+                msg += "Koordinat diluar TM3!"
+
+
         if self.combo_kegiatan.count() < 1:
             valid = False
             msg += "\nTidak ada SK Penlok yang sedang aktif, silahkan dibuat terlebih dahulu"
@@ -765,6 +776,25 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             self.writeErrorLog.emit(msg)
             self.changeTabIndex.emit(1)
 
+    def validateCoordsExtend(self):
+        layer = QgsProject.instance().mapLayersByName("(Lb_Rincikan) Garis Rincikan")[0]
+        ext = layer.extent()
+
+        retval = True
+
+        xmin = ext.xMinimum()
+        xmax = ext.xMaximum()
+        ymin = ext.yMinimum()
+        ymax = ext.yMaximum()
+
+        print(xmin,xmax,ymin,ymax)
+
+        if(xmin<32000 or xmax > 368000  or ymin < 282000  or ymax > 2166000  ):
+            retval = False
+  
+
+        return retval
+    
     def _handle_process(self):
         self.btn_proses.setDisabled(True)
         self.btn_validasi.setDisabled(True)
@@ -978,6 +1008,9 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                             feature.id(), field_index, result_oid_map[objectid]
                         )
                         layer.commitChanges()
+                    QtWidgets.QMessageBox.information(
+                    None, "GeoKKP", response_json["Sukses"][0]["message"]
+                )
             else:
                 features = self.layer.getFeatures()
                 # for feature in features:
@@ -991,10 +1024,11 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                 )
 
     def _fill_text_entity(self):
-        layers = QgsProject.instance().mapLayers()
+        # layers = QgsProject.instance().mapLayers()
+        layers = self._current_layers
 
         points = []
-        for layer in layers.values():
+        for layer in layers:
             if (
                 isinstance(layer, QgsVectorLayer)
                 and "point" not in QgsWkbTypes.displayString(layer.wkbType()).lower()
@@ -1039,10 +1073,11 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
         return points
 
     def _fill_entity_data_table(self):
-        layers = QgsProject.instance().mapLayers()
+        # layers = QgsProject.instance().mapLayers()
+        layers = self._current_layers
 
         lines = []
-        for layer in layers.values():
+        for layer in layers:
             if (
                 isinstance(layer, QgsVectorLayer)
                 and "line" not in QgsWkbTypes.displayString(layer.wkbType()).lower()

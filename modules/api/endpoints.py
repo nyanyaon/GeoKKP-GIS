@@ -121,9 +121,9 @@ def get_notifikasi_by_kantor(kantor_id, **kwargs):
 # Buka Berkas Sequence
 @api(endpoint="getBerkas")
 def get_berkas(
-    kantor_id,
-    tahun_berkas=None,
     nomor_berkas="",
+    tahun_berkas=None,
+    kantor_id=None,
     tipe_kantor_id=None,
     start=0,
     limit=20,
@@ -869,19 +869,67 @@ def unduh_wilayah_sdo(wilayah_id, srs_name, tipe_wilayah, **kwargs):
         "tipeWilayah": tipe_wilayah
     }
 
+
 @api(endpoint="getWilayahPtslSkb")
 def get_wilayah_ptsl_skb(kantor_id):
     return {
         "kantorId": kantor_id
     }
 
+
 @api(endpoint="GetTandaTerimaPtslSkb")
 def get_tanda_terima_ptsl_skb(kantor_id, nomor, tahun, program_id, surveyor_id, wilayah_id):
     return {
-        "kantorId":  kantor_id,
+        "kantorId": kantor_id,
         "nomor": nomor,
         "tahun": tahun,
         "programId": program_id,
         "surveyorId": surveyor_id,
         "wilayahId": wilayah_id
+    }
+
+
+@api(endpoint="tolakPBTForPtslSkb")
+def tolak_pbt_for_ptsl_skb(user_id, kantor_id, tandaterima_id, catatan):
+    return{
+        "userId": user_id,
+        "kantorId": kantor_id,
+        "tandaterimaId": tandaterima_id,
+        "catatan": catatan
+    }
+
+
+@api(endpoint="createNewPBTForPtslSkb")
+def create_new_pbt_for_ptsl_skb(user_id, program_id, wilayah_id, surveyor_id, tandaterima_id):
+    return{
+        "userId": user_id,
+        "programId": program_id,
+        "wilayahId": wilayah_id,
+        "surveyorId": surveyor_id,
+        "tandaterimaId": tandaterima_id
+    }
+
+
+@api(endpoint="checkPetaTematik")
+def check_peta_tematik(berkas_id, **kwargs):
+    return {
+        "berkasId": berkas_id
+    }
+
+
+@api(endpoint="checkDI302")
+def check_di302(berkas_id, **kwargs):
+    return {
+        "berkasId": berkas_id
+    }
+
+
+@api("finnishBerkas")
+def finish_berkas(nomor_berkas, tahun_berkas, kantor_id, tipe_kantor_id, kkp_user, **kwargs):
+    return {
+        "nomorBerkas": nomor_berkas,
+        "tahunBerkas": tahun_berkas,
+        "kantorId": kantor_id,
+        "tipeKantorId": tipe_kantor_id,
+        "kkpUser": kkp_user
     }

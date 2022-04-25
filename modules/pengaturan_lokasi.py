@@ -122,7 +122,7 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
         """Eksekusi pencarian lokasi"""
         currentKabupaten = self.cari_kabupaten.currentText()
         self.iface.mainWindow().blockSignals(True)
-        layer = self.iface.addVectorLayer(adm_district_file, currentKabupaten, "ogr")
+        layer = self.iface.addVectorLayer(adm_district_file+"|layername=IDN_adm_lv2_district|geometrytype=Polygon", currentKabupaten, "ogr")
         if not layer or not layer.isValid():
             dialogBox("Layer gagal dibaca dari Plugin GeoKKP!")
         crs = QgsCoordinateReferenceSystem("EPSG:4326")
@@ -132,15 +132,15 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
 
         layer.setSubsetString(f"WAK = '{currentKabupaten}'")
         set_symbology(layer, "administrasi.qml")
-        self.iface.actionZoomToLayer().trigger()
+        self.iface.actionZoomToLayers().trigger()
 
         # for feature in layer.getFeatures():
         #    print(feature["WAK"])
 
         epsg = get_epsg_from_tm3_zone(self.zone)
         crs = QgsCoordinateReferenceSystem(str(epsg))
-        print(crs.isValid())
-        print(self.project.crs())
+        # print(crs.isValid())
+        # print(self.project.crs())
         self.project.instance().setCrs(crs)
 
         try:

@@ -59,6 +59,11 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         self.btn_close.setEnabled(False)
         self.btn_finish.setEnabled(False)
 
+        self.btn_first.clicked.connect(self._btn_first_click)
+        self.btn_prev.clicked.connect(self._btn_prev_click)
+        self.btn_next.clicked.connect(self._btn_next_click)
+        self.btn_last.clicked.connect(self._btn_last_click)
+
     def closeEvent(self, event):
         self.closingPlugin.emit()
         self.stackedWidget.setCurrentIndex(0)
@@ -89,6 +94,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         layer = QgsProject.instance().mapLayersByName("(Lb_Rincikan) Garis Rincikan")[0]
         self.petaBidang = DesainPBT(self.pbt,"TM3",True,current_layers=layer)
         self.petaBidang.show()
+        self.petaBidang.processed.connect(self.pd_Event)
     
     def btnCari_Click(self):
         self._start = 0 
@@ -96,10 +102,6 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         self._txtNomor = self.txt_nomor.text()
         self._txtTahun = self.txt_tahun.text()
         self._txtKegiatan = self.cmb_kegiatan.currentData()
-
-        self.btn_first.setEnabled(False)
-        self.btn_last.setEnabled(False)
-
         self.RefreshGrid()
 
     def RefreshGrid(self):
@@ -141,7 +143,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         if(self.dset["PBTAPBN"] != None and len(self.dset["PBTAPBN"]) > 0):
             dataset = Dataset()
             table = dataset.add_table("PBTAPBN")
-            table.add_column("DOKUMENPENGUKURANID")
+            table.add_column("DOKUMENPENGUKURANID") 
             table.add_column("NOMOR")
             table.add_column("PRODUK")
             table.add_column("LINTOR")
@@ -157,6 +159,37 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
 
             dataset.render_to_qtable_widget("PBTAPBN",self.dvg_invent,[0,4])
 
+    def _btn_first_click(self):
+        self._start = 0
+        self.btn_prev.setEnabled(False)
+        self.btn_next.setEnabled(True)
+        self.RefreshGrid()
+
+    def _btn_prev_click(self):
+        self._start -= self._limit
+        if self._start <= 0:
+            self.btn_prev.setEnabled(False)
+        self.btn_next.setEnabled(True)
+        self.RefreshGrid()
+
+    def _btn_next_click(self):
+        self._start += self._limit
+        if self._start + self._limit >= self._count:
+            self.btn_next.setEnabled(False)
+        self.btn_prev.setEnabled(True)
+        self.RefreshGrid()
+
+    def _btn_last_click(self):
+        self._start = self._count // self._limit * self._limit
+        print(self._start)
+        if self._start >= self._count:
+            self._start -= self._limit
+            self.btn_prev.setEnabled(False)
+        else:
+            self.btn_prev.setEnabled(True)
+        self.btn_next.setEnabled(False)
+        self.RefreshGrid()
+    
     def createPBT(self):
         self.pbti = CreatePBT("PBTI")
         self.pbti.show()
@@ -207,6 +240,19 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
             QtWidgets.QMessageBox.information(
                 None, "GeoKKP", payload["myPBT"]["PBT"]["errorStack"][0]
             )
+
+    def pd_Event(self,payload):
+        if(payload["submittedParcel"] is not None):
+            self._submitted_parcels = payload["submittedParcel"]
+            self.pbt["wilayahId"] = payload["wilayahId"]
+            self.pbt["gugusId"] = [self._submitted_parcels]
+            self.pbt["wilayahId"] = payload["wilayahId"]
+            if(self.pbt["mitraKerjaid"]  != ""):
+                # TODO : Link Berkas
+                pass
+            else:
+                if(self.pbt["autoClosed"]):
+                    self.stop_proses
 
     def prepare_berkas(self):
         item = self.dvg_invent.selectedItems()
@@ -265,10 +311,6 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         response_spatial_sdo = endpoints.get_spatial_document_sdo([gugus_ids],riwayat)
         response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
         print(response_spatial_sdo_json)
-
-        # response = endpoints.get_rincikan_by_pbt(self._currentDokumenPengukuranId)
-        # response_json = json.loads(response.content)
-
         if not response_spatial_sdo_json["status"]:
             QtWidgets.QMessageBox.critical(None, "Error", "Proses Unduh Geometri gagal")
             return
@@ -276,13 +318,8 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         epsg = get_project_crs()
         layer_config = get_layer_config("Lb_Rincikan")
 
-        nama = []
         if response_spatial_sdo_json["geoKkpPolygons"]:
             for index,feature in enumerate(response_spatial_sdo_json["geoKkpPolygons"]):
-                # for label in response_json["RINCIKANBARU"]:
-                #     if(label["PERSILINVENTID"] == feature["key"]):
-                #         response_spatial_sdo_json["geoKkpPolygons"][index]["label"] = label["NOMOR"]
-                #         break
                 response_spatial_sdo_json["geoKkpPolygons"][index]["pemilik"] = ""
                 geometryPoly = parse_sdo_geometry(feature["boundary"]["sdoElemInfo"],feature["boundary"]["sdoOrdinates"])
                 for feature in response_spatial_sdo_json["geoKkpTekss"]:
@@ -312,7 +349,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         #         coords_field="position",
         #     )
             
-        iface.actionZoomToLayer().trigger()
+        iface.actionZoomToLayers().trigger()
 
     def tutup_proses(self):
         response = endpoints.stop_pbt(self._currentDokumenPengukuranId)
@@ -334,7 +371,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
             self.txt_tahun.setEnabled(True)
             self.txt_nomor.setEnabled(True)
 
-            pbt = None
+            self.pbt = None
 
             QtWidgets.QMessageBox.information(
                 None, "GeoKKP", "Proses spasial sudah dihentikan"
@@ -369,7 +406,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
                         "Persil belum dipetakan\nUntuk menyelesaikan berkas lakukan proses Map Placing terlebih dahulu",
                     )
 
-        response = endpoints.finish_pbt(self._current_document_pengukuran_id)
+        response = endpoints.finish_pbt(self._currentDokumenPengukuranId)
         if response.content.decode("utf-8").split(":")[0] == "OK":
             self._processAvailable = False
             self.btn_start.setEnabled(True)
@@ -380,13 +417,16 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
             self.btn_close.setEnabled(False)
             self.btn_finish.setEnabled(False)
 
+            self.btn_cari.setEnabled(True)
+            self.txt_tahun.setEnabled(True)
+            self.txt_nomor.setEnabled(True)
+
             self._pbt = None
             QtWidgets.QMessageBox.information(
                 None,
                 "Informasi",
                 "Proses spasial sudah selesai",
             )
-            self._cari_berkas_apbn()
         else:
             QtWidgets.QMessageBox.critical(
                 None,

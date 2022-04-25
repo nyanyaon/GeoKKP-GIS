@@ -30,7 +30,8 @@ from qgis.core import (
     QgsAuthMethodConfig,
     QgsProcessingFeatureSourceDefinition,
     QgsDxfExport,
-    QgsRectangle,
+    QgsSnappingConfig,
+    QgsTolerance,
     QgsFeatureRequest
 )
 from qgis.utils import iface
@@ -48,6 +49,7 @@ TODO: Pindah variabel & konstanta global ke modul terpisah
 """
 
 layer_json_file = os.path.join(os.path.dirname(__file__), "../../config/layers.json")
+block_json_file = os.path.join(os.path.dirname(__file__), "../../config/block_definition.json")
 
 epsg4326 = QgsCoordinateReferenceSystem("EPSG:4326")
 
@@ -109,7 +111,7 @@ SDO_GTYPE_MAP = {
     "09": "MultiSolid",
 }
 
-SDO_FIELD_EXCLUDE = ["text", "boundary", "line","position"]
+SDO_FIELD_EXCLUDE = ["text", "boundary", "line", "position"]
 
 
 # constants for processing snap parameter (auto-adjust)
@@ -208,14 +210,21 @@ def add_google_basemap():
     loadXYZ(url, "Google Satellite")
 
 
+def deleteLayerbyName(layername):
+    to_be_deleted = QgsProject.instance().mapLayersByName(layername)[0]
+    # QgsProject.instance().layerTreeRoot().removeLayer(to_be_deleted)
+    QgsProject.instance().removeMapLayer(to_be_deleted.id())
+
+    
 def activate_editing(layer):
     """
     Activate layer editing tools
     TODO: fix conflicts with built-in layer editing in QGIS
     """
-    QgsProject.instance().setTopologicalEditing(True)
+    project.instance().setTopologicalEditing(True)
+    project.instance().setAvoidIntersectionsLayers([layer])
     layer.startEditing()
-    iface.layerTreeView().setCurrentLayer(layer)
+    # iface.layerTreeView().setCurrentLayer(layer)
     iface.actionAddFeature().trigger()
     # for vertex editing
     # iface.actionVertexTool().trigger()
@@ -242,8 +251,19 @@ def readSetting(key, default=None):
     settings.sync()
 
 
+def select_layer_by_name(project, layername):
+    """
+    pilih semua layer berdasarkan nama layer tertentu
+    """
+    all_layers = project.instance().mapLayers().values()
+    detected_layers = [layer for layer in all_layers if layername in layer.name()]
+    return detected_layers
+
+
 def clear_all_vars():
-    """Hapus semua value dari QgsSettings yang digunakan oleh GeoKKP"""
+    """
+    Hapus semua value dari QgsSettings yang digunakan oleh GeoKKP
+    """
     for key in sorted(settings.allKeys()):
         if key.startswith("geokkp"):
             settings.remove(key)
@@ -269,7 +289,11 @@ def set_symbology(layer, qml):
     Set layer symbology based on QML files in ./styles folder
     """
     uri = os.path.join(os.path.dirname(__file__), "../styles/" + qml)
-    layer.loadNamedStyle(uri)
+    print(uri)
+    try:
+        layer.loadNamedStyle(uri)
+    except Exception as e:
+        logMessage(str(e))
 
 
 def properify(self, text):
@@ -477,6 +501,36 @@ def get_layer_config(kode):
     return None
 
 
+def get_layer_config_by_type(tipe):
+    with open(layer_json_file, "r") as f:
+        layer_config = json.loads(f.read())
+    for layers in layer_config["layers"].values():
+        for layer in layers:
+            if "Tipe Objek" in layer and layer["Tipe Objek"] == tipe:
+                return layer
+    return None
+
+
+def get_layers_config_by_topology(topology):
+    results = []
+    with open(layer_json_file, "r") as f:
+        layer_config = json.loads(f.read())
+    for layers in layer_config["layers"].values():
+        for layer in layers:
+            if "Topologi" in layer and layer["Topologi"] == topology:
+                results.append(layer)
+    return results
+
+
+def get_block_definition_by_type(tipe):
+    with open(block_json_file, "r") as f:
+        block_config = json.loads(f.read())
+    for block in block_config:
+        if "pointName" in block and block["pointName"] == tipe:
+            return block
+    return None
+
+
 def sdo_geokkp_to_layer(sdo, crs):
     layers = []
     if sdo["geoKkpPolygons"]:
@@ -564,7 +618,7 @@ def add_layer(layername, type, symbol=None, fields=None, crs=None, parent=None):
             field_list.append(field)
     if symbol:
         symbolurl = os.path.join(os.path.dirname(__file__), "../../styles/" + symbol)
-        print(symbolurl)
+        # print(symbolurl)
         layer.loadNamedStyle(symbolurl)
 
     layer_dataprovider.addAttributes(field_list)
@@ -580,10 +634,10 @@ def resolve_path(name, basepath=None):
 
 
 def set_project_crs_by_epsg(epsg):
-    print(epsg)
     try:
         crs = QgsCoordinateReferenceSystem(epsg)
         QgsProject.instance().setCrs(crs)
+        # print(epsg)
     except Exception as e:
         print(e)
 
@@ -591,6 +645,22 @@ def set_project_crs_by_epsg(epsg):
 def get_project_crs(epsg=True):
     crs = QgsProject.instance().crs()
     return crs if not epsg else crs.authid()
+
+
+def snapping_config():
+    config = QgsSnappingConfig()
+    config.setType(QgsSnappingConfig.VertexAndSegment)
+    config.setUnits(QgsTolerance.Pixels)
+    config.setTolerance(15)
+    config.setIntersectionSnapping(True)
+    config.setMode(QgsSnappingConfig.AllLayers)
+    return config
+
+
+def enable_snapping(value=True):
+    config = snapping_config()
+    config.setEnabled(value)
+    QgsProject.instance().setSnappingConfig(config)
 
 
 def snap_geometries_to_layer(
@@ -671,9 +741,9 @@ def draw_rect_bound(xMin, yMin, xMax, yMax, epsg, nama="Blok NLP"):
     QgsProject.instance().addMapLayer(layer)
 
     rect = QgsRectangle(xMin, yMin, xMax, yMax)
-    print(rect)
+    # print(rect)
     polygon = QgsGeometry.fromRect(rect)
-    print(polygon)
+    # print(polygon)
 
     feature = QgsFeature()
     feature.setGeometry(polygon)
@@ -961,6 +1031,16 @@ def select_layer_by_regex(regex):
     return results
 
 
+def select_layer_by_topology(topology):
+    layers_config = get_layers_config_by_topology(topology)
+    list_pattern = [f"^\({layer['Kode']}\)" for layer in layers_config]
+
+    if list_pattern:
+        regex = "|".join(list_pattern)
+        return select_layer_by_regex(regex)
+    return None
+
+
 def get_feature_object_id(layer_id, feature_id):
     identifier = f"{layer_id}|{feature_id}".encode("utf-8")
     objectid = hashlib.md5(identifier).hexdigest()
@@ -992,10 +1072,10 @@ def add_bintang(coords):
     data_profider = layer.dataProvider()
     features = []
     for coord in coords:
-        print(coord)
+        # print(coord)
         feature = QgsFeature()
-        point = QgsPoint(coord[0], coord[1])
-        feature.setGeometry(QgsGeometry.fromPoint(point))
+        point = QgsPointXY(coord[0], coord[1])
+        feature.setGeometry(QgsGeometry.fromPointXY(point))
         features.append(feature)
     data_profider.addFeatures(features)
     layer.commitChanges()

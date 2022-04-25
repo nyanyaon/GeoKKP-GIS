@@ -1,14 +1,17 @@
+import configparser
 import os
 import json
 
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
-from qgis.core import Qgis, QgsProject
+from qgis.core import Qgis, QgsProject, QgsRectangle
 from qgis.gui import QgsMessageBar
 
 from .utils import (
     add_google_basemap,
+    get_project_crs,
+    set_project_crs_by_epsg,
     storeSetting,
     logMessage,
     dialogBox,
@@ -39,8 +42,13 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         self.setupUi(self)
 
         self.postlogin = PostLoginDock()
-
         self.bar = QgsMessageBar()
+
+        config = configparser.ConfigParser()
+        config.read(os.path.join(os.path.dirname(__file__), "..", 'metadata.txt'))
+        version = config.get('general', 'version')        
+        self.teksVersi.setText("<p>Versi <a href='https://github.com/danylaksono/GeoKKP-GIS'> \
+            <span style='text-decoration: underline; color:#009da5;'>" + version + "</span></a></p>")
 
         # login action
         self.buttonBoxLogin.clicked.connect(self.doLoginRequest)
@@ -69,7 +77,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
 
         username = self.inputUsername.text()
         password = self.inputPassword.text()
-        logMessage(f"{username}, {password}")
+        # logMessage(f"{username}, {password}")
         try:
             response = endpoints.login(username, password)
             content = json.loads(response.content)
@@ -81,7 +89,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 if self.checkboxSaveLogin.isChecked():
                     save_credentials(username, password)
                     storeSetting("isLoggedIn", content["status"])
-                logMessage(str(content))
+                # logMessage(str(content))
                 self.iface.messageBar().pushMessage(
                     "Login Pengguna Berhasil:", username, level=Qgis.Success
                 )
@@ -90,7 +98,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 self.getKantorProfile(username)
                 self.get_user(username)
         except Exception as e:
-            print(e)
+            # print(e)
             dialogBox(
                 "Kesalahan koneksi. Periksa sambungan Anda ke server GeoKKP",
                 "Koneksi Bermasalah",
@@ -103,9 +111,9 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
             is_e_sertifikat = response.content == "1"
             storeSetting("isESertifikat", is_e_sertifikat)
         except Exception as e:
-            print(e)
+            # print(e)
             dialogBox(
-                "Gagal mengambil status data e sertifikat dari server",
+                "Gagal mengambil status data e-sertifikat dari server",
                 "Koneksi Bermasalah",
                 "Warning",
             )
@@ -113,7 +121,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
     def get_user(self, username):
         response = endpoints.get_user_by_username(username)
         response_json = json.loads(response.content)
-        print("get_user_by_username", response_json)
+        # print("get_user_by_username", response_json)
         app_state.set("user", response_json)
 
     def getKantorProfile(self, username):
@@ -124,7 +132,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             response = endpoints.get_entity_by_username(username)
         except Exception as e:
-            print(e)
+            # print(e)
             dialogBox(
                 "Data Pengguna gagal dimuat dari server",
                 "Koneksi Bermasalah",
@@ -148,11 +156,14 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         """
         what to do when user is logged in
         """
-        self.accept()
-        app_state.set("logged_in", True)
         if not QgsProject.instance().mapLayersByName("Google Satellite"):
             add_google_basemap()
-        # if self.postlogin is None:
-        #     self.postlogin = PostLoginDock()
-        # # show the dialog
-        # self.postlogin.show()
+            set_project_crs_by_epsg("EPSG:4326")    
+        # print(get_project_crs())
+        set_project_crs_by_epsg("EPSG:4326")
+        rect = QgsRectangle(95.0146, -10.92107, 140.9771, 5.9101)
+        self.iface.mapCanvas().setExtent(rect)
+        self.iface.mapCanvas().refresh()
+        self.accept()
+        app_state.set("logged_in", True)
+

@@ -36,7 +36,7 @@ class DesainPBT(QtWidgets.QDialog, FORM_CLASS):
         parent=iface.mainWindow(),
     ):
         super(DesainPBT, self).__init__(parent)
-
+        self.setupUi(self)
         self._pbt = peta_bidang
         self._tipe_sistem_koordinat = tipe_sistem_koordinat
         self._is_invent = is_invent
@@ -48,7 +48,7 @@ class DesainPBT(QtWidgets.QDialog, FORM_CLASS):
         self._is_pengadaan = bool(kendali_id)
         self._current_layers = current_layers
 
-        self.setupUi(self)
+        
         self.setup_workpanel()
 
     def closeEvent(self, event):

@@ -256,7 +256,7 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
             selesai_pengukuran,
             pegawai["userId"],
         )
-        print(response.content)
+        # print(response.content)
         self._gset_petugas_ukur = Dataset(response.content)
         self._gset_petugas_ukur.render_to_qtable_widget(
             table_name="PETUGASUKUR", table_widget=self.dgv_petugas_ukur
@@ -388,7 +388,7 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
             mulai_pengukuran,
             selesai_pengukuran,
         )
-        print(response.content)
+        # print(response.content)
         self._gset_petugas_ukur = Dataset(response.content)
         self._gset_petugas_ukur.render_to_qtable_widget(
             table_name="PETUGASUKUR", table_widget=self.dgv_petugas_ukur

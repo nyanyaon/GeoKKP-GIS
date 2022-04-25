@@ -27,7 +27,7 @@ class FeatureSearchDialog(QtWidgets.QDialog, FORM_CLASS):
         # PyQt Bug. See issue https://github.com/qgis/QGIS/issues/38472
         self.layerAsal.setFilters(QgsMapLayerProxyModel.PolygonLayer)
         layer_asal = self.layerAsal.currentLayer()
-        print(layer_asal)
+        # print(layer_asal)
         self.cariFitur.layer = layer_asal
         self.populateComboBox()
 

@@ -474,7 +474,7 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
                 # TODO: refactoring layer type
             
 
-            iface.actionZoomToLayer().trigger()
+            iface.actionZoomToLayers().trigger()
         else:
             if upr["message"]:
                 msg = upr["message"]

@@ -114,7 +114,11 @@
             </layout>
            </item>
            <item>
-            <widget class="QTableWidget" name="tabel_desain_persil"/>
+            <widget class="QTableWidget" name="tabel_desain_persil">
+             <property name="editTriggers">
+              <set>QAbstractItemView::NoEditTriggers</set>
+             </property>
+            </widget>
            </item>
           </layout>
          </item>

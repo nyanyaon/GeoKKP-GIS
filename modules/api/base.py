@@ -1,5 +1,9 @@
 import json
 
+from ..utils import (
+    readSetting,
+)
+
 from .networkaccessmanager import NetworkAccessManager, DEFAULT_MAX_REDIRECTS
 
 BASE_URL = "http://10.20.22.90:5001/spatialapi"
@@ -11,7 +15,11 @@ REQUEST_KWARGS = {"endpoint", "method", "body", "headers", "redirections", "bloc
 
 class API:
     def __init__(self, base_url=BASE_URL, *args, **kwargs):
-        self._base_url = base_url
+        endpoint = readSetting("pengaturan/endpoint")
+        if not endpoint:
+            self._base_url = base_url
+        else:
+            self._base_url = endpoint
         self._client = NetworkAccessManager(*args, **kwargs)
 
     def _build_url(self, endpoint):
@@ -32,7 +40,7 @@ class API:
     ):
         request_url = self._build_url(endpoint)
         request_body = self.build_api_payload(body)
-        print("api", request_url, request_body)
+        # print("api", request_url, request_body)
         (response, content) = self._client.request(
             url=request_url,
             method=method,

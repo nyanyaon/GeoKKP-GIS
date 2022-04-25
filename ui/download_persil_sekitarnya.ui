@@ -73,6 +73,13 @@
        </property>
       </spacer>
      </item>
+     <item row="6" column="0">
+      <widget class="QLabel" name="nomorLabel_5">
+       <property name="text">
+        <string>Zona TM-3</string>
+       </property>
+      </widget>
+     </item>
      <item row="6" column="1">
       <widget class="QComboBox" name="cmb_coordinate_system">
        <property name="minimumSize">
@@ -83,33 +90,20 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="0">
-      <widget class="QLabel" name="nomorLabel_5">
-       <property name="text">
-        <string>Zona TM-3</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="0">
-      <widget class="QLabel" name="nomorLabel_7">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="text">
-        <string>Radius Unduhan</string>
-       </property>
-      </widget>
-     </item>
      <item row="7" column="1">
-      <widget class="QLineEdit" name="nud_radius">
+      <widget class="QLineEdit" name="radius">
        <property name="minimumSize">
         <size>
          <width>150</width>
          <height>0</height>
         </size>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="lbl_wilayah_2">
+       <property name="text">
+        <string>Radius (meter)</string>
        </property>
       </widget>
      </item>

@@ -1,4 +1,5 @@
 from asyncio.windows_events import NULL
+from http.client import responses
 import os
 import json
 import hashlib
@@ -60,6 +61,9 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
 
         self.btn_tolak.clicked.connect(self._btn_tolak_clicked)
         self.btn_batal.clicked.connect(self._btn_batal_clicked)
+        self.btn_proses_tolak.clicked.connect(self._btn_tolak_proses_clicked)
+        self.btn_process.clicked.connect(self._btn_process_clicked)
+        
         self.cbx_layer.stateChanged.connect(self._cbx_layer_checkedchange)
         self.cbx_topologi.stateChanged.connect(self._cbx_topologi_checkedchange)
         self.cbx_diluar_wilayah.stateChanged.connect(self._cbx_diluar_wilayah_checkedchange)
@@ -93,12 +97,13 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
         self._ds_program = Dataset(response.content)
         response_json = json.loads(response.content)
 
-        print(response_json)
+        # print(response_json)
 
         dt_program = DataTable()
         dt_program.add_column("PROGRAMID")
         dt_program.add_column("PROYEK")
-
+        
+        self.panel.setCurrentIndex(0)
         self.cmb_program.clear()
         for dr in self._ds_program["PROGRAM"].rows:
             program_id = dr["PROGRAMID"]
@@ -130,7 +135,7 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
             self._program_id = self.cmb_program.currentData()
 
             drs_surveyor = self._select_rows(self._ds_program["PROGRAM"], "PROGRAMID", self._program_id)
-            print("drs_surveyor:", drs_surveyor)
+            # print("drs_surveyor:", drs_surveyor)
 
             dt_surveyor = DataTable()
             dt_surveyor.add_column("SURVEYORID")
@@ -149,7 +154,7 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
             
             self.cmb_surveyor.clear()
             for row in dt_surveyor.rows:
-                print(row)
+                # print(row)
                 self.cmb_surveyor.addItem(row["NAMA"], row["SURVEYORID"])
     
     def _cmb_surveyor_index_changed(self):
@@ -236,6 +241,10 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
 
         if len(dset["TANDATERIMA"].columns) > 0:
             dset.render_to_qtable_widget("TANDATERIMA",self.dgv_inbox_pbt, [0,1,2,3])
+        else:
+            self.dgv_inbox_pbt.clear()
+            self.dgv_inbox_pbt.setRowCount(0)
+            self.dgv_inbox_pbt.setColumnCount(0)
         
     def _btn_tolak_clicked(self):
         for i in [0,1,2,3]:
@@ -243,9 +252,6 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
         selected_item = self.dgv_inbox_pbt.selectedItems()
         for i in [0,1,2,3]:
             self.dgv_inbox_pbt.setColumnHidden(i,True)
-        print(selected_item)
-        print(selected_item[8].text())
-        print(type(selected_item[8].text()))
 
         if (len(selected_item) > 0) and (selected_item[8].text() == "None"):
             tandaterima = selected_item[4].text()
@@ -315,7 +321,99 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
             texts = text.replace("Bidang overlap, ","")
             self.txt_catatan.setText(texts)
     
-    # TODO: btn proses
-    # TODO: btn tolak
+    def _btn_tolak_proses_clicked(self):
+        # 0,1,2,3
+        self.dgv_inbox_pbt.setColumnHidden(0,False)
+        selected_item = self.dgv_inbox_pbt.selectedItems()
+        self.dgv_inbox_pbt.setColumnHidden(0,True)
+        self._tandaterima_id = selected_item[0].text()
+        # print("tanda terima id:",self._tandaterima_id)
+        catatan = self.txt_catatan.toPlainText()
+        # print(catatan)
+        if catatan == "":
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Catatan belum terisi!"
+            )
+            return
+        # TODO: remove 2nd catatan if exist
 
+        pegawai_state = app_state.get("pegawai", {})
+        pegawai = pegawai_state.value
+        user_id = pegawai["userId"] if "userId" in pegawai else ""
+
+        responses = endpoints.tolak_pbt_for_ptsl_skb(
+            user_id,
+            self._kantor_id,
+            self._tandaterima_id,
+            catatan
+        )
+
+        batal = json.loads(responses.content)
+        # print(batal)
+        if batal != "Sukses":
+            QtWidgets.QMessageBox.critical(
+                None, "Error!", "Proses penolakan tidak berhasil!"
+            )
+            self.close()
+        else:
+            QtWidgets.QMessageBox.information(
+                None, "Sukses!", "Proses penolakan berhasil!"
+            )
+            self.close()
+
+
+    def _btn_process_clicked(self):
+        for i in [0,1,2,3]:
+            self.dgv_inbox_pbt.setColumnHidden(i,False)
+        selected_item = self.dgv_inbox_pbt.selectedItems()
+        for i in [0,1,2,3]:
+            self.dgv_inbox_pbt.setColumnHidden(i,True)
+
+        if (len(selected_item) > 0) and (selected_item[8].text() == "None"):
+            self._tandaterima_id = selected_item[0].text()
+            self._desa_id = selected_item[1].text()
+            self._program_id = selected_item[2].text()
+            self._surveyor_id = selected_item[3].text()
+            nama_desa = selected_item[6].text()
         
+            pegawai_state = app_state.get("pegawai", {})
+            pegawai = pegawai_state.value
+            user_id = pegawai["userId"] if "userId" in pegawai else ""
+            
+            surveyor = self.cmb_surveyor.currentText()
+            msg = f"Apakah akan membuat peta bidang tanah untuk Surveyor {surveyor} di wilayah {nama_desa}?"
+            dr = QtWidgets.QMessageBox.question(
+                None,
+                'Pembuatan PBT Surveyor', 
+                msg, QtWidgets.QMessageBox.Yes,
+                QtWidgets.QMessageBox.No)
+            if dr != QtWidgets.QMessageBox.Yes:
+                return
+            
+            responses = endpoints.create_new_pbt_for_ptsl_skb(
+                user_id,
+                self._program_id,
+                self._desa_id,
+                self._surveyor_id,
+                self._tandaterima_id
+            )
+            pbt = json.loads(responses.content)
+            # print(pbt)
+            if not pbt["ErrorStack"] and len(pbt["ErrorStack"]) == 0:
+                nomor = pbt["Nomor"]
+                tahun = pbt["Tahun"]
+                nomor_tahun = f"{nomor}/{tahun}"
+                msg = f"Peta Bidang Surveyor sukses dibuat. \nNomor PBT {nomor_tahun}\nNama Surveyor {surveyor}\nWilayah {nama_desa}\nSelanjutnya silahkan buka PBT dari panel Pelayanan Massal!"
+                QtWidgets.QMessageBox.information(
+                None, "GeoKKP", msg
+                )
+                self.close()
+            else:
+                error = str(pbt["ErrorStack"])
+                msg = f"Peta Bidang gagal dibuat!\n{error}"
+                QtWidgets.QMessageBox.critical(
+                None, "Error!", msg)
+                self.close()
+        else:
+            QtWidgets.QMessageBox.critical(
+            None, "Perhatian!", "Pilih Tanda Terima Surveyor yang akan diproses!")

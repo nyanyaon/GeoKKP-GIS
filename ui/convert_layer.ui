@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Ubah Layer</string>
+   <string>Pindah Layer</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -21,7 +21,7 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Daftar Layer GeoKKP</string>
+          <string>Ubah fitur menjadi layer:</string>
          </property>
          <property name="textFormat">
           <enum>Qt::AutoText</enum>
@@ -102,7 +102,7 @@
        <item>
         <widget class="QCheckBox" name="chk_selected_only">
          <property name="text">
-          <string>Objek terpilih</string>
+          <string>Hanya Objek terpilih</string>
          </property>
         </widget>
        </item>

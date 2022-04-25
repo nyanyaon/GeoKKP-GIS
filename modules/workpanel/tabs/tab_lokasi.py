@@ -1,14 +1,17 @@
 import os
 import json
+from queue import Empty
 
 from osgeo import ogr
-from qgis.PyQt import QtWidgets, uic
+from qgis.PyQt import QtWidgets, uic, QtGui
 from qgis.core import QgsProject, QgsCoordinateReferenceSystem
-
+from qgis.gui import QgsTableWidgetItem
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
 from ...utils import (
+    dialogBox,
+    get_project_crs,
     readSetting,
     storeSetting,
     get_tm3_zone,
@@ -44,10 +47,25 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
         self.current_tipe_kantor_id = None
         self.current_kantor = {}
         self.list_kantor = []
+
+        self.populateTM3()
+
         self.combo_kantor.currentIndexChanged.connect(self.kantor_changed)
         self.btn_simpan_area_kerja.clicked.connect(self.simpan_area_kerja)
 
+        self.btn_simpan_zonatm3.clicked.connect(self.simpan_tm3)
+
         self.setup_workpanel()
+
+        # setup tabel rekap
+        self.tabelRekapitulasi.setRowCount(3)
+        self.tabelRekapitulasi.setColumnCount(2)
+
+        header = self.tabelRekapitulasi.horizontalHeader()       
+        header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
+        header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
+
+        
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -61,6 +79,7 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
     def setup_workpanel(self):
         self.read_settings()
         self.populate_kantor()
+        self.populateRekapitulasi()
 
     def populate_kantor(self):
         self.combo_kantor.clear()
@@ -72,7 +91,8 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
             if kantor["kantorID"] == prev_id:
                 current_index = index
             self.combo_kantor.addItem(kantor["nama"])
-        self.combo_kantor.setCurrentIndex(current_index)
+        # hide kantor first to avoid confusion
+        self.combo_kantor.setCurrentIndex(-1)
 
     def kantor_changed(self, index):
         self.current_kantor = self.list_kantor[index]
@@ -82,6 +102,7 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
     def simpan_area_kerja(self):
         storeSetting("kantorterpilih", self.current_kantor)
         self.get_pagawai()
+        self.populateRekapitulasi()
         # self.set_project_crs()
 
     def get_pagawai(self):
@@ -91,7 +112,7 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
             return
         response = endpoints.get_user_entity_by_username(username.value, kantor_id)
         response_json = json.loads(response.content)
-        print("get_user_entity_by_username", response_json)
+        # print("get_user_entity_by_username", response_json)
         app_state.set("pegawai", response_json)
 
         # add notif for succesful setting loaction
@@ -100,7 +121,7 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
             None, "GeoKKP - Informasi", "Berhasil mengatur lokasi")
 
     def _set_crs_by_local_data(self):
-        print("using local data")
+        # print("using local data")
         iface.mainWindow().blockSignals(True)
         driver = ogr.GetDriverByName("TopoJSON")
         dataSource = driver.Open(adm_district_file, 0)
@@ -145,10 +166,92 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
             layer = sdo_to_layer(response_json["wilayahs"], "Batas Desa", epsg_string)
             layer.setReadOnly(True)
             QgsProject.instance().addMapLayer(layer)
-            iface.actionZoomToLayer().trigger()
+            iface.actionZoomToLayers().trigger()
         else:
             QtWidgets.QMessageBox.warning(
                 None,
                 "Perhatian",
                 "Batas Desa tidak ditemukan,\nBatas desa tidak akan ditampilkan di QGIS",
             )
+
+    def populateTM3(self):
+        for i in range(46, 55):
+            for j in range(2, 0, -1):
+                self.combo_tm3.addItem(f"{i}.{j}")
+        self.combo_tm3.setCurrentIndex(-1)
+
+    def simpan_tm3(self):
+        selectedTM3 = get_epsg_from_tm3_zone(self.combo_tm3.currentText())
+        try:
+            # print(selectedTM3)
+            set_project_crs_by_epsg(selectedTM3)
+        except Exception as e:
+            logMessage("pengaturan CRS Project Gagal")
+            pass
+        dialogBox("Berhasil mengatur CRS Project")
+        self.populateRekapitulasi()
+
+
+    def populateRekapitulasi(self):
+        username_not_done = True
+        kantor_not_done = True
+        crs_not_done = True
+
+        # username
+        login_state = app_state.get("logged_in")
+        if not login_state.value:
+            str_username = "Anda belum melakukan login ke aplikasi GeoKKP"
+        else:
+            username = str(app_state.get("username"))
+            str_username = username
+            username_not_done = False
+        # print("str", str_username)
+        item = QgsTableWidgetItem(str_username)
+        #print(item)
+        self.tabelRekapitulasi.setItem(0, 0, QgsTableWidgetItem("Pengguna GeoKKP"))
+        self.tabelRekapitulasi.setItem(0, 1, item)
+        if username_not_done:
+            item.setBackground(QtGui.QColor(255,0,0))
+        else:
+            item.setBackground(QtGui.QColor(0,255,0))
+
+        # kantor
+        kantor = readSetting("kantorterpilih", {})
+        try:
+            kantor = kantor['nama']
+        except:
+            str_kantor = "Anda belum memilih lokasi kantor"
+        else:
+            str_kantor = kantor
+            kantor_not_done = False
+        item = QgsTableWidgetItem(str_kantor)
+        self.tabelRekapitulasi.setItem(1, 0, QgsTableWidgetItem("Kantor Terpilih"))
+        self.tabelRekapitulasi.setItem(1, 1, item)
+        if kantor_not_done:
+            item.setBackground(QtGui.QColor(255,0,0))
+        else:
+            item.setBackground(QtGui.QColor(0,255,0))
+
+        # CRS
+        epsg = get_project_crs()
+        crs = QgsCoordinateReferenceSystem(epsg)
+        if crs.isGeographic():
+            str_crs = "Anda belum mengatur sistem koordinat TM-3"
+        else:
+            str_crs = crs.description()
+            crs_not_done = False
+        item = QgsTableWidgetItem(str_crs)
+        self.tabelRekapitulasi.setItem(2, 0, QgsTableWidgetItem("Sistem Proyeksi"))
+        self.tabelRekapitulasi.setItem(2, 1, item)
+        if crs_not_done:
+            item.setBackground(QtGui.QColor(255,0,0))
+        else:
+            item.setBackground(QtGui.QColor(0,255,0))
+        
+
+        
+
+        
+
+        
+
