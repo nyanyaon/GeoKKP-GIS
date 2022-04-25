@@ -704,6 +704,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         for feature in features:
 
             self._layer.startEditing()
+            print(ds["PersilBaru"],"persil")
             for apartemen in ds["PersilBaru"]:
                 if(feature.attributes()[key] == apartemen["oid"]):
                     self._layer.changeAttributeValue(
