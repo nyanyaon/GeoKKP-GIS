@@ -84,7 +84,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
                 self._layer = layer
                 return
         self.layer_target_not_found()
-        self.adjustButton.setEnabled(False)
+        # self.adjustButton.setEnabled(False)
         return
 
     def activate_selection(self):
