@@ -56,7 +56,7 @@
 		}],
 		"googlemaps": [{
 			"nama": "Google Maps Default",
-			"url": " https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}",
+			"url": "https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}",
 			"type": "TMS",
 			"icon": "google.png",
 			"zmin": 1,

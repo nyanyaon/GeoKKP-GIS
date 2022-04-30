@@ -191,12 +191,11 @@ class GeocodingDialog(QtWidgets.QDialog, FORM_CLASS):
             # store layer id
             self.layerid = self.layer.id()
 
-
         # add a feature
         try:
-            fields=self.layer.pendingFields()
+            fields = self.layer.pendingFields()
         except:
-            fields=self.layer.fields()
+            fields = self.layer.fields()
 
         fet = QgsFeature(fields)
         try:
@@ -210,10 +209,5 @@ class GeocodingDialog(QtWidgets.QDialog, FORM_CLASS):
             fet['address'] = address
 
         self.layer.startEditing()
-        self.layer.addFeatures([ fet ])
+        self.layer.addFeatures([fet])
         self.layer.commitChanges()
-    
-
-    
-
-  
