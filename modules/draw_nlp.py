@@ -3,7 +3,13 @@ import os
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
-from qgis.core import QgsProject, QgsPointXY
+from qgis.core import (
+    QgsProject, 
+    QgsPointXY, 
+    QgsCoordinateReferenceSystem, 
+    QgsCoordinateTransform,
+)
+
 from qgis.gui import QgsVertexMarker
 
 # using utils
@@ -16,6 +22,7 @@ from .utils import (
     bk_1000,
     bk_500,
     bk_250,
+    dialogBox,
 )
 from .maptools import MapTool
 
@@ -49,14 +56,16 @@ class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
         self.project = QgsProject()
         self.setWindowIcon(icon("icon.png"))
 
+        self.project.instance().crsChanged.connect(self.set_epsg)
+
         self.ambil_titik.checked = False
         self.point = None
 
         # setup map tool
         self.previousMapTool = self.canvas.mapTool()
-        self.epsg = self.canvas.mapSettings().destinationCrs().authid()
+        self.epsg = self.project.instance().crs().authid()
+        self.crs_tm3.setText(self.project.instance().crs().description())
 
-        self.crs_tm3.setText(self.canvas.mapSettings().destinationCrs().description())
         # self.skala_peta.currentIndexChanged.connect(self.get_nlp_text())
         self.ambil_titik.clicked.connect(self.on_pressed)
 
@@ -75,11 +84,18 @@ class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
         self.canvas.scene().removeItem(self.vm)
         self.canvas.setMapTool(self.previousMapTool)
 
+    def set_epsg(self):
+        self.epsg = self.project.instance().crs().authid()
+        self.crs_tm3.setText(self.project.instance().crs().description())
+        # print("changing epsg now into", self.epsg)
+
     def on_pressed(self):
+        self.check_is_tm3()
         self.ambil_titik.checked = True
         try:
             self.canvas.scene().removeItem(self.vm)
             self.canvas.scene().removeItem(self.rb)
+            MapTool(self.canvas, self.vm).clear_drawing()
         except:  # noqa
             pass
         self.vm = self.create_vertex_marker()
@@ -90,13 +106,32 @@ class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
         self.point_tool.isEmittingPoint = True
         self.canvas.setMapTool(self.point_tool)
 
+    def check_is_tm3(self):
+        if int(self.epsg.split(":")[1]) in range(23830, 23846):
+            return True
+            print("EPSG Tercatat", self.epsg.split(":")[1])
+        else:
+            dialogBox("Anda belum mengatur sistem proyeksi TM-3 Project")
+            print("EPSG Tercatat", self.epsg.split(":")[1])
+            self.ambil_titik.checked = False
+            return False
+
     def update_titik(self, x, y):
         self.ambil_titik.setChecked(False)
         self.point = QgsPointXY(x, y)
-        self.koordinat.setText(str(round(x, 3)) + "," + str(round(y, 3)))
-        self.canvas.unsetMapTool(self.point_tool)
-        self.deactivateMapTool()
-        self.get_nlp_text()
+
+        # check point bounds against TM-3 Boundary
+        source_crs = QgsCoordinateReferenceSystem("EPSG:4326")
+        crs = QgsCoordinateReferenceSystem(self.epsg)
+        transform = QgsCoordinateTransform(source_crs, crs, QgsProject.instance())
+        crs_box = transform.transformBoundingBox(crs.bounds())
+        if not crs_box.contains(self.point):
+            dialogBox("Anda memilih titik di luar zona TM-3 Project")
+        else:
+            self.koordinat.setText(str(round(x, 3)) + "," + str(round(y, 3)))
+            self.canvas.unsetMapTool(self.point_tool)
+            self.deactivateMapTool()
+            self.get_nlp_text()
 
     def create_vertex_marker(self, type="CROSS"):
         vm = QgsVertexMarker(self.canvas)

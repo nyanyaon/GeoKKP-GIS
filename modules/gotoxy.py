@@ -39,7 +39,7 @@ class GotoXYDialog(QtWidgets.QDialog, FORM_CLASS):
         self._currentcrs = None
 
         self.setupUi(self)
-        self.buttonBox.accepted.connect(self.zoomtodialog)
+        self.cariLokasi.clicked.connect(self.zoomtodialog)
         self.selectProj.crsChanged.connect(self.set_crs)
 
     def closeEvent(self, event):
@@ -53,7 +53,6 @@ class GotoXYDialog(QtWidgets.QDialog, FORM_CLASS):
     def parse_coordinate(self):
         coordinate_text = self.mLineEditXY.text()
         points = parse_raw_coordinate(coordinate_text)
-        # TODO: Extend with more than one coordinates
         first_point = next(points)
         return first_point
 
