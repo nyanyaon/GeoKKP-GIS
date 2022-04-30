@@ -261,11 +261,3 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
             item.setBackground(QtGui.QColor(255,0,0))
         else:
             item.setBackground(QtGui.QColor(0,255,0))
-        
-
-        
-
-        
-
-        
-
