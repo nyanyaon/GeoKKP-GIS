@@ -42,6 +42,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         self.setWindowIcon(icon("icon.png"))
         self._layer = None
         self._selected_features = None
+        self.tolerance.setText("10")
         self.adjustButton.clicked.connect(self.adjust_parcel)
 
     def showEvent(self, events):
@@ -94,13 +95,16 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.actionSelect().trigger()
 
     def adjust_parcel(self):
+        toleransi = self.tolerance.text()
         selected_layer_index = self.layer_acuan.currentIndex()
         ref_layer = self.layer_acuan.layer(selected_layer_index)
         if not ref_layer and not isinstance(self._layer, QgsVectorLayer):
             self.layer_acuan_not_found()
 
-        out = snap_geometries_to_layer(self._layer, ref_layer, only_selected=True)
-        adjusted_features = out.getFeatures()
+        out = snap_geometries_to_layer(self._layer, ref_layer, tolerance=toleransi, only_selected=True)
+
+        adjusted_layer = QgsVectorLayer(out, "adjusted", "ogr")
+        adjusted_features = adjusted_layer.getFeatures()
 
         selected_feature_ids = [feature.id() for feature in self._selected_features]
         self._layer.dataProvider().deleteFeatures(selected_feature_ids)

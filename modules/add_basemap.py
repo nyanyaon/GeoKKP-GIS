@@ -49,7 +49,8 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
                 for count, value in enumerate(values):
                     icons = value["icon"]
                     item = QStandardItem(value["nama"])
-                    item.setData(value["url"], 256)
+                    item.setData(value["url"], 128)
+                    item.setData(value["type"], 256)
                     item.setIcon(icon(f"../images/basemap_icons/{icons}"))
                     self.model.appendRow(item)
             self.daftarBasemap.setModel(self.model)
@@ -58,7 +59,11 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def addToQGIS(self):
         for index in self.daftarBasemap.selectedIndexes():
-            url = index.data(256)
+            url = index.data(128)
             name = index.data()
-            # print(index.row(), index.data(256))
-            loadXYZ(url, name)
+            basemaptype = index.data(256)
+            # print(index.row(), index.data())
+            if basemaptype == "arcgismapserver":
+                iface.addRasterLayer("url='" + url + "' layer='0'", name, "arcgismapserver")
+            else:
+                loadXYZ(url, name)

@@ -293,7 +293,7 @@ def set_symbology(layer, qml):
     try:
         layer.loadNamedStyle(uri)
     except Exception as e:
-        logMessage(str(e))
+        logMessage("symbology error"+str(e))
 
 
 def properify(self, text):
@@ -666,9 +666,9 @@ def enable_snapping(value=True):
 def snap_geometries_to_layer(
     layer,
     ref_layer,
-    tolerance=1,
+    tolerance=10,
     behavior=SNAP_ALIGNING_NODE_NOT_INSERT,
-    output="memory:snap",
+    output="memory",
     only_selected=False,
 ):
     if isinstance(layer, str):
