@@ -2,11 +2,13 @@ import os
 
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QApplication
 from qgis.utils import iface
 from qgis.core import (
-    QgsProject, 
-    QgsPointXY, 
-    QgsCoordinateReferenceSystem, 
+    QgsProject,
+    QgsPointXY,
+    QgsCoordinateReferenceSystem,
     QgsCoordinateTransform,
 )
 
@@ -56,7 +58,12 @@ class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
         self.project = QgsProject()
         self.setWindowIcon(icon("icon.png"))
 
+        copy_icon = QIcon(":/images/themes/default/mActionEditCopy.svg")
+        
         self.project.instance().crsChanged.connect(self.set_epsg)
+
+        # Clipboard
+        self.clipboard = QApplication.clipboard()
 
         self.ambil_titik.checked = False
         self.point = None
@@ -66,6 +73,10 @@ class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
         self.epsg = self.project.instance().crs().authid()
         self.crs_tm3.setText(self.project.instance().crs().description())
 
+        # copy to clipboard
+        self.copyTeksNLP.setIcon(copy_icon)
+        self.copyTeksNLP.clicked.connect(self.copy_clicked)
+
         # self.skala_peta.currentIndexChanged.connect(self.get_nlp_text())
         self.ambil_titik.clicked.connect(self.on_pressed)
 
@@ -73,7 +84,16 @@ class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
+        self.iface.actionPan().trigger()
+        MapTool(self.canvas, self.vm).clear_drawing()
         event.accept()
+    
+    def copy_clicked(self, button_index):
+        text = self.nlp.text()
+        self.clipboard.setText(text)
+        self.iface.statusBarIface().showMessage(
+            "Nomor lembar peta berhasil disalin", 3000
+        )
 
     def createMapTool(self):
         self.canvas.setMapTool(self.myMapTool)

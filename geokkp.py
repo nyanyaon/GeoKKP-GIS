@@ -974,7 +974,7 @@ class GeoKKP:
         layername = '(020400) Dimensi Pengukuran'
         try:
             self.dimension_layer = select_layer_by_name(self.project, layername)[0]
-             # enable last chosen tools as default in toolbar
+            # enable last chosen tools as default in toolbar
             self.DimensionButton.setDefaultAction(self.actionDistanceDimension)
             self.actionDistanceDimension.setChecked(True)
             self.distanceTool = DimensionDistanceTool(
@@ -983,7 +983,7 @@ class GeoKKP:
             self.distanceTool.completed.connect(self.dimension_distance_completed)
             self.iface.mapCanvas().setMapTool(self.distanceTool)
         except Exception as e:
-            dialogBox("Layer Dimensi Pengukuran (020400) tidak ditemukan. ")
+            dialogBox("Layer Dimensi Pengukuran (020400) tidak ditemukan!")
             logMessage(str(e), level=Qgis.Warning)
             self.actionDistanceDimension.setChecked(False)
             self.iface.mapCanvas().setMapTool(self.mapToolPan)
@@ -1035,7 +1035,7 @@ class GeoKKP:
             self.pointTool.completed.connect(self.dimension_point_completed)
             self.iface.mapCanvas().setMapTool(self.pointTool)
         except Exception as e:
-            dialogBox("Layer Dimensi Pengukuran (020400) tidak ditemukan. ")
+            dialogBox("Layer Dimensi Pengukuran (020400) tidak ditemukan!")
             logMessage(str(e), level=Qgis.Warning)
             self.actionPointDimension.setChecked(False)
             self.iface.mapCanvas().setMapTool(self.mapToolPan)
@@ -1396,6 +1396,7 @@ class GeoKKP:
             # print(action.text())
             if action.text() == "Georeferencer…":
                 action.trigger()
+                self.iface.mainWindow().findChildren(QAction, 'mActionOpenRaster')[0].trigger()
 
     def geocoding(self):
         if self.geocodingaction is None:
