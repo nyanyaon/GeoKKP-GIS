@@ -44,7 +44,8 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
         self.setupUi(self)
         self.project = QgsProject()
 
-        self.epsg = get_project_crs()
+        # initialize epsg
+        self.epsg = "EPSG:4326"
         self.crs = QgsCoordinateReferenceSystem(self.epsg)
         self.project.instance().crsChanged.connect(self.set_epsg)
 
@@ -68,8 +69,6 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
         header = self.tabelRekapitulasi.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
-
-
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
