@@ -343,7 +343,7 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
                 layer_config["Attributes"][0],
             )
 
-        iface.actionZoomToLayers().trigger()
+        iface.actionZoomToLayer().trigger()
 
     def Submit(self):
         # replacing_current_layers

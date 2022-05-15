@@ -349,7 +349,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         #         coords_field="position",
         #     )
             
-        iface.actionZoomToLayers().trigger()
+        iface.actionZoomToLayer().trigger()
 
     def tutup_proses(self):
         response = endpoints.stop_pbt(self._currentDokumenPengukuranId)
