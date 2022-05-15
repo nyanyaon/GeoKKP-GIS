@@ -17,7 +17,12 @@ from qgis.core import (
 )
 
 # using utils
-from .utils import icon, parse_raw_coordinate
+from .utils import (
+    icon,
+    logMessage,
+    parse_raw_coordinate,
+    dialogBox
+)
 
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../ui/coordtrans.ui")
@@ -101,8 +106,13 @@ class CoordinateTransformDialog(QDialog, FORM_CLASS):
 
     def transform_coordinate(self, source_crs, target_crs, point):
         trans = QgsCoordinateTransform(source_crs, target_crs, QgsProject.instance())
-        new_point = trans.transform(point)
-        return new_point
+        try:
+            new_point = trans.transform(point)
+        except Exception as e:
+            dialogBox("Kesalahan input koordinat. Periksa urutan x dan y data masukan")
+            logMessage(str(e))
+        else:
+            return new_point
 
     def parse_coordinate(self, lineedit_index):
         coordinate_text = self.lineedits[lineedit_index].text()
@@ -143,8 +153,8 @@ class CoordinateTransformDialog(QDialog, FORM_CLASS):
                     self.tm3_label.setText(
                         "TM3 " + tm3_crs.description().split(" zone ")[1]
                     )
-
-                self.lineedits[i].setText("%f, %f" % (new_point.x(), new_point.y()))
+                if new_point:
+                    self.lineedits[i].setText("%f, %f" % (new_point.x(), new_point.y()))
 
     def copy_clicked(self, button_index):
         text = self.lineedits[button_index].text()

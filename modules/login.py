@@ -38,11 +38,14 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
     def __init__(self, parent=iface.mainWindow()):
         self.iface = iface
         self.canvas = iface.mapCanvas()
+        self.project = QgsProject()
         super(LoginDialog, self).__init__(parent)
         self.setupUi(self)
 
         self.postlogin = PostLoginDock()
         self.bar = QgsMessageBar()
+
+        # self.project.instance().crsChanged.connect(self.set_epsg)
 
         config = configparser.ConfigParser()
         config.read(os.path.join(os.path.dirname(__file__), "..", 'metadata.txt'))
@@ -152,18 +155,26 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 "Warning",
             )
 
+    def set_epsg(self):
+        epsg = self.project.instance().crs().authid()
+        print("epsg", epsg)
+        if epsg == "EPSG:3857":
+            set_project_crs_by_epsg("EPSG:4326")
+        else:
+            pass
+
+    def zoom_to_id(self):
+        rect = QgsRectangle(95.0146, -10.92107, 140.9771, 5.9101)
+        self.iface.mapCanvas().setExtent(rect)
+        self.iface.mapCanvas().refresh()
+
     def postuserlogin(self):
         """
         what to do when user is logged in
         """
         if not QgsProject.instance().mapLayersByName("Google Satellite"):
             add_google_basemap()
-            set_project_crs_by_epsg("EPSG:4326")    
-        # print(get_project_crs())
         set_project_crs_by_epsg("EPSG:4326")
-        rect = QgsRectangle(95.0146, -10.92107, 140.9771, 5.9101)
-        self.iface.mapCanvas().setExtent(rect)
-        self.iface.mapCanvas().refresh()
+        self.zoom_to_id()
         self.accept()
         app_state.set("logged_in", True)
-

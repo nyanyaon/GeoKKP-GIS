@@ -30,6 +30,8 @@ from qgis.core import (
     QgsAuthMethodConfig,
     QgsProcessingFeatureSourceDefinition,
     QgsDxfExport,
+    QgsSnappingConfig,
+    QgsTolerance,
     QgsFeatureRequest
 )
 from qgis.utils import iface
@@ -213,15 +215,16 @@ def deleteLayerbyName(layername):
     # QgsProject.instance().layerTreeRoot().removeLayer(to_be_deleted)
     QgsProject.instance().removeMapLayer(to_be_deleted.id())
 
-
+    
 def activate_editing(layer):
     """
     Activate layer editing tools
     TODO: fix conflicts with built-in layer editing in QGIS
     """
-    QgsProject.instance().setTopologicalEditing(True)
+    project.instance().setTopologicalEditing(True)
+    project.instance().setAvoidIntersectionsLayers([layer])
     layer.startEditing()
-    iface.layerTreeView().setCurrentLayer(layer)
+    # iface.layerTreeView().setCurrentLayer(layer)
     iface.actionAddFeature().trigger()
     # for vertex editing
     # iface.actionVertexTool().trigger()
@@ -286,7 +289,11 @@ def set_symbology(layer, qml):
     Set layer symbology based on QML files in ./styles folder
     """
     uri = os.path.join(os.path.dirname(__file__), "../styles/" + qml)
-    layer.loadNamedStyle(uri)
+    print(uri)
+    try:
+        layer.loadNamedStyle(uri)
+    except Exception as e:
+        logMessage("symbology error"+str(e))
 
 
 def properify(self, text):
@@ -640,12 +647,28 @@ def get_project_crs(epsg=True):
     return crs if not epsg else crs.authid()
 
 
+def snapping_config():
+    config = QgsSnappingConfig()
+    config.setType(QgsSnappingConfig.VertexAndSegment)
+    config.setUnits(QgsTolerance.Pixels)
+    config.setTolerance(15)
+    config.setIntersectionSnapping(True)
+    config.setMode(QgsSnappingConfig.AllLayers)
+    return config
+
+
+def enable_snapping(value=True):
+    config = snapping_config()
+    config.setEnabled(value)
+    QgsProject.instance().setSnappingConfig(config)
+
+
 def snap_geometries_to_layer(
     layer,
     ref_layer,
-    tolerance=1,
+    tolerance=10,
     behavior=SNAP_ALIGNING_NODE_NOT_INSERT,
-    output="memory:snap",
+    output="memory",
     only_selected=False,
 ):
     if isinstance(layer, str):

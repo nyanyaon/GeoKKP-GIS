@@ -190,12 +190,9 @@
              </spacer>
             </item>
             <item>
-             <widget class="QToolButton" name="terapkan_btsadmin">
-              <property name="minimumSize">
-               <size>
-                <width>80</width>
-                <height>30</height>
-               </size>
+             <widget class="QPushButton" name="terapkan_btsadmin">
+              <property name="focusPolicy">
+               <enum>Qt::StrongFocus</enum>
               </property>
               <property name="text">
                <string>Terapkan</string>

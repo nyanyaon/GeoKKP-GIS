@@ -110,9 +110,6 @@ class GeocodingDialog(QtWidgets.QDialog, FORM_CLASS):
         """
         # lon lat and transform
         point = QgsPoint(float(point[0]), float(point[1]))
-        print(point)
-        print(self._get_layer_crs())
-
         point = self.pointFromWGS84(point, self._get_layer_crs())
         
         # Set the extent to our new point
@@ -145,7 +142,6 @@ class GeocodingDialog(QtWidgets.QDialog, FORM_CLASS):
             return QgsProject.instance()
 
     def pointFromWGS84(self, point, crs):
-        print(point, crs)
         f=QgsCoordinateReferenceSystem()
         f.createFromSrid(4326)
         t=crs # QgsCoordinateReferenceSystem()
@@ -161,7 +157,7 @@ class GeocodingDialog(QtWidgets.QDialog, FORM_CLASS):
         return pt
 
     def save_point(self, point, address):
-        logMessage('Saving point ' + str(point[0])  + ' ' + str(point[1]))
+        logMessage('Menuju ke lokasi pencarian: ' + str(point[0])  + ' ' + str(point[1]))
         # create and add the point layer if not exists or not set
         if not self._get_registry().mapLayer(self.layerid) :
             # create layer with same CRS as map canvas
@@ -195,12 +191,11 @@ class GeocodingDialog(QtWidgets.QDialog, FORM_CLASS):
             # store layer id
             self.layerid = self.layer.id()
 
-
         # add a feature
         try:
-            fields=self.layer.pendingFields()
+            fields = self.layer.pendingFields()
         except:
-            fields=self.layer.fields()
+            fields = self.layer.fields()
 
         fet = QgsFeature(fields)
         try:
@@ -214,10 +209,5 @@ class GeocodingDialog(QtWidgets.QDialog, FORM_CLASS):
             fet['address'] = address
 
         self.layer.startEditing()
-        self.layer.addFeatures([ fet ])
+        self.layer.addFeatures([fet])
         self.layer.commitChanges()
-    
-
-    
-
-  

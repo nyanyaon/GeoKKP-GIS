@@ -19,7 +19,10 @@ class MapTool(QgsMapTool):
 
         self.reset()
         self.isEmittingPoint = True
-        print("is emitting ", self.isEmittingPoint)
+        # print("is emitting ", self.isEmittingPoint)
+
+    def clear_drawing(self):
+        self.canvas.scene().removeItem(self.vertexmarker)
 
     def reset(self):
         self.isEmittingPoint = False

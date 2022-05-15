@@ -260,17 +260,16 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         table.add_column("HEIGHT")
         table.add_column("ORIENTATION")
         table.add_column("URUT")
-
+        self._layer.startEditing()
         for feature in features:
             identifier = f"{self._layer.id()}|{feature.id()}".encode("utf-8")
             objectid = hashlib.md5(identifier).hexdigest().upper()
-
-            
-            self._layer.startEditing()
+            print(identifier)
+    
             self._layer.changeAttributeValue(
                 feature.id(), field_index, objectid
-                )
-            self._layer.commitChanges()
+            )
+      
 
             point = feature.geometry().pointOnSurface().asPoint()
             teks = get_sdo_point(point)
@@ -320,7 +319,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                 )
             except:
                 d_row["URUT"] = 0
-
+        self._layer.commitChanges()
         dataset.render_to_qtable_widget("ApartemenBaru", self.dgv_GambarDenah , [3,4])
 
     def FillNewApartments(self):
@@ -513,7 +512,6 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                 valid = False
 
         if(self.cmb_lihat_data.currentText() == "Apartemen Edit"):
-            self.dgv_GambarDenah.setColumnHidden(0, False)
             for x in range(self.dgv_GambarDenah.rowCount()):
                 if self.dgv_GambarDenah.item(x,2).text() is None:
                     valid = False
@@ -523,7 +521,6 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                     valid = False
                     msg = "Ada Apartemen yang tidak memiliki REGID!"
                     break
-            self.dgv_GambarDenah.setColumnHidden(0, True)
 
         if valid:
             self.btn_proses.setEnabled(True)
@@ -698,13 +695,12 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         
         field_index = self._layer.fields().indexOf("label")
         key = self._layer.fields().indexOf("key")
-        print("field_index", field_index)
         features = self._layer.getFeatures()
-
+        print(features)
         for feature in features:
-
             self._layer.startEditing()
             for apartemen in ds["PersilBaru"]:
+                print(feature.attributes()[key],apartemen["oid"],"persil")
                 if(feature.attributes()[key] == apartemen["oid"]):
                     self._layer.changeAttributeValue(
                         feature.id(), field_index, apartemen["nib"]
