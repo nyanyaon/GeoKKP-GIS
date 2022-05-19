@@ -28,6 +28,7 @@ from ...link_pbt import LinkPBT
 from ...link_pbt.input_berkas_pbt import InputBerkasPBT
 from ...link_pbt.info_pbt import InfoPBT
 from ...link_pbt.edit_gambar_ukur import EditGambarUkur
+from ...layout_create import CreateLayoutDialog
 
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../../../ui/workpanel/tab_apbn.ui")
@@ -77,6 +78,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         self.btn_selesai.clicked.connect(self._handle_selesai)
         self.btn_link.clicked.connect(self._link_berkas)
         self.table_apbn.itemSelectionChanged.connect(self._handle_apbn_select)
+        self.btn_layout.clicked.connect(self.create_layout)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -531,3 +533,8 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
                 "Error",
                 response.content.decode("utf-8"),
             )
+
+    def create_layout(self):
+        # TODO send variable to layout
+        create_layout = CreateLayoutDialog()
+        create_layout.show()

@@ -14,6 +14,7 @@ from ...utils import get_layer_config, get_project_crs, readSetting, sdo_to_laye
 from ...topology import quick_check_topology
 from ...models.dataset import Dataset
 from ...desain_surat_ukur import DesainSuratUkur
+from ...layout_create import CreateLayoutDialog
 
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../../../ui/workpanel/tab_surat_ukur.ui")
@@ -104,7 +105,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
         self.btn_start_process.clicked.connect(self._prepare_dokumen)
         self.btn_save_data.clicked.connect(self._submit)
         self.btn_info_process.clicked.connect(self._info_handler)
-        # self.btn_create_layout.clicked.connect()
+        self.btn_create_layout.clicked.connect(self.create_layout)
         self.btn_finish_process.clicked.connect(self._stop_import)
 
         self.dgv_surat_ukur.itemDoubleClicked.connect(self._prepare_dokumen)
@@ -576,13 +577,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
     def _handle_processed_su(self, payload):
         pass
 
-
-
-
-        
-
-        
-            
-
-
-
+    def create_layout(self):
+        # TODO send variable to layout
+        create_layout = CreateLayoutDialog()
+        create_layout.show()

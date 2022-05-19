@@ -27,6 +27,7 @@ from ...topology import quick_check_topology
 from ...desain_gambar_denah import DesainGambarDenah
 from ...FmImportGambarDenah import FmImportGambarDenah
 from datetime import datetime
+from ...layout_create import CreateLayoutDialog
 
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../../../ui/workpanel/tab_gambar_denah.ui")
@@ -72,7 +73,7 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self.btn_first.clicked.connect(self.btnFirst_click)
         self.btn_last.clicked.connect(self.btnLast_click)
 
-        
+        self.btn_layout.clicked.connect(self.create_layout)
         self.btn_informasi.setEnabled(False)
         self.btn_layout.setEnabled(False)
         self.btn_tutup.setEnabled(False)
@@ -466,6 +467,7 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
                 "Berkas berhasil di stop",
         )
 
-        
-            
-
+    def create_layout(self):
+        # TODO send variable to layout
+        create_layout = CreateLayoutDialog()
+        create_layout.show()

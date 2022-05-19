@@ -30,6 +30,7 @@ from ...informasi_persil import InformasiPersil
 from ...link_di302 import LinkDI302
 from ...link_di302a import LinkDI302A
 from ...input_denah import InputDenah
+from ...layout_create import CreateLayoutDialog
 
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../../../ui/workpanel/tab_rutin.ui")
@@ -95,6 +96,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         self.btn_save_data.clicked.connect(self._submit)
         self.btn_info_process.clicked.connect(self._get_process_info)
         self.btn_parcel_mapping.clicked.connect(self._update_di_302)
+        self.btn_create_layout.clicked.connect(self._create_layout)
         self.btn_pause_process.clicked.connect(self._stop_process)
         self.btn_finish_process.clicked.connect(self._finish_process)
 
@@ -581,8 +583,8 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
 
             result_oid_map = {}
             for persil in ds["PersilBaru"]:
-                regid = persil["regid"]
-                self._parcel_ready_to_map.append(regid)
+                regid = persil["REGID"]
+                self._parcels_ready_2_map.append(regid)
 
                 if (
                     regid not in self._old_parcels
@@ -592,7 +594,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
                 ):
                     self._new_parcels.append(regid)
 
-                result_oid_map[persil["oid"]] = persil["nib"]
+                result_oid_map[persil["OID"]] = persil["NIB"]
 
             # update nib to layer
             for layer in self._layers:
@@ -833,3 +835,30 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             self._old_parcels,
         )
         pi.show()
+    
+    # TODO insert layout variable
+    def _create_layout(self):
+        parcel_to_plot = self._new_parcels
+        print(self._new_parcels)
+        if self._tipe_berkas != "SUB" and self._tipe_berkas != "UNI" and self._tipe_berkas != "VPG" and self._tipe_berkas != "SPL":
+            parcel_to_plot.extend(self._old_parcels)
+        
+        apartment_to_plot = self._new_apartments
+        if self._tipe_berkas != "SUB" and self._tipe_berkas != "UNI":
+            apartment_to_plot.extend(self._old_apartments)
+
+        variables = {
+            "tipeBerkas" : self._tipe_berkas,
+            "newParcels" : parcel_to_plot,
+            "newApartment" : apartment_to_plot,
+            "berkasId" : self._berkas_id,
+            "nomorBerkas" : self._nomor_berkas,
+            "tahunBerkas" : self._tahun_berkas,
+            "kodeSpopp" : self._kode_spopp,
+            "hitungLembar" : True,
+            "isRutin" : True,
+        }
+
+        # TODO send variable to layout
+        create_layout = CreateLayoutDialog()
+        create_layout.show()
