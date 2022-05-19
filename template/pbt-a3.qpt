@@ -1135,7 +1135,7 @@
   <LabelFont description="MS Shell Dlg 2,6,-1,5,50,0,0,0,0,0" style=""/>
   <FontColor blue="215" alpha="255" red="22" green="55"/>
  </LayoutItem>
- <LayoutItem templateUuid="{b8b858b5-41d4-433d-840c-25721c4ef396}" position="338.775,63.3429,mm" outlineWidthM="0.3,mm" positionLock="false" marginX="0" marginY="0" blendMode="0" opacity="1" valign="128" itemRotation="0" groupUuid="" id="" halign="4" type="65641" visibility="1" background="true" uuid="{b8b858b5-41d4-433d-840c-25721c4ef396}" frame="false" labelText="Skala 1 :[% round((item_variables('muka-peta')['map_scale']/100),0)*100%]" referencePoint="0" size="62.6196,7.40998,mm" excludeFromExports="0" htmlState="0" zValue="24" frameJoinStyle="miter" positionOnPage="338.775,63.3429,mm">
+ <LayoutItem templateUuid="{b8b858b5-41d4-433d-840c-25721c4ef396}" position="338.775,63.3429,mm" outlineWidthM="0.3,mm" positionLock="false" marginX="0" marginY="0" blendMode="0" opacity="1" valign="128" itemRotation="0" groupUuid="" id="" halign="4" type="65641" visibility="1" background="true" uuid="{b8b858b5-41d4-433d-840c-25721c4ef396}" frame="false" labelText="Skala 1 : [% round((item_variables('muka-peta')['map_scale']),0)%]" referencePoint="0" size="62.6196,7.40998,mm" excludeFromExports="0" htmlState="0" zValue="24" frameJoinStyle="miter" positionOnPage="338.775,63.3429,mm">
   <FrameColor blue="0" alpha="255" red="0" green="0"/>
   <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
   <LayoutObject>
@@ -1189,7 +1189,7 @@
   <LabelFont description="MS Shell Dlg 2,7,-1,5,50,0,0,0,0,0" style=""/>
   <FontColor blue="0" alpha="255" red="0" green="0"/>
  </LayoutItem>
- <LayoutItem mapUuid="" templateUuid="{ff3a4c90-e821-4971-b90c-4cdb926c7b5c}" position="361.622,33.5895,mm" outlineWidthM="0.3,mm" resizeMode="0" positionLock="false" northOffset="0" blendMode="0" opacity="1" itemRotation="0" mode="1" pictureHeight="23.8574" groupUuid="" id="" pictureWidth="9.54296" northMode="0" type="65640" svgBorderWidth="0.2" file="C:/Users/ivanbusthomi/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins/GeoKKP-GIS/template/north_arrow.png" visibility="1" background="false" uuid="{ff3a4c90-e821-4971-b90c-4cdb926c7b5c}" svgBorderColor="0,0,0,255" frame="false" svgFillColor="255,255,255,255" referencePoint="0" anchorPoint="4" size="19.1689,23.8574,mm" excludeFromExports="0" zValue="21" frameJoinStyle="miter" positionOnPage="361.622,33.5895,mm" pictureRotation="0">
+ <LayoutItem mapUuid="" templateUuid="{ff3a4c90-e821-4971-b90c-4cdb926c7b5c}" position="361.622,33.5895,mm" outlineWidthM="0.3,mm" resizeMode="0" positionLock="false" northOffset="0" blendMode="0" opacity="1" itemRotation="0" mode="1" pictureHeight="23.8574" groupUuid="" id="mata-angin" pictureWidth="9.54296" northMode="0" type="65640" svgBorderWidth="0.2" file="C:/Users/ivanbusthomi/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins/GeoKKP-GIS/template/north_arrow.png" visibility="1" background="false" uuid="{ff3a4c90-e821-4971-b90c-4cdb926c7b5c}" svgBorderColor="0,0,0,255" frame="false" svgFillColor="255,255,255,255" referencePoint="0" anchorPoint="4" size="19.1689,23.8574,mm" excludeFromExports="0" zValue="21" frameJoinStyle="miter" positionOnPage="361.622,33.5895,mm" pictureRotation="0">
   <FrameColor blue="0" alpha="255" red="0" green="0"/>
   <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
   <LayoutObject>
