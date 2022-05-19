@@ -457,7 +457,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
                 # TODO: refactoring layer type
             
             # print(self._current_layers)
-            iface.actionZoomToLayers().trigger()
+            iface.actionZoomToLayer().trigger()
         else:
             if de["message"]:
                 msg = de["message"]
