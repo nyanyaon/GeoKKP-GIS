@@ -764,9 +764,20 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             self.toolbar_new_bidang.setDisabled(False)
 
     def _do_update(self):
+        msg = f"Anda akan melakukan pemetaan batas bidang \nApakah anda akan melanjutkan?"
+        result = QtWidgets.QMessageBox.question(self, "Perhatian", msg)
+        if result != QtWidgets.QMessageBox.Yes:
+            return
+
         pegawai_state = app_state.get("pegawai", {})
         pegawai = pegawai_state.value
         if not pegawai or "userId" not in pegawai or "userId" not in pegawai:
+            return
+
+        if not self._txt:
+            QtWidgets.QMessageBox.warning(
+                None, "Kesalahan", "Pilih Teks atau titik terlebih dahulu"
+            )
             return
 
         pp = {}
@@ -878,6 +889,11 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
 
 
     def _do_create_persil(self):
+        msg = f"Anda akan melakukan pembuatan peta bidang baru \nApakah anda akan melanjutkan?"
+        result = QtWidgets.QMessageBox.question(self, "Perhatian", msg)
+        if result != QtWidgets.QMessageBox.Yes:
+            return
+
         wilayah_id = ""
         if self.chb_per_kabupaten.isChecked():
             wilayah_id = self.cmb_kabupaten.currentData()

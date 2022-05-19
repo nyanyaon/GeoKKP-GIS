@@ -1,9 +1,11 @@
+from ast import Pass
 import os
 import json
 from urllib import response
+import math
 
-from qgis.PyQt import QtWidgets, uic
-from qgis.core import QgsProject
+from qgis.PyQt import QtWidgets, uic, QtXml
+from qgis.core import QgsProject, QgsPrintLayout, QgsReadWriteContext, Qgis, QgsLayoutItemMap
 from qgis.PyQt.QtGui import QDesktopServices
 
 from ...utils import (
@@ -18,6 +20,7 @@ from ...models.dataset import Dataset
 from ...create_pbt import CreatePBT
 from ...memo import app_state
 from ...desain_pbt import DesainPBT
+from ...layout_create import CreateLayoutDialog
 
 from qgis.PyQt.QtCore import pyqtSignal, QUrl
 from qgis.utils import iface
@@ -38,6 +41,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
     def __init__(self, parent=iface.mainWindow()):
         super(TabInvent, self).__init__(parent)
         self.setupUi(self)
+        self.iface = iface
 
         self._start = 0
         self._limit = 20
@@ -48,6 +52,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         self.btn_create.clicked.connect(self.createPBT)
         self.btn_close.clicked.connect(self.stop_proses)
         self.btn_finish.clicked.connect(self.finish_process)
+        self.btn_layout.clicked.connect(self.create_layout)
 
         self._submitted_parcels = []
         self.dvg_invent.doubleClicked.connect(self.prepare_berkas)
@@ -433,13 +438,15 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
                 "Error",
                 response.content.decode("utf-8"),
             )
-
-            
-
-        
-
-
-
-            
-        
-
+    
+    # TODO insert layout variable
+    def create_layout(self):
+        variables = {
+            "dokumenPengukuranid" : self._currentDokumenPengukuranId,
+            "newParcels" : self._submitted_parcels,
+            "hitungLembar" : True,
+            "isRutin" : False,
+        }
+        # TODO send variable to layout
+        create_layout = CreateLayoutDialog()
+        create_layout.show()
