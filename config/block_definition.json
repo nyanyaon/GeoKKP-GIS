@@ -1,0 +1,82 @@
+[
+    {
+        "blockName": "alir",
+        "pointName": "Alir",
+        "remark": "Arah aliran"
+    },
+    {
+        "blockName": "sawah",
+        "pointName": "Sawah",
+        "remark": "Sawah"
+    },
+    {
+        "blockName": "tembok",
+        "pointName": "Tembok",
+        "remark": "Batas Tembok"
+    },
+    {
+        "blockName": "alir",
+        "pointName": "Alir",
+        "remark": "Arah aliran"
+    },
+    {
+        "blockName": "titikbatas",
+        "pointName": "TitikBatas",
+        "remark": "TitikBatas"
+    },
+    {
+        "blockName": "panah",
+        "pointName": "Panah",
+        "remark": "Panah penunjuk arah"
+    },
+    {
+        "blockName": "tembokbersama",
+        "pointName": "TembokBersama",
+        "remark": "Batas Tembok Bersama"
+    },
+    {
+        "blockName": "titikdetail",
+        "pointName": "TitikDetail",
+        "remark": "Titik Detail"
+    },
+    {
+        "blockName": "utara",
+        "pointName": "Utara",
+        "remark": "Penunjuk arah utara"
+    },
+    {
+        "blockName": "tdo0",
+        "pointName": "TDO0",
+        "remark": "Titik Dasar Teknik Order 0"
+    },
+    {
+        "blockName": "utara",
+        "pointName": "Utara",
+        "remark": "Penunjuk arah utara"
+    },
+    {
+        "blockName": "tdo1",
+        "pointName": "TDO1",
+        "remark": "Titik Dasar Teknik Order 1"
+    },
+    {
+        "blockName": "tdo2",
+        "pointName": "TDO2",
+        "remark": "Titik Dasar Teknik Order 2"
+    },
+    {
+        "blockName": "tdo3",
+        "pointName": "TDO3",
+        "remark": "Titik Dasar Teknik Order 3"
+    },
+    {
+        "blockName": "tdo4",
+        "pointName": "TDO4",
+        "remark": "Titik Dasar Teknik Order 4"
+    },
+    {
+        "blockName": "tdor",
+        "pointName": "TDOR",
+        "remark": "Titik Dasar Teknik Perapatan"
+    }
+]

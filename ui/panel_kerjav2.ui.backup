@@ -2,10 +2,18 @@
 <ui version="4.0">
  <class>panelkerja</class>
  <widget class="QDockWidget" name="panelkerja">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>551</width>
+    <height>595</height>
+   </rect>
+  </property>
   <property name="minimumSize">
    <size>
-    <width>437</width>
-    <height>543</height>
+    <width>510</width>
+    <height>576</height>
    </size>
   </property>
   <property name="focusPolicy">
@@ -463,9 +471,9 @@ color:rgb(23, 145, 205)</string>
              </spacer>
             </item>
             <item>
-             <widget class="QLabel" name="lblTermsOfService">
+             <widget class="QLabel" name="teksVersi">
               <property name="text">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Versi &lt;a href=&quot;https://github.com/danylaksono/GeoKKP-GIS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#009da5;&quot;&gt;1.0.0&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Versi &lt;a href=&quot;https://github.com/danylaksono/GeoKKP-GIS&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#009da5;&quot;&gt;1.1.4&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -499,7 +507,7 @@ color:rgb(23, 145, 205)</string>
         <item row="0" column="0">
          <layout class="QVBoxLayout" name="Layout">
           <item>
-           <widget class="QTabWidget" name="TabWIdget">
+           <widget class="QTabWidget" name="main_tab">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -594,7 +602,7 @@ color:rgb(23, 145, 205)</string>
                  <number>1</number>
                 </property>
                 <item>
-                 <widget class="QToolButton" name="toolButton">
+                 <widget class="QToolButton" name="btn_rutin_mulai">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -626,7 +634,7 @@ color:rgb(23, 145, 205)</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="toolButton_2">
+                 <widget class="QToolButton" name="btn_rutin_simpan">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -652,7 +660,7 @@ color:rgb(23, 145, 205)</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="toolButton_3">
+                 <widget class="QToolButton" name="btn_rutin_informasi">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -678,7 +686,7 @@ color:rgb(23, 145, 205)</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="toolButton_4">
+                 <widget class="QToolButton" name="btn_rutin_di301">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -704,7 +712,7 @@ color:rgb(23, 145, 205)</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="toolButton_5">
+                 <widget class="QToolButton" name="btn_rutin_layout">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -730,7 +738,7 @@ color:rgb(23, 145, 205)</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="toolButton_6">
+                 <widget class="QToolButton" name="btn_rutin_tutup">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -756,7 +764,7 @@ color:rgb(23, 145, 205)</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="toolButton_7">
+                 <widget class="QToolButton" name="btn_rutin_selesai">
                   <property name="sizePolicy">
                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                     <horstretch>0</horstretch>
@@ -798,7 +806,7 @@ color:rgb(23, 145, 205)</string>
                    </widget>
                   </item>
                   <item row="0" column="1">
-                   <widget class="QgsFilterLineEdit" name="mLineEdit">
+                   <widget class="QgsFilterLineEdit" name="input_rutin_no_berkas">
                     <property name="showSearchIcon">
                      <bool>true</bool>
                     </property>
@@ -815,7 +823,7 @@ color:rgb(23, 145, 205)</string>
                    </widget>
                   </item>
                   <item row="1" column="1">
-                   <widget class="QgsFilterLineEdit" name="mLineEdit_2">
+                   <widget class="QgsFilterLineEdit" name="input_rutin_th_berkas">
                     <property name="showSearchIcon">
                      <bool>true</bool>
                     </property>
@@ -826,7 +834,7 @@ color:rgb(23, 145, 205)</string>
                   </item>
                  </layout>
                 </widget>
-                <widget class="QToolButton" name="toolButton_8">
+                <widget class="QToolButton" name="btn_rutin_cari">
                  <property name="sizePolicy">
                   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
                    <horstretch>0</horstretch>
@@ -853,15 +861,21 @@ color:rgb(23, 145, 205)</string>
                </widget>
               </item>
               <item row="2" column="0">
-               <widget class="QTableWidget" name="tableWidget">
+               <widget class="QTableWidget" name="table_rutin">
                 <property name="horizontalScrollBarPolicy">
                  <enum>Qt::ScrollBarAlwaysOff</enum>
+                </property>
+                <property name="selectionMode">
+                 <enum>QAbstractItemView::SingleSelection</enum>
+                </property>
+                <property name="selectionBehavior">
+                 <enum>QAbstractItemView::SelectRows</enum>
                 </property>
                 <property name="sortingEnabled">
                  <bool>false</bool>
                 </property>
                 <property name="columnCount">
-                 <number>4</number>
+                 <number>3</number>
                 </property>
                 <attribute name="horizontalHeaderCascadingSectionResizes">
                  <bool>false</bool>
@@ -872,10 +886,21 @@ color:rgb(23, 145, 205)</string>
                 <attribute name="horizontalHeaderShowSortIndicator" stdset="0">
                  <bool>true</bool>
                 </attribute>
-                <column/>
-                <column/>
-                <column/>
-                <column/>
+                <column>
+                 <property name="text">
+                  <string>Nomor</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>Tahun</string>
+                 </property>
+                </column>
+                <column>
+                 <property name="text">
+                  <string>Operasi</string>
+                 </property>
+                </column>
                </widget>
               </item>
              </layout>

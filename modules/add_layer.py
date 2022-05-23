@@ -6,16 +6,24 @@ from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
-from .utils import logMessage, readSetting, add_layer, icon
+from qgis.core import (
+    Qgis,
+    QgsProject,
+    QgsRasterLayer,
+    QgsCoordinateReferenceSystem,
+    QgsSettings,
+)
 
-data_layer = readSetting("layers")
+from .utils import dialogBox, get_project_crs, logMessage, readSetting, add_layer, icon
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/addlayerv2.ui'))
+
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/addlayerv2.ui")
+)
 
 
 class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for Add Layers from List """
+    """Dialog for Add Layers from List"""
 
     closingPlugin = pyqtSignal()
 
@@ -28,13 +36,14 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
         self._currentcrs = None
         self.setupUi(self)
 
+        self.data_layer = readSetting("layers")
         try:
-            self.populateDaftarLayer(data_layer)
+            self.populateDaftarLayer(self.data_layer)
         except Exception:
             logMessage("daftar layer gagal dimuat")
 
         self.cariDaftarLayer.valueChanged.connect(self.findLayer)
-        self.pushButtonAddtoQGIS.clicked.connect(self.addToQGIS)
+        self.pushButtonAddtoQGIS.clicked.connect(self.checkCRS)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -42,7 +51,7 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def set_crs(self):
         self._currentcrs = self.selectProj.crs()
-        # print(self._currentcrs.description())
+        print(self._currentcrs.description())
 
     def populateDaftarLayer(self, data):
         items = []
@@ -56,7 +65,9 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
                     attr_theme = str(value["Attributes"][0])
                 except IndexError:
                     attr_theme = None
-                child = QTreeWidgetItem([nama_layer, tipe_layer, style_path, attr_theme])
+                child = QTreeWidgetItem(
+                    [nama_layer, tipe_layer, style_path, attr_theme]
+                )
                 child.setFlags(child.flags() | Qt.ItemIsUserCheckable)
                 child.setCheckState(0, Qt.Unchecked)
                 item.addChild(child)
@@ -65,11 +76,31 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def findLayer(self):
         textto_find = self.cariDaftarLayer.value()
-        items = self.daftarLayer.findItems(textto_find, Qt.MatchContains | Qt.MatchRecursive)
+        items = self.daftarLayer.findItems(
+            textto_find, Qt.MatchContains | Qt.MatchRecursive
+        )
         for item in items:
             item.setSelected(True)
             self.daftarLayer.setCurrentItem(item)
-            self.daftarLayer.scrollToItem(item, QtWidgets.QAbstractItemView.PositionAtTop)
+            self.daftarLayer.scrollToItem(
+                item, QtWidgets.QAbstractItemView.PositionAtTop
+            )
+
+    def cleanup(self):
+        self.cariDaftarLayer.clearValue()
+        # self.daftarLayer.collapseAll()
+        self.daftarLayer.clear()
+        self.populateDaftarLayer(self.data_layer)
+
+    def checkCRS(self):
+        epsg = get_project_crs()
+        crs = QgsCoordinateReferenceSystem(epsg)
+        if crs.isGeographic() or crs.authid() == "EPSG:3857":
+            dialogBox("Sistem Koordinat Proyek saat ini berjenis Geographic atau Pseudo-Mercator. Lakukan perubahan menjadi sistem terproyeksi melalui menu pengaturan lokasi atau pengaturan CRS pada QGIS")
+            self.cleanup()
+            self.accept()
+        else:
+            self.addToQGIS()
 
     def deleteSelection(self):
         root = self.daftarLayer.invisibleRootItem()
@@ -107,8 +138,10 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
                     layertype = item.text(1)
                     layersymbology = item.text(2)
                     if item.text(3):
-                        fields = json.loads(item.text(3).replace("'",'"'))
+                        fields = json.loads(item.text(3).replace("'", '"'))
                     else:
                         fields = None
                     print(item.text(0), item.text(1), item.text(2), fields)
                     add_layer(layername, layertype, layersymbology, fields)
+        self.cleanup()
+        self.accept()

@@ -1,19 +1,19 @@
 from qgis.PyQt.QtWidgets import QFileDialog
 
 
-class ImportGeomFromFile():
+class ImportGeomFromFile:
     def __init__(self, parent=None, *args, **kwargs):
         self.parent = parent
         self._file = None
         self._setup_file_browser()
 
     def _setup_file_browser(self):
-        filters = 'CSV (*.csv)'
+        filters = "CSV (*.csv)"
         self._file_browser = QFileDialog(filter=filters)
 
     def _show_using_plotxy(self, file):
         self.parent.plotxy()
-        with open(file, 'r') as f:
+        with open(file, "r") as f:
             self.parent.plotxyaction.list_coords.setText(f.read())
 
     def show(self):

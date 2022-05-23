@@ -47,7 +47,7 @@
 		}],
 		"openstreetmap": [{
 			"nama": "OpenStreetMap Default",
-			"url": "https://mt1.google.com/vt/lyrs=y&x=%7Bx%7D&y=%7By%7D&z=%7Bz%7D",
+			"url": "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
 			"type": "TMS",
 			"icon": "osm.png",
 			"zmin": 1,
@@ -56,12 +56,24 @@
 		}],
 		"googlemaps": [{
 			"nama": "Google Maps Default",
-			"url": " https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}",
+			"url": "https://mt1.google.com/vt/lyrs=r&x={x}&y={y}&z={z}",
 			"type": "TMS",
 			"icon": "google.png",
+			"zmin": 1,
+			"zmax": 19,
+			"keterangan": ""
+		}],
+		"rbi": [{
+			"nama": "Rupabumi Indonesia",
+			"url": "https://portal.ina-sdi.or.id/arcgis/rest/services/RBI/Basemap/MapServer",
+			"type": "arcgismapserver",
+			"icon": "indonesia.png",
 			"zmin": 1,
 			"zmax": 19,
 			"keterangan": ""
 		}]
 	}
 }
+
+
+

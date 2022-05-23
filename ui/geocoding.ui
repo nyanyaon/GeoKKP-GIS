@@ -7,11 +7,11 @@
     <x>0</x>
     <y>0</y>
     <width>459</width>
-    <height>167</height>
+    <height>120</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Pencarian Lokasi (Geocoding)</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="0">
@@ -45,6 +45,12 @@
             </item>
             <item>
              <widget class="QgsFilterLineEdit" name="cari_lokasi">
+              <property name="minimumSize">
+               <size>
+                <width>250</width>
+                <height>0</height>
+               </size>
+              </property>
               <property name="clearButtonEnabled">
                <bool>false</bool>
               </property>
@@ -55,44 +61,6 @@
                <string notr="true"/>
               </property>
              </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_18">
-            <item>
-             <widget class="QLabel" name="label_9">
-              <property name="text">
-               <string>Koordinat (Lat, Lon):</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="latlong_lokasi">
-              <property name="font">
-               <font>
-                <pointsize>10</pointsize>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>(Lat, Lon)</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <spacer name="horizontalSpacer_14">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
-              </property>
-              <property name="sizeHint" stdset="0">
-               <size>
-                <width>40</width>
-                <height>20</height>
-               </size>
-              </property>
-             </spacer>
             </item>
            </layout>
           </item>
@@ -130,15 +98,15 @@
            </spacer>
           </item>
           <item>
-           <widget class="QToolButton" name="terapkan_lokasi">
-            <property name="minimumSize">
-             <size>
-              <width>80</width>
-              <height>30</height>
-             </size>
+           <widget class="QPushButton" name="terapkan_lokasi">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
             </property>
             <property name="text">
-             <string>Terapkan</string>
+             <string>Terapkan Pencarian</string>
             </property>
            </widget>
           </item>

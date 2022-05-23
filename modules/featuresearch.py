@@ -6,12 +6,13 @@ from qgis.utils import iface
 from qgis.core import QgsMapLayerProxyModel
 
 
-FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), '../ui/pencarian_fitur.ui'))
+FORM_CLASS, _ = uic.loadUiType(
+    os.path.join(os.path.dirname(__file__), "../ui/pencarian_fitur.ui")
+)
 
 
 class FeatureSearchDialog(QtWidgets.QDialog, FORM_CLASS):
-    """ Dialog for FeatureSearch """
+    """Dialog for FeatureSearch"""
 
     closingPlugin = pyqtSignal()
 
@@ -26,7 +27,7 @@ class FeatureSearchDialog(QtWidgets.QDialog, FORM_CLASS):
         # PyQt Bug. See issue https://github.com/qgis/QGIS/issues/38472
         self.layerAsal.setFilters(QgsMapLayerProxyModel.PolygonLayer)
         layer_asal = self.layerAsal.currentLayer()
-        print(layer_asal)
+        # print(layer_asal)
         self.cariFitur.layer = layer_asal
         self.populateComboBox()
 
@@ -36,7 +37,4 @@ class FeatureSearchDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def populateComboBox(self):
         pass
-        
         # self.cariFitur.featureChanged(print(self.cariFitur.feature()))
-        
-

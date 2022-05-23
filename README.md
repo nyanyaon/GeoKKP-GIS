@@ -16,7 +16,7 @@ Fungsi-fungsi GeoKKP-GIS saat ini antara lain:
 * Fungsi Editing dengan tiga mode penggambaran: Manual (GIS), Sudut-jarak dan Mode CAD
 * Auto-adjust dan koreksi topologi otomatis
 * Layout peta otomatis
-* Unggah persil ke server GeoKKP (*incoming feature*)
+* Integrasi panel-panel pemetaan GeoKKP
 
 
 ## Kontribusi
@@ -34,7 +34,9 @@ Berikut adalah tahapan untuk melakukan release versi baru.
 7. Berikan keterangan pada release versi tersebut (Changelog)
 8. Tekan tombol _Publish release_
 9. Github akan membuat berkas terkompresi dari plugin ini
-10. Upload berkas terkompresi tersebut ke [Plugin QGIS](https://plugins.qgis.org/) agar pengguna bisa mengunduhnya.
+10. Unduh berkas terkompresi tersebut, dan _extract_ isinya
+11. Ubah nama folder menjadi GeoKKP-GIS, dan kompres kembali
+12. Upload berkas terkompresi tersebut ke [Plugin QGIS](https://plugins.qgis.org/) agar pengguna bisa mengunduhnya.
 
 ## Lisensi
 Lisensi aplikasi GeoKKP-GIS berada di bawah naungan **GNU-AGPLv3** sebagai berikut:

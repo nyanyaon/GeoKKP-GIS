@@ -1,13 +1,15 @@
 from qgis.gui import QgsMapTool  # , QgsVertexMarker
+
 # from qgis.core import QgsPointXY
 # from qgis.PyQt.QtGui import QColor
 from qgis.PyQt.QtCore import pyqtSignal
 
 
 class MapTool(QgsMapTool):
-    '''
+    """
     Docstring is needed here
-    '''
+    """
+
     map_clicked = pyqtSignal(float, float)
 
     def __init__(self, canvas, vm):
@@ -17,7 +19,10 @@ class MapTool(QgsMapTool):
 
         self.reset()
         self.isEmittingPoint = True
-        print("is emitting ", self.isEmittingPoint)
+        # print("is emitting ", self.isEmittingPoint)
+
+    def clear_drawing(self):
+        self.canvas.scene().removeItem(self.vertexmarker)
 
     def reset(self):
         self.isEmittingPoint = False

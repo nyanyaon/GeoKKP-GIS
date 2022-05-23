@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>472</width>
+    <width>572</width>
     <height>148</height>
    </rect>
   </property>
@@ -91,7 +91,7 @@
          <item>
           <widget class="QLineEdit" name="crs_tm3">
            <property name="enabled">
-            <bool>true</bool>
+            <bool>false</bool>
            </property>
            <property name="minimumSize">
             <size>
@@ -224,6 +224,13 @@
          </property>
          <property name="readOnly">
           <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="copyTeksNLP">
+         <property name="text">
+          <string>...</string>
          </property>
         </widget>
        </item>

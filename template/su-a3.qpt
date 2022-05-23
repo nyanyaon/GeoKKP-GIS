@@ -122,7 +122,7 @@
   <LabelFont description="Ubuntu,10,-1,5,50,0,0,0,0,0" style=""/>
   <FontColor blue="0" alpha="255" red="0" green="0"/>
  </LayoutItem>
- <LayoutItem templateUuid="{cd0529db-f51d-473b-a830-8fd7ab0e265c}" position="33.0392,11.0631,mm" outlineWidthM="0.3,mm" positionLock="false" marginX="0" marginY="0" blendMode="0" opacity="1" valign="32" itemRotation="0" groupUuid="" id="" halign="8" type="65641" visibility="1" background="false" uuid="{cd0529db-f51d-473b-a830-8fd7ab0e265c}" frame="false" labelText="SKALA 1 : &lt;SKALA PETA>" referencePoint="0" size="73.1392,10.1412,mm" excludeFromExports="0" htmlState="0" zValue="3" frameJoinStyle="miter" positionOnPage="33.0392,11.0631,mm">
+ <LayoutItem templateUuid="{cd0529db-f51d-473b-a830-8fd7ab0e265c}" position="33.0392,11.0631,mm" outlineWidthM="0.3,mm" positionLock="false" marginX="0" marginY="0" blendMode="0" opacity="1" valign="32" itemRotation="0" groupUuid="" id="" halign="8" type="65641" visibility="1" background="false" uuid="{cd0529db-f51d-473b-a830-8fd7ab0e265c}" frame="false" labelText="SKALA 1 : [% round((item_variables('muka-peta')['map_scale']),0)%]" referencePoint="0" size="73.1392,10.1412,mm" excludeFromExports="0" htmlState="0" zValue="3" frameJoinStyle="miter" positionOnPage="33.0392,11.0631,mm">
   <FrameColor blue="0" alpha="255" red="0" green="0"/>
   <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
   <LayoutObject>
@@ -140,7 +140,7 @@
   <LabelFont description="Ubuntu,10,-1,5,50,0,0,0,0,0" style=""/>
   <FontColor blue="0" alpha="255" red="0" green="0"/>
  </LayoutItem>
- <LayoutItem mapUuid="" templateUuid="{d203d39d-f6f7-4d94-b388-09ea65e609aa}" position="9.21923,71.6523,mm" outlineWidthM="0.3,mm" resizeMode="0" positionLock="false" northOffset="0" blendMode="0" opacity="1" itemRotation="0" mode="1" pictureHeight="48.401" groupUuid="" id="" pictureWidth="19.3604" northMode="0" type="65640" svgBorderWidth="0.2" file="C:/Users/ivanbusthomi/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins/GeoKKP-GIS/template/north_arrow.png" visibility="1" background="false" uuid="{d203d39d-f6f7-4d94-b388-09ea65e609aa}" svgBorderColor="0,0,0,255" frame="false" svgFillColor="255,255,255,255" referencePoint="0" anchorPoint="0" size="19.3604,60.4404,mm" excludeFromExports="0" zValue="2" frameJoinStyle="miter" positionOnPage="9.21923,71.6523,mm" pictureRotation="0">
+ <LayoutItem mapUuid="" templateUuid="{d203d39d-f6f7-4d94-b388-09ea65e609aa}" position="9.21923,71.6523,mm" outlineWidthM="0.3,mm" resizeMode="0" positionLock="false" northOffset="0" blendMode="0" opacity="1" itemRotation="0" mode="1" pictureHeight="48.401" groupUuid="" id="mata-angin" pictureWidth="19.3604" northMode="0" type="65640" svgBorderWidth="0.2" file="C:/Users/ivanbusthomi/AppData/Roaming/QGIS/QGIS3/profiles/default/python/plugins/GeoKKP-GIS/template/north_arrow.png" visibility="1" background="false" uuid="{d203d39d-f6f7-4d94-b388-09ea65e609aa}" svgBorderColor="0,0,0,255" frame="false" svgFillColor="255,255,255,255" referencePoint="0" anchorPoint="0" size="19.3604,60.4404,mm" excludeFromExports="0" zValue="2" frameJoinStyle="miter" positionOnPage="9.21923,71.6523,mm" pictureRotation="0">
   <FrameColor blue="0" alpha="255" red="0" green="0"/>
   <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
   <LayoutObject>
@@ -156,7 +156,7 @@
    </customproperties>
   </LayoutObject>
  </LayoutItem>
- <LayoutItem templateUuid="{343e215f-6dda-4889-b07d-35b6a92dd199}" position="33.1892,27.965,mm" outlineWidthM="0.3,mm" positionLock="false" keepLayerSet="false" isTemporal="0" blendMode="0" opacity="1" itemRotation="0" groupUuid="" id="Map 1" mapRotation="0" followPresetName="" type="65639" visibility="1" background="true" uuid="{343e215f-6dda-4889-b07d-35b6a92dd199}" followPreset="false" frame="true" referencePoint="0" size="228.33,147.815,mm" excludeFromExports="0" labelMargin="0,mm" mapFlags="0" zValue="2" frameJoinStyle="miter" drawCanvasItems="true" positionOnPage="33.1892,27.965,mm">
+ <LayoutItem templateUuid="{343e215f-6dda-4889-b07d-35b6a92dd199}" position="33.1892,27.965,mm" outlineWidthM="0.3,mm" positionLock="false" keepLayerSet="false" isTemporal="0" blendMode="0" opacity="1" itemRotation="0" groupUuid="" id="muka-peta" mapRotation="0" followPresetName="" type="65639" visibility="1" background="true" uuid="{343e215f-6dda-4889-b07d-35b6a92dd199}" followPreset="false" frame="true" referencePoint="0" size="228.33,147.815,mm" excludeFromExports="0" labelMargin="0,mm" mapFlags="0" zValue="2" frameJoinStyle="miter" drawCanvasItems="true" positionOnPage="33.1892,27.965,mm">
   <FrameColor blue="0" alpha="255" red="0" green="0"/>
   <BackgroundColor blue="255" alpha="255" red="255" green="255"/>
   <LayoutObject>
