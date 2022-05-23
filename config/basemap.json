@@ -1,5 +1,14 @@
 {
 	"basemaps": {
+		"petadasar": [{
+			"nama": "Peta Dasar Pendaftaran",
+			"url": "https://bhumi.atrbpn.go.id/tiles/wmts/PDP/webmercator/{z}/{x}/{y}.png",
+			"type": "TMS",
+			"icon": "atrbpn.png",
+			"zmin": 1,
+			"zmax": 19,
+			"keterangan": ""
+		}],
 		"bing_satellite": [{
 			"nama": "Bing Satellite ",
 			"url": "http://ecn.t3.tiles.virtualearth.net/tiles/a{q}.jpeg?g=0&dir=dir_n",
