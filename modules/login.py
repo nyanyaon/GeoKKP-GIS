@@ -9,7 +9,7 @@ from qgis.core import Qgis, QgsProject, QgsRectangle
 from qgis.gui import QgsMessageBar
 
 from .utils import (
-    add_google_basemap,
+    add_pdp_basemap,
     get_project_crs,
     set_project_crs_by_epsg,
     storeSetting,
@@ -49,7 +49,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
 
         config = configparser.ConfigParser()
         config.read(os.path.join(os.path.dirname(__file__), "..", 'metadata.txt'))
-        version = config.get('general', 'version')        
+        version = config.get('general', 'version')    
         self.teksVersi.setText("<p>Versi <a href='https://github.com/danylaksono/GeoKKP-GIS'> \
             <span style='text-decoration: underline; color:#009da5;'>" + version + "</span></a></p>")
 
@@ -173,7 +173,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         what to do when user is logged in
         """
         if not QgsProject.instance().mapLayersByName("Google Satellite"):
-            add_google_basemap()
+            add_pdp_basemap()
         set_project_crs_by_epsg("EPSG:4326")
         self.zoom_to_id()
         self.accept()

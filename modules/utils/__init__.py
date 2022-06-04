@@ -204,10 +204,18 @@ def loadXYZ(url, name):
 
 def add_google_basemap():
     """
-    Tambahkan layer basemap default: Google Basemap
+    Tambahkan layer Google Basemap
     """
     url = "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
     loadXYZ(url, "Google Satellite")
+    
+
+def add_pdp_basemap():
+    """
+    Tambahkan layer basemap default: Peta Dasar Pendaftaran
+    """
+    url = "https://bhumi.atrbpn.go.id/tiles/wmts/PDP/webmercator/{z}/{x}/{y}.png"
+    loadXYZ(url, "Peta Dasar Pendaftaran")
 
 
 def deleteLayerbyName(layername):
