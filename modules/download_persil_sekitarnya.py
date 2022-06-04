@@ -192,7 +192,8 @@ class DownloadPersilSekitar(QtWidgets.QDialog, FORM_CLASS):
             if layer.type() == QgsMapLayer.RasterLayer:
                 continue
             lRect = self.canvas.mapSettings().mapToLayerCoordinates(layer, rect)
-            layer.selectByRect(lRect, False)
+            # layer.selectByRect(lRect, False)
+            layer.selectByRect(lRect)
             features = layer.selectedFeatures()
             if(features != []):
                 koordinatX = features[0].geometry().centroid().asPoint().x()

@@ -5,7 +5,7 @@ import os
 from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 
 from qgis.PyQt import QtWidgets, uic
-from qgis.PyQt.QtCore import pyqtSignal
+from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.utils import iface
 
 from .utils import logMessage, readSetting, loadXYZ, dialogBox
@@ -34,6 +34,7 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
         data_basemap = readSetting("basemaps")
         self.populateDaftarBasemap(data_basemap)
         self.buttonTambahLayer.clicked.connect(self.addToQGIS)
+        self.checkBoxTambahan.toggled.connect(self.activate_tambahan)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
@@ -51,11 +52,28 @@ class AddBasemapDialog(QtWidgets.QDialog, FORM_CLASS):
                     item = QStandardItem(value["nama"])
                     item.setData(value["url"], 128)
                     item.setData(value["type"], 256)
+                    item.setData(value["tambahan"], 64)
                     item.setIcon(icon(f"../images/basemap_icons/{icons}"))
+                    if eval(value["tambahan"]):
+                        item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
+                    self.model.sort(Qt.Unchecked, Qt.DescendingOrder)
                     self.model.appendRow(item)
+
             self.daftarBasemap.setModel(self.model)
         else:
             logMessage("data tidak dijumpai pada memory")
+
+    def activate_tambahan(self):
+        aktifkan = self.checkBoxTambahan.isChecked()
+        if aktifkan:
+            dialogBox("Layer tambahan hanya digunakan sebagai panduan umum. " 
+            "Gunakan Layer Peta Dasar Pendaftaran sebagai acuan pembuatan peta", type="Warning")
+        for index in range(self.model.rowCount()):
+            item = self.model.item(index)
+            if self.checkBoxTambahan.isChecked():
+                item.setFlags(item.flags() | Qt.ItemIsEnabled)
+            elif eval(item.data(64)):
+                item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
 
     def addToQGIS(self):
         for index in self.daftarBasemap.selectedIndexes():

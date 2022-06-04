@@ -7,7 +7,8 @@
 			"icon": "atrbpn.png",
 			"zmin": 1,
 			"zmax": 19,
-			"keterangan": ""
+			"tambahan": "False",
+			"keterangan": "Peta Dasar Pendaftaran dari server ATR/BPN"
 		}],
 		"bing_satellite": [{
 			"nama": "Bing Satellite ",
@@ -16,7 +17,8 @@
 			"icon": "bing.png",
 			"zmin": 1,
 			"zmax": 19,
-			"keterangan": ""
+			"tambahan": "True",
+			"keterangan": "Citra satelit layanan Microsoft Bing Imagery"
 		}],
 		"esri_imagery": [{
 			"nama": "ESRI World Imagery",
@@ -25,7 +27,8 @@
 			"icon": "esri.png",
 			"zmin": 1,
 			"zmax": 19,
-			"keterangan": ""
+			"tambahan": "True",
+			"keterangan": "Citra satelit dari ESRI World Imagery"
 		}],
 		"google_imagery": [{
 			"nama": "Google Imagery",
@@ -34,7 +37,8 @@
 			"icon": "google.png",
 			"zmin": 1,
 			"zmax": 19,
-			"keterangan": ""
+			"tambahan": "True",
+			"keterangan": "Citra satelit dari Google"
 		}],
 		"mapbox_satellite": [{
 			"nama": "Mapbox Satellite",
@@ -43,7 +47,8 @@
 			"icon": "mapbox.png",
 			"zmin": 1,
 			"zmax": 19,
-			"keterangan": ""
+			"tambahan": "True",
+			"keterangan": "Citra satelit koleksi Mapbox Inc."
 		}],
 		"google_hybrid": [{
 			"nama": "Google Hybrid",
@@ -52,7 +57,8 @@
 			"icon": "google.png",
 			"zmin": 1,
 			"zmax": 19,
-			"keterangan": ""
+			"tambahan": "True",
+			"keterangan": "tambahan"
 		}],
 		"openstreetmap": [{
 			"nama": "OpenStreetMap Default",
@@ -61,7 +67,8 @@
 			"icon": "osm.png",
 			"zmin": 1,
 			"zmax": 19,
-			"keterangan": ""
+			"tambahan": "True",
+			"keterangan": "tambahan"
 		}],
 		"googlemaps": [{
 			"nama": "Google Maps Default",
@@ -70,7 +77,8 @@
 			"icon": "google.png",
 			"zmin": 1,
 			"zmax": 19,
-			"keterangan": ""
+			"tambahan": "True",
+			"keterangan": "Layanan peta dengan simbologi Google Maps"
 		}],
 		"rbi": [{
 			"nama": "Rupabumi Indonesia",
@@ -79,7 +87,8 @@
 			"icon": "indonesia.png",
 			"zmin": 1,
 			"zmax": 19,
-			"keterangan": ""
+			"tambahan": "False",
+			"keterangan": "Peta Rupabumi Indonesia (RBI) dari Badan Informasi Geospasial (BIG)"
 		}]
 	}
 }
