@@ -58,6 +58,8 @@ from qgis import processing
 
 from qgis.utils import active_plugins
 
+from .modules.utils.preferences import Preferences
+
 # import utilities
 from .modules.utils import (
     clear_all_vars,
@@ -128,6 +130,7 @@ class GeoKKP:
         self.mapToolIdentify = QgsMapToolIdentify(self.canvas)
         self.mapToolPan = QgsMapToolPan(self.canvas)
         self.feed = MyFeedBack()
+        self.preferences = Preferences()
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -320,6 +323,8 @@ class GeoKKP:
 
         # start the deck
         self.run()
+
+        self.preferences.set_value("exportDirectory", "export_folder")
 
         # ========== Menu: Login Pengguna ==========
         # self.add_action(
