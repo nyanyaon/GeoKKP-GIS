@@ -135,7 +135,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             response = endpoints.get_entity_by_username(username)
         except Exception as e:
-            # print(e)
+            logMessage(e)
             dialogBox(
                 "Data Pengguna gagal dimuat dari server",
                 "Koneksi Bermasalah",

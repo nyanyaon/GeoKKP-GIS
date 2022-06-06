@@ -32,7 +32,7 @@ from qgis.core import (
     QgsDxfExport,
     QgsSnappingConfig,
     QgsTolerance,
-    QgsFeatureRequest
+    # QgsFeatureRequest
 )
 from qgis.utils import iface
 from qgis.gui import QgsMapToolIdentifyFeature
