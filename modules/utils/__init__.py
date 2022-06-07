@@ -39,6 +39,8 @@ from qgis.gui import QgsMapToolIdentifyFeature
 from collections import namedtuple
 from qgis import processing
 
+from ..settings.preferences import Preferences
+
 """
 Kumpulan Utilities untuk GeoKKP-QGIS
 ===========================================
@@ -46,6 +48,7 @@ Kumpulan Utilities untuk GeoKKP-QGIS
 Variabel global dan modul global untuk digunakan di plugin GeoKKP-GIS
 
 TODO: Pindah variabel & konstanta global ke modul terpisah
+TODO: Buat kelas Utilitas
 """
 
 layer_json_file = os.path.join(os.path.dirname(__file__), "../../config/layers.json")
@@ -128,6 +131,9 @@ SNAP_ANCHOR_NODES = 7
 # global settings variable
 settings = QgsSettings()
 
+# Penyimpanan Pengaturan: instance of Preferences
+preferences = Preferences()
+
 
 """
 Definisi Fungsi
@@ -208,7 +214,7 @@ def add_google_basemap():
     """
     url = "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
     loadXYZ(url, "Google Satellite")
-    
+
 
 def add_pdp_basemap():
     """
@@ -223,7 +229,7 @@ def deleteLayerbyName(layername):
     # QgsProject.instance().layerTreeRoot().removeLayer(to_be_deleted)
     QgsProject.instance().removeMapLayer(to_be_deleted.id())
 
-    
+
 def activate_editing(layer):
     """
     Activate layer editing tools
@@ -240,10 +246,15 @@ def activate_editing(layer):
 
 def storeSetting(key, value):
     """
-    Store value to QGIS Settings
+    Store value to QGIS Settings using QGISSettingsManager
     """
-    settings.setValue("geokkp/" + str(key), value)
-    logMessage("Menyimpan data " + str(key) + " pada memory proyek QGIS")
+    try:
+        preferences.set_value(key, value)
+    except Exception as e:
+        # fallback to QGIS settings
+        settings.setValue("geokkp/" + str(key), value)
+        logMessage(f"Error: {e}")
+    logMessage("Menyimpan data {str(key)} pada memory proyek QGIS")
     settings.sync()
 
 

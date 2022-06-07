@@ -58,7 +58,7 @@ from qgis import processing
 
 from qgis.utils import active_plugins
 
-from .modules.utils.preferences import Preferences
+
 
 # import utilities
 from .modules.utils import (
@@ -83,7 +83,7 @@ from .modules.add_layer import AddLayerDialog
 from .modules.convert_layer import ConvertLayerDialog
 from .modules.add_basemap import AddBasemapDialog
 from .modules.gotoxy import GotoXYDialog
-from .modules.settings import SettingsDialog
+from .modules.settings.settings_widgets  import SettingsDialog
 from .modules.plotcoord import PlotCoordinateDialog
 from .modules.login import LoginDialog
 from .modules.openaerialmap import OAMDialog
@@ -130,7 +130,6 @@ class GeoKKP:
         self.mapToolIdentify = QgsMapToolIdentify(self.canvas)
         self.mapToolPan = QgsMapToolPan(self.canvas)
         self.feed = MyFeedBack()
-        self.preferences = Preferences()
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -324,7 +323,6 @@ class GeoKKP:
         # start the deck
         self.run()
 
-        self.preferences.set_value("exportDirectory", "export_folder")
 
         # ========== Menu: Login Pengguna ==========
         # self.add_action(

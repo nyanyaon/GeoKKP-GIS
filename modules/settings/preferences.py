@@ -15,6 +15,7 @@ class Preferences(SettingManager):
     def __init__(self):
         SettingManager.__init__(self, pluginName, False)
         home = Path.home()
+        drive = Path(home).anchor
         self.add_setting(
-            String("exportDirectory", Scope.Global, str(home.joinpath("GeoKKP/export")))
+            String("exportDirectory", Scope.Global, str(Path(drive).joinpath("GeoKKP/export")))
         )
