@@ -235,8 +235,8 @@ def activate_editing(layer):
     Activate layer editing tools
     TODO: fix conflicts with built-in layer editing in QGIS
     """
-    project.instance().setTopologicalEditing(True)
-    project.instance().setAvoidIntersectionsLayers([layer])
+    QgsProject.instance().setTopologicalEditing(True)
+    QgsProject.instance().setAvoidIntersectionsLayers([layer])
     layer.startEditing()
     # iface.layerTreeView().setCurrentLayer(layer)
     iface.actionAddFeature().trigger()
@@ -253,9 +253,11 @@ def storeSetting(key, value):
     except Exception as e:
         # fallback to QGIS settings
         settings.setValue("geokkp/" + str(key), value)
-        logMessage(f"Error: {e}")
-    logMessage("Menyimpan data {str(key)} pada memory proyek QGIS")
-    settings.sync()
+        logMessage(f"Error menyimpan data: {e}")
+    else:
+        logMessage(f"Menyimpan data {str(key)} pada memory proyek QGIS")
+    finally:
+        settings.sync()
 
 
 def readSetting(key, default=None):
