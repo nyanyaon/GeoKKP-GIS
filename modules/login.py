@@ -172,9 +172,10 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         """
         what to do when user is logged in
         """
-        if not QgsProject.instance().mapLayersByName("Google Satellite"):
-            add_pdp_basemap()
+        # if not QgsProject.instance().mapLayersByName("Google Satellite"):
+        #     add_pdp_basemap()
         set_project_crs_by_epsg("EPSG:4326")
+        self.postlogin.show()  # TODO: check saved config first
         self.zoom_to_id()
         self.accept()
         app_state.set("logged_in", True)

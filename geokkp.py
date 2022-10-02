@@ -82,6 +82,7 @@ from .modules.geocoding import GeocodingDialog
 from .modules.add_layer import AddLayerDialog
 from .modules.convert_layer import ConvertLayerDialog
 from .modules.add_basemap import AddBasemapDialog
+from .modules.add_additional_wms import AddOtherWMSDialog
 from .modules.gotoxy import GotoXYDialog
 from .modules.settings.settings_widgets  import SettingsDialog
 from .modules.plotcoord import PlotCoordinateDialog
@@ -191,6 +192,7 @@ class GeoKKP:
         self.addlayeraction = AddLayerDialog()
         self.convertlayeraction = ConvertLayerDialog()
         self.addbasemapaction = AddBasemapDialog()
+        self.addWMSLayeraction = AddOtherWMSDialog()
         self.gotoxyaction = GotoXYDialog()
         self.setting_action = SettingsDialog()
         self.plotxyaction = PlotCoordinateDialog()
@@ -463,6 +465,17 @@ class GeoKKP:
             add_to_menu=False,
         )
         self.popupAddData.addAction(self.actionTambahBasemap)
+
+        #  --- Sub-menu Tambah WMS ---
+        self.actionTambahWMS = self.add_action(
+            icon("wms.png"),
+            text=self.tr(u"Tambah Layer WMS"),
+            callback=self.add_wmslayer,
+            add_to_toolbar=False,
+            parent=self.popupAddData,
+            add_to_menu=False,
+        )
+        self.popupAddData.addAction(self.actionTambahWMS)
 
         #  --- Sub-menu Tambah OpenAerialMap ---
         self.actionTambahOAM = self.add_action(
@@ -1177,6 +1190,11 @@ class GeoKKP:
         if self.addbasemapaction is None:
             self.addbasemapaction = AddBasemapDialog()
         self.addbasemapaction.show()
+
+    def add_wmslayer(self):
+        if self.addWMSLayeraction is None:
+            self.addWMSLayeraction = AddOtherWMSDialog()
+        self.addWMSLayeraction.show()
 
     def toggle_cad_mode(self):
         if "qad" in active_plugins:

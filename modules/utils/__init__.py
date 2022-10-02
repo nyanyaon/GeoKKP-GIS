@@ -202,7 +202,7 @@ def loadXYZ(url, name):
     Memuat layer dalam bentuk XYZ Tile
     """
     encodedUrl = urllib.parse.quote(url)
-    urlString = "type=xyz&zmin=0&zmax=21&url=" + encodedUrl
+    urlString = "type=xyz&zmin=0&zmax=21&crs=EPSG:3857&url=" + encodedUrl
     logMessage("Loaded url: " + urlString)
     rasterLyr = QgsRasterLayer(urlString, name, "wms")
     QgsProject.instance().addMapLayer(rasterLyr)
