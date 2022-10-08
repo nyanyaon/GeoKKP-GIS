@@ -511,6 +511,7 @@ class GeoKKP:
             callback=self.start_editing,
             add_to_toolbar=False,
             add_to_menu=False,
+            need_auth=False,
             parent=self.popupDraw,
         )
         self.popupDraw.addAction(self.actionManualDraw)
@@ -555,6 +556,7 @@ class GeoKKP:
             callback=self.azdistance,
             add_to_toolbar=False,
             add_to_menu=False,
+            need_auth=False,
             parent=self.popupDraw,
         )
         self.popupDraw.addAction(self.actionPlotCoordinate)
