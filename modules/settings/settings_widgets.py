@@ -1,25 +1,25 @@
 import os
-from .utils import (
+from ..utils import (
     dialogBox,
     readSetting,
-    storeSetting, 
-    get_epsg_from_tm3_zone, 
+    storeSetting,
+    get_epsg_from_tm3_zone,
     logMessage,
     set_project_crs_by_epsg,
-) 
+)
 
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
 FORM_CLASS, _ = uic.loadUiType(
-    os.path.join(os.path.dirname(__file__), "../ui/pengaturan.ui")
+    os.path.join(os.path.dirname(__file__), "../../ui/pengaturan.ui")
 )
 
 # ==== Defaults ====
-folder_data = os.path.join(os.path.dirname(__file__), "../data/")
-folder_config = os.path.join(os.path.dirname(__file__), "../config/")
-folder_template = os.path.join(os.path.dirname(__file__), "../template/")
+folder_data = os.path.join(os.path.dirname(__file__), "../../data/")
+folder_config = os.path.join(os.path.dirname(__file__), "../../config/")
+folder_template = os.path.join(os.path.dirname(__file__), "../../template/")
 
 
 class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):

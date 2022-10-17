@@ -10,6 +10,16 @@
 			"tambahan": "False",
 			"keterangan": "Peta Dasar Pendaftaran dari server ATR/BPN"
 		}],
+		"rbi": [{
+			"nama": "Rupabumi Indonesia",
+			"url": "https://portal.ina-sdi.or.id/arcgis/rest/services/RBI/Basemap/MapServer",
+			"type": "arcgismapserver",
+			"icon": "indonesia.png",
+			"zmin": 1,
+			"zmax": 19,
+			"tambahan": "False",
+			"keterangan": "Peta Rupabumi Indonesia (RBI) dari Badan Informasi Geospasial (BIG)"
+		}],
 		"bing_satellite": [{
 			"nama": "Bing Satellite ",
 			"url": "http://ecn.t3.tiles.virtualearth.net/tiles/a{q}.jpeg?g=0&dir=dir_n",
@@ -79,16 +89,6 @@
 			"zmax": 19,
 			"tambahan": "True",
 			"keterangan": "Layanan peta dengan simbologi Google Maps"
-		}],
-		"rbi": [{
-			"nama": "Rupabumi Indonesia",
-			"url": "https://portal.ina-sdi.or.id/arcgis/rest/services/RBI/Basemap/MapServer",
-			"type": "arcgismapserver",
-			"icon": "indonesia.png",
-			"zmin": 1,
-			"zmax": 19,
-			"tambahan": "False",
-			"keterangan": "Peta Rupabumi Indonesia (RBI) dari Badan Informasi Geospasial (BIG)"
 		}]
 	}
 }
