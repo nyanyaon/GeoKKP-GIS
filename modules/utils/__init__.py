@@ -39,6 +39,8 @@ from qgis.gui import QgsMapToolIdentifyFeature
 from collections import namedtuple
 from qgis import processing
 
+from ..settings.preferences import Preferences
+
 """
 Kumpulan Utilities untuk GeoKKP-QGIS
 ===========================================
@@ -46,6 +48,7 @@ Kumpulan Utilities untuk GeoKKP-QGIS
 Variabel global dan modul global untuk digunakan di plugin GeoKKP-GIS
 
 TODO: Pindah variabel & konstanta global ke modul terpisah
+TODO: Buat kelas Utilitas
 """
 
 layer_json_file = os.path.join(os.path.dirname(__file__), "../../config/layers.json")
@@ -128,6 +131,9 @@ SNAP_ANCHOR_NODES = 7
 # global settings variable
 settings = QgsSettings()
 
+# Penyimpanan Pengaturan: instance of Preferences
+preferences = Preferences()
+
 
 """
 Definisi Fungsi
@@ -196,7 +202,7 @@ def loadXYZ(url, name):
     Memuat layer dalam bentuk XYZ Tile
     """
     encodedUrl = urllib.parse.quote(url)
-    urlString = "type=xyz&zmin=0&zmax=21&url=" + encodedUrl
+    urlString = "type=xyz&zmin=0&zmax=21&crs=EPSG:3857&url=" + encodedUrl
     logMessage("Loaded url: " + urlString)
     rasterLyr = QgsRasterLayer(urlString, name, "wms")
     QgsProject.instance().addMapLayer(rasterLyr)
@@ -208,7 +214,7 @@ def add_google_basemap():
     """
     url = "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
     loadXYZ(url, "Google Satellite")
-    
+
 
 def add_pdp_basemap():
     """
@@ -223,14 +229,14 @@ def deleteLayerbyName(layername):
     # QgsProject.instance().layerTreeRoot().removeLayer(to_be_deleted)
     QgsProject.instance().removeMapLayer(to_be_deleted.id())
 
-    
+
 def activate_editing(layer):
     """
     Activate layer editing tools
     TODO: fix conflicts with built-in layer editing in QGIS
     """
-    project.instance().setTopologicalEditing(True)
-    project.instance().setAvoidIntersectionsLayers([layer])
+    QgsProject.instance().setTopologicalEditing(True)
+    QgsProject.instance().setAvoidIntersectionsLayers([layer])
     layer.startEditing()
     # iface.layerTreeView().setCurrentLayer(layer)
     iface.actionAddFeature().trigger()
@@ -240,11 +246,18 @@ def activate_editing(layer):
 
 def storeSetting(key, value):
     """
-    Store value to QGIS Settings
+    Store value to QGIS Settings using QGISSettingsManager
     """
-    settings.setValue("geokkp/" + str(key), value)
-    logMessage("Menyimpan data " + str(key) + " pada memory proyek QGIS")
-    settings.sync()
+    try:
+        preferences.set_value(key, value)
+    except Exception as e:
+        # fallback to QGIS settings
+        settings.setValue("geokkp/" + str(key), value)
+        logMessage(f"Error menyimpan data: {e}")
+    else:
+        logMessage(f"Menyimpan data {str(key)} pada memory proyek QGIS")
+    finally:
+        settings.sync()
 
 
 def readSetting(key, default=None):

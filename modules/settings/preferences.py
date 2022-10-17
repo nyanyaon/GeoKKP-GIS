@@ -2,7 +2,7 @@ from pathlib import Path
 
 from ...qgissettingmanager import (
     # Bool,
-    # Dictionary,
+    Dictionary,
     Scope,
     SettingManager,
     String
@@ -15,6 +15,10 @@ class Preferences(SettingManager):
     def __init__(self):
         SettingManager.__init__(self, pluginName, False)
         home = Path.home()
+        drive = Path(home).anchor
         self.add_setting(
-            String("exportDirectory", Scope.Global, str(home.joinpath("GeoKKP/export")))
+            String("exportDirectory", Scope.Global, str(Path(drive).joinpath("GeoKKP/export")))
+        )
+        self.add_setting(
+            Dictionary("provinsibykantor", Scope.Global, {})
         )

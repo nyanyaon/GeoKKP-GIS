@@ -58,7 +58,7 @@ from qgis import processing
 
 from qgis.utils import active_plugins
 
-from .modules.utils.preferences import Preferences
+
 
 # import utilities
 from .modules.utils import (
@@ -82,8 +82,9 @@ from .modules.geocoding import GeocodingDialog
 from .modules.add_layer import AddLayerDialog
 from .modules.convert_layer import ConvertLayerDialog
 from .modules.add_basemap import AddBasemapDialog
+from .modules.add_additional_wms import AddOtherWMSDialog
 from .modules.gotoxy import GotoXYDialog
-from .modules.settings import SettingsDialog
+from .modules.settings.settings_widgets  import SettingsDialog
 from .modules.plotcoord import PlotCoordinateDialog
 from .modules.login import LoginDialog
 from .modules.openaerialmap import OAMDialog
@@ -130,7 +131,6 @@ class GeoKKP:
         self.mapToolIdentify = QgsMapToolIdentify(self.canvas)
         self.mapToolPan = QgsMapToolPan(self.canvas)
         self.feed = MyFeedBack()
-        self.preferences = Preferences()
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
@@ -192,6 +192,7 @@ class GeoKKP:
         self.addlayeraction = AddLayerDialog()
         self.convertlayeraction = ConvertLayerDialog()
         self.addbasemapaction = AddBasemapDialog()
+        self.addWMSLayeraction = AddOtherWMSDialog()
         self.gotoxyaction = GotoXYDialog()
         self.setting_action = SettingsDialog()
         self.plotxyaction = PlotCoordinateDialog()
@@ -338,7 +339,7 @@ class GeoKKP:
             text=self.tr(u"Login Pengguna"),
             callback=self.login_geokkp,
             parent=self.iface.mainWindow().menuBar(),
-            add_to_toolbar = True,
+            add_to_toolbar=True,
             add_to_menu=False,
             need_auth=False,
         )
@@ -466,6 +467,17 @@ class GeoKKP:
         )
         self.popupAddData.addAction(self.actionTambahBasemap)
 
+        #  --- Sub-menu Tambah WMS ---
+        self.actionTambahWMS = self.add_action(
+            icon("wms.png"),
+            text=self.tr(u"Tambah Layer WMS"),
+            callback=self.add_wmslayer,
+            add_to_toolbar=False,
+            parent=self.popupAddData,
+            add_to_menu=False,
+        )
+        self.popupAddData.addAction(self.actionTambahWMS)
+
         #  --- Sub-menu Tambah OpenAerialMap ---
         self.actionTambahOAM = self.add_action(
             icon("openaerialmap.png"),
@@ -500,6 +512,7 @@ class GeoKKP:
             callback=self.start_editing,
             add_to_toolbar=False,
             add_to_menu=False,
+            # need_auth=True,
             parent=self.popupDraw,
         )
         self.popupDraw.addAction(self.actionManualDraw)
@@ -544,6 +557,7 @@ class GeoKKP:
             callback=self.azdistance,
             add_to_toolbar=False,
             add_to_menu=False,
+            # need_auth=False,
             parent=self.popupDraw,
         )
         self.popupDraw.addAction(self.actionPlotCoordinate)
@@ -1180,6 +1194,11 @@ class GeoKKP:
             self.addbasemapaction = AddBasemapDialog()
         self.addbasemapaction.show()
 
+    def add_wmslayer(self):
+        if self.addWMSLayeraction is None:
+            self.addWMSLayeraction = AddOtherWMSDialog()
+        self.addWMSLayeraction.show()
+
     def toggle_cad_mode(self):
         if "qad" in active_plugins:
             for panel in self.iface.mainWindow().findChildren(QDockWidget):
@@ -1418,12 +1437,12 @@ class GeoKKP:
         if not layer.type()==0:
             dialogBox("Layer aktif bukan vektor")
             pass
-        else: 
+        else:
             csvSaveOptions = QgsVectorFileWriter.SaveVectorOptions()
             csvSaveOptions.driverName = "CSV"
             csvSaveOptions.fileEncoding = "UTF-8"
             name = QFileDialog.getSaveFileName(self.iface.mainWindow(), 'Simpan Layer sebagai CSV')
-            QgsVectorFileWriter.writeAsVectorFormatV2(layer, name[0], QgsCoordinateTransformContext(), csvSaveOptions)       
+            QgsVectorFileWriter.writeAsVectorFormatV2(layer, name[0], QgsCoordinateTransformContext(), csvSaveOptions)
 
     def geomchecker(self):
         for action in self.iface.mainWindow().findChildren(QAction):
