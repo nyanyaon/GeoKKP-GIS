@@ -102,10 +102,13 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
         self._current_layer = self._iface.activeLayer()
         self._canvas = self._iface.mapCanvas()
 
-        if self._current_layer and self._current_layer.name().startswith("(080201)") or self._current_layer.name().startswith("(080202)") or self._current_layer.name().startswith("(080203)"):
-            self._txt = self._current_layer
-        else:
-            self._txt = None
+        try:
+            if self._current_layer and self._current_layer.name().startswith("(080201)") or self._current_layer.name().startswith("(080202)") or self._current_layer.name().startswith("(080203)"):
+                self._txt = self._current_layer
+            else:
+                self._txt = None
+        except Exception as e:
+            pass
 
         self._set_cmb_propinsi()
 

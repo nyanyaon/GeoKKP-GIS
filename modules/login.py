@@ -9,7 +9,7 @@ from qgis.core import Qgis, QgsProject, QgsRectangle
 from qgis.gui import QgsMessageBar
 
 from .utils import (
-    add_pdp_basemap,
+    add_google_basemap,
     get_project_crs,
     set_project_crs_by_epsg,
     storeSetting,
@@ -38,18 +38,15 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
     def __init__(self, parent=iface.mainWindow()):
         self.iface = iface
         self.canvas = iface.mapCanvas()
-        self.project = QgsProject()
         super(LoginDialog, self).__init__(parent)
         self.setupUi(self)
 
         self.postlogin = PostLoginDock()
         self.bar = QgsMessageBar()
 
-        # self.project.instance().crsChanged.connect(self.set_epsg)
-
         config = configparser.ConfigParser()
         config.read(os.path.join(os.path.dirname(__file__), "..", 'metadata.txt'))
-        version = config.get('general', 'version')    
+        version = config.get('general', 'version')        
         self.teksVersi.setText("<p>Versi <a href='https://github.com/danylaksono/GeoKKP-GIS'> \
             <span style='text-decoration: underline; color:#009da5;'>" + version + "</span></a></p>")
 
@@ -77,7 +74,6 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         Login using requests
         API backend: {}/validateUser
         """
-
         username = self.inputUsername.text()
         password = self.inputPassword.text()
         # logMessage(f"{username}, {password}")
@@ -135,7 +131,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             response = endpoints.get_entity_by_username(username)
         except Exception as e:
-            logMessage(e)
+            # print(e)
             dialogBox(
                 "Data Pengguna gagal dimuat dari server",
                 "Koneksi Bermasalah",
@@ -155,26 +151,18 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 "Warning",
             )
 
-    def set_epsg(self):
-        epsg = self.project.instance().crs().authid()
-        print("epsg", epsg)
-        if epsg == "EPSG:3857":
-            set_project_crs_by_epsg("EPSG:4326")
-        else:
-            pass
-
-    def zoom_to_id(self):
-        rect = QgsRectangle(95.0146, -10.92107, 140.9771, 5.9101)
-        self.iface.mapCanvas().setExtent(rect)
-        self.iface.mapCanvas().refresh()
-
     def postuserlogin(self):
         """
         what to do when user is logged in
         """
         if not QgsProject.instance().mapLayersByName("Google Satellite"):
-            add_pdp_basemap()
+            add_google_basemap()
+            set_project_crs_by_epsg("EPSG:4326")    
+        # print(get_project_crs())
         set_project_crs_by_epsg("EPSG:4326")
-        self.zoom_to_id()
+        rect = QgsRectangle(95.0146, -10.92107, 140.9771, 5.9101)
+        self.iface.mapCanvas().setExtent(rect)
+        self.iface.mapCanvas().refresh()
         self.accept()
         app_state.set("logged_in", True)
+

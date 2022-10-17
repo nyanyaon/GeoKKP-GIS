@@ -239,7 +239,7 @@ class GeoKKP:
         status_tip=None,
         whats_this=None,
         parent=None,
-        need_auth=True,
+        need_auth=False,
         checkable=False,
     ):
         """Add a toolbar icon to the toolbar.
@@ -325,7 +325,7 @@ class GeoKKP:
         self.run()
 
         self.preferences.set_value("exportDirectory", "export_folder")
-
+        print()
         # ========== Menu: Login Pengguna ==========
         # self.add_action(
         #    iconPath("login.png"),
@@ -1232,12 +1232,16 @@ class GeoKKP:
 
     def reclean(self):
         layer = self.iface.activeLayer()
-        if layer is None:
-            dialogBox("Pilih salah satu layer vektor pada daftar")
-            pass
-        if not layer.type() == 0:
-            dialogBox("Layer aktif bukan vektor")
-            pass
+        try:
+            if layer is None:
+                dialogBox("Pilih salah satu layer vektor pada daftar")
+                pass
+            if not layer.type() == 0:
+                dialogBox("Layer aktif bukan vektor")
+                pass
+        except Exception as e:
+            print(str(e))
+            return
 
         basename = layer.name()
         # basecrs = layer.crs().authid()
