@@ -39,7 +39,6 @@ from qgis.gui import QgsMapToolIdentifyFeature
 from collections import namedtuple
 from qgis import processing
 
-from ..settings.preferences import Preferences
 
 """
 Kumpulan Utilities untuk GeoKKP-QGIS
@@ -131,8 +130,6 @@ SNAP_ANCHOR_NODES = 7
 # global settings variable
 settings = QgsSettings()
 
-# Penyimpanan Pengaturan: instance of Preferences
-preferences = Preferences()
 
 
 """
@@ -248,16 +245,14 @@ def storeSetting(key, value):
     """
     Store value to QGIS Settings using QGISSettingsManager
     """
-    try:
-        preferences.set_value(key, value)
-    except Exception as e:
         # fallback to QGIS settings
+    try:
         settings.setValue("geokkp/" + str(key), value)
+    except Exception as e:
         logMessage(f"Error menyimpan data: {e}")
-    else:
-        logMessage(f"Menyimpan data {str(key)} pada memory proyek QGIS")
-    finally:
-        settings.sync()
+        return
+    logMessage(f"Menyimpan data {str(key)} pada memory proyek QGIS")
+    settings.sync()
 
 
 def readSetting(key, default=None):
@@ -592,7 +587,6 @@ def get_saved_credentials():
     if auth_id:
         auth_mgr.loadAuthenticationConfig(auth_id, auth_cfg, True)
     return auth_cfg.configMap()
-
 
 def save_credentials(username, password):
     auth_mgr = QgsApplication.authManager()

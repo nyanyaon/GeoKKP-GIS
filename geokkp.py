@@ -325,8 +325,6 @@ class GeoKKP:
         # start the deck
         self.run()
 
-        self.preferences.set_value("exportDirectory", "export_folder")
-        print()
         # ========== Menu: Login Pengguna ==========
         # self.add_action(
         #    iconPath("login.png"),
@@ -1308,7 +1306,6 @@ class GeoKKP:
 
         try:
             cleaned_layer = select_layer_by_name(self.project, 'Cleaned')
-            print(cleaned_layer)
             # cleaned_layer = QgsVectorLayer(result['output'], basename, "ogr")
             uri = os.path.join(os.path.dirname(__file__), "styles/" + "persil_cleaned.qml")
             # print(uri)

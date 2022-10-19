@@ -13,7 +13,7 @@ from .utils import (
     get_project_crs,
     set_project_crs_by_epsg,
     storeSetting,
-    logMessage,
+    readSetting,
     dialogBox,
     get_saved_credentials,
     save_credentials,
@@ -22,6 +22,7 @@ from .utils import (
 from .api import endpoints
 from .memo import app_state
 from .postlogin import PostLoginDock
+from .settings.settings_widgets import SettingsDialog
 
 
 FORM_CLASS, _ = uic.loadUiType(
@@ -41,7 +42,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         super(LoginDialog, self).__init__(parent)
         self.setupUi(self)
 
-        self.postlogin = PostLoginDock()
+        self.settingPage = SettingsDialog()
         self.bar = QgsMessageBar()
 
         config = configparser.ConfigParser()
@@ -54,6 +55,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         self.buttonBoxLogin.clicked.connect(self.doLoginRequest)
 
     def _autofill_credentials(self):
+       
         credentials = get_saved_credentials()
         if set(["username", "password"]).issubset(credentials.keys()):
             self.inputUsername.setText(credentials["username"])
@@ -76,6 +78,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         """
         username = self.inputUsername.text()
         password = self.inputPassword.text()
+        
         # logMessage(f"{username}, {password}")
         try:
             response = endpoints.login(username, password)
@@ -94,10 +97,23 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 )
                 self.loginChanged.emit()
                 app_state.set("username", username)
-                self.getKantorProfile(username)
-                self.get_user(username)
+                # self.getKantorProfile(username)
+                # self.get_user(username)
+                daftarUser = readSetting("daftarUser")
+
+                self.postuserlogin()
+                if(daftarUser is None):
+                    self.settingPage.show()
+                else:    
+                    result = [a for a in daftarUser if a["username"] == username]
+                    if(len(result)==0):
+                        self.settingPage.show()
+                    else:
+                        self.settingPage.get_pagawai(result[0]["kantor"])
+                        self.settingPage.simpan_tm3(result[0]["tm3"])
+
         except Exception as e:
-            # print(e)
+            print(e)
             dialogBox(
                 "Kesalahan koneksi. Periksa sambungan Anda ke server GeoKKP",
                 "Koneksi Bermasalah",
@@ -151,15 +167,15 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 "Warning",
             )
 
-    def postuserlogin(self):
+    def postuserlogin(self,epsg = "EPSG:4326"):
         """
         what to do when user is logged in
         """
         if not QgsProject.instance().mapLayersByName("Google Satellite"):
             add_google_basemap()
-            set_project_crs_by_epsg("EPSG:4326")    
+            set_project_crs_by_epsg(epsg)    
         # print(get_project_crs())
-        set_project_crs_by_epsg("EPSG:4326")
+        set_project_crs_by_epsg(epsg)
         rect = QgsRectangle(95.0146, -10.92107, 140.9771, 5.9101)
         self.iface.mapCanvas().setExtent(rect)
         self.iface.mapCanvas().refresh()
