@@ -240,7 +240,7 @@ class GeoKKP:
         status_tip=None,
         whats_this=None,
         parent=None,
-        need_auth=False,
+        need_auth=True,
         checkable=False,
     ):
         """Add a toolbar icon to the toolbar.
@@ -349,7 +349,7 @@ class GeoKKP:
             parent=self.iface.mainWindow().menuBar(),
             add_to_toolbar=True,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
         )
         self.actionLogoutUser.setEnabled(False)
         self.actionLogoutUser.setVisible(False)
@@ -697,7 +697,7 @@ class GeoKKP:
             callback=self.aturlokasi,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionAturLokasi)
@@ -709,7 +709,7 @@ class GeoKKP:
             callback=self.geocoding,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionGeocoding)
@@ -722,7 +722,7 @@ class GeoKKP:
             callback=self.coordinate_transform,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionTransformasiKoordinat)
@@ -734,7 +734,7 @@ class GeoKKP:
             callback=self.gotoxy,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionGotoXY)
@@ -747,7 +747,7 @@ class GeoKKP:
             callback=self.inspeksinlp,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionNLP)
@@ -759,7 +759,7 @@ class GeoKKP:
             callback=self.georeferencer,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionGeoreference)
@@ -772,7 +772,7 @@ class GeoKKP:
             callback=self.export_csv,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionExportCSV)
@@ -784,7 +784,7 @@ class GeoKKP:
             callback=self.search_for_feature,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionFeatureSearch)
@@ -842,7 +842,7 @@ class GeoKKP:
             add_to_toolbar=True,
             add_to_menu=True,
             parent=self.iface.mainWindow(),
-            need_auth=False,
+            need_auth=True,
         )
         # -------------------------------------------
 

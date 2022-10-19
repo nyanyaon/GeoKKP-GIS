@@ -1,6 +1,6 @@
 import os
 import json
-from pickle import FALSE
+from pathlib import Path
 from ..utils import (
     dialogBox,
     readSetting,
@@ -11,7 +11,6 @@ from ..utils import (
 )
 
 from qgis.core import QgsCoordinateReferenceSystem  
-
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
@@ -61,18 +60,23 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def showEvent(self, events):
         username = app_state.get("username").value
-        daftarUser = readSetting("daftarUser")
-        if(daftarUser is None):
-            self.populateKantor()
-            self.populateTM3()
-        else:
-            result = [a for a in daftarUser if a["username"] == username]
+        script_dir = Path(os.path.dirname(__file__)).parents[2]
+        file_path = os.path.join(script_dir, 'file.json')
+
+        if(os.path.exists(file_path)):
+            with open(file_path, "r") as outfile:
+                data = json.load(outfile)
+
+            result = [a for a in data["data_user"] if a["username"] == username]
             if(len(result)==0):
                 self.populateKantor()
                 self.populateTM3()
             else:
                 self.populateKantor(result[0]["kantor"]["nama"])
                 self.populateTM3(result[0]["tm3"])
+        else:
+            self.populateKantor()
+            self.populateTM3()
     
     def populateTM3(self,tm3=False):
         index = 0
@@ -141,31 +145,91 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
         except Exception as e:
             print(e)
             dialogBox("Gagal mengatur CRS Project dan kantor")
+        
 
     def save_user(self,username,kantor,tm3):
-        dataBaru = {
+        # dataBaru = {
+        #     "username": username,
+        #     "kantor":kantor,
+        #     "tm3":tm3
+        # }
+        # daftarUser = readSetting("daftarUser")
+
+        # if(daftarUser is None):
+        #     daftarUser = []
+        #     daftarUser.append(data)
+        # else:
+        #     isSame = False
+        #     NomorIndex = 0 
+        #     for index,data in enumerate(daftarUser):
+        #         if(data["username"] == username):
+        #             isSame = True
+        #             NomorIndex = index
+        #             break
+        #     if(isSame):
+        #         daftarUser[NomorIndex] = dataBaru
+        #     else:
+        #         daftarUser.append(dataBaru)
+        # storeSetting("daftarUser", daftarUser)
+        dictionary = {
             "username": username,
             "kantor":kantor,
             "tm3":tm3
         }
-        daftarUser = readSetting("daftarUser")
 
-        if(daftarUser is None):
-            daftarUser = []
-            daftarUser.append(data)
-        else:
-            isSame = False
-            NomorIndex = 0 
-            for index,data in enumerate(daftarUser):
-                if(data["username"] == username):
-                    isSame = True
-                    NomorIndex = index
-                    break
-            if(isSame):
-                daftarUser[NomorIndex] = dataBaru
+        script_dir = Path(os.path.dirname(__file__)).parents[2]
+        file_path = os.path.join(script_dir, 'file.json')
+        try:
+            if(os.path.exists(file_path)):
+                with open(file_path, "r") as outfile:
+                    print(outfile)
+                    data = json.load(outfile)
+                    print(data)
+                isSame = False
+                for index,data in enumerate(data["data_user"]):
+                    if(data["username"] == username):
+                        isSame = True
+                        NomorIndex = index
+                        break
+                if(isSame):
+                    data["data_user"][NomorIndex] = dictionary
+                else:
+                    data["data_user"].append(dictionary)
+
+                with open(file_path, "w") as outfile:
+                    json_object = json.dumps(data)
+                    outfile.write(json_object)
             else:
-                daftarUser.append(dataBaru)
-        storeSetting("daftarUser", daftarUser)
+                with open(file_path, "w") as outfile:
+                    json_object = json.dumps({"data_user":[dictionary]})
+                    outfile.write(json_object)
+        except Exception as e:
+            with open(file_path, "w") as outfile:
+                json_object = json.dumps({"data_user":[dictionary]})
+                outfile.write(json_object)
+            
+        # if(daftarUser is None):
+        #     daftarUser = []
+        #     daftarUser.append(data)
+        # else:
+        #     isSame = False
+        #     NomorIndex = 0 
+        #     for index,data in enumerate(daftarUser):
+        #         if(data["username"] == username):
+        #             isSame = True
+        #             NomorIndex = index
+        #             break
+        #     if(isSame):
+        #         daftarUser[NomorIndex] = dataBaru
+        #     else:
+        #         daftarUser.append(dataBaru)
+        
+        # Serializing json
+        # json_object = json.dumps(dictionary, indent=4)
+        
+        # # Writing to sample.json
+        # with open(file_path, "w") as outfile:
+        #     outfile.write(json_object)
 
     def simpan_tm3(self,tm3):
         selectedTM3 = get_epsg_from_tm3_zone(tm3)
