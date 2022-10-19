@@ -19,6 +19,7 @@ from .utils import (
 from .api import endpoints
 from .memo import app_state
 from .pengaturan_lokasi import PengaturanLokasiDialog
+from .settings.settings_widgets import SettingsDialog
 
 # file constants
 layer_json_file = os.path.join(os.path.dirname(__file__), "../config/layers.json")
@@ -44,11 +45,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         self.canvas = iface.mapCanvas()
         self.setupUi(self)
         # self.project = QgsProject()
-
-        
-
         # login_state = app_state.get('logged_in')
-
         for panel in self.iface.mainWindow().findChildren(QDockWidget):
             if panel.windowTitle() == "Panel Kerja GeoKKP-GIS":
                 self.panel = panel
@@ -61,9 +58,8 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         if self.jsonKantor is not None:
             self.jumlahKantor = len(self.jsonKantor)
             self.populateKantah(int(self.jumlahKantor))
-            print("daftar kantor", self.jsonKantor[0])
 
-        self.atur_lokasi = PengaturanLokasiDialog()
+        self.atur_lokasi = SettingsDialog()
 
         # if readSetting("jumlahkantor") is not None:
         #    jumlah_kantor = int(readSetting("jumlahkantor"))
@@ -99,9 +95,14 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
     def pengaturan_lokasi(self):
         self.accept()
         if self.atur_lokasi is None:
-            self.atur_lokasi = PengaturanLokasiDialog()
-        # add_google_basemap()
+            self.atur_lokasi = SettingsDialog()
         self.atur_lokasi.show()
+        # add_google_basemap()
+        # self.accept()
+        # if self.atur_lokasi is None:
+        #     self.atur_lokasi = PengaturanLokasiDialog()
+        # # add_google_basemap()
+        # self.atur_lokasi.show()
 
     def simpanKantorSettings(self):
         index = self.comboBoxKantah_3.currentIndex()

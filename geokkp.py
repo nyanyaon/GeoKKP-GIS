@@ -325,7 +325,6 @@ class GeoKKP:
         # start the deck
         self.run()
 
-
         # ========== Menu: Login Pengguna ==========
         # self.add_action(
         #    iconPath("login.png"),
@@ -350,7 +349,7 @@ class GeoKKP:
             parent=self.iface.mainWindow().menuBar(),
             add_to_toolbar=True,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
         )
         self.actionLogoutUser.setEnabled(False)
         self.actionLogoutUser.setVisible(False)
@@ -698,7 +697,7 @@ class GeoKKP:
             callback=self.aturlokasi,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionAturLokasi)
@@ -710,7 +709,7 @@ class GeoKKP:
             callback=self.geocoding,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionGeocoding)
@@ -723,7 +722,7 @@ class GeoKKP:
             callback=self.coordinate_transform,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionTransformasiKoordinat)
@@ -735,7 +734,7 @@ class GeoKKP:
             callback=self.gotoxy,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionGotoXY)
@@ -748,7 +747,7 @@ class GeoKKP:
             callback=self.inspeksinlp,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionNLP)
@@ -760,7 +759,7 @@ class GeoKKP:
             callback=self.georeferencer,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionGeoreference)
@@ -773,7 +772,7 @@ class GeoKKP:
             callback=self.export_csv,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionExportCSV)
@@ -785,7 +784,7 @@ class GeoKKP:
             callback=self.search_for_feature,
             add_to_toolbar=False,
             add_to_menu=False,
-            need_auth=False,
+            need_auth=True,
             parent=self.popupPeralatan,
         )
         self.popupPeralatan.addAction(self.actionFeatureSearch)
@@ -843,7 +842,7 @@ class GeoKKP:
             add_to_toolbar=True,
             add_to_menu=True,
             parent=self.iface.mainWindow(),
-            need_auth=False,
+            need_auth=True,
         )
         # -------------------------------------------
 
@@ -1250,12 +1249,16 @@ class GeoKKP:
 
     def reclean(self):
         layer = self.iface.activeLayer()
-        if layer is None:
-            dialogBox("Pilih salah satu layer vektor pada daftar")
-            pass
-        if not layer.type() == 0:
-            dialogBox("Layer aktif bukan vektor")
-            pass
+        try:
+            if layer is None:
+                dialogBox("Pilih salah satu layer vektor pada daftar")
+                pass
+            if not layer.type() == 0:
+                dialogBox("Layer aktif bukan vektor")
+                pass
+        except Exception as e:
+            print(str(e))
+            return
 
         basename = layer.name()
         # basecrs = layer.crs().authid()
@@ -1303,7 +1306,6 @@ class GeoKKP:
 
         try:
             cleaned_layer = select_layer_by_name(self.project, 'Cleaned')
-            print(cleaned_layer)
             # cleaned_layer = QgsVectorLayer(result['output'], basename, "ogr")
             uri = os.path.join(os.path.dirname(__file__), "styles/" + "persil_cleaned.qml")
             # print(uri)

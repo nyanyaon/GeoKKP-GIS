@@ -10,7 +10,7 @@ from qgis.core import (
     QgsVectorLayer,
     Qgis,
 )
-
+from qgis.PyQt.QtWidgets import QMessageBox
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 from qgis.gui import QgsVertexMarker, QgsMessageBar, QgsRubberBand
@@ -128,7 +128,6 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
             self.trilaterasi_koord_3,
             self.input_jarak_3,
             self.trilaterasi_titik_3,
-            self.clear_titik_3,
             self.trilaterasi_ok,
         ]
         try:
@@ -171,6 +170,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         self.iface.mapCanvas().setMapTool(self.point_tool_3)
 
     def update_titik_3(self, x, y):
+        self.clear_titik_3.setEnabled(True)
         self.point_3 = QgsPointXY(x, y)
         self.trilaterasi_koord_3.setText(str(round(x, 3)) + "," + str(round(y, 3)))
         self.iface.mapCanvas().unsetMapTool(self.point_tool_3)
@@ -209,6 +209,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
             widget.setEnabled(False)
 
     def on_clear_titik_3_pressed(self):
+        self.clear_titik_3.setEnabled(False)
         self.trilaterasi_koord_3.clear()
         self.input_jarak_3.clear()
         self.dialog_bar.clearWidgets()
@@ -230,70 +231,78 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         vl = QgsVectorLayer(
             "Point?crs=" + project_epsg, "trilateration point", "memory"
         )
+        try:
+            if self.three_point_flag:
+                d1 = self.jarak_1
+                d2 = self.jarak_2
+                d3 = self.jarak_3
 
-        if self.three_point_flag:
-            d1 = self.jarak_1
-            d2 = self.jarak_2
-            d3 = self.jarak_3
+                p1 = self.point_1
+                p2 = self.point_2
+                p3 = self.point_3
 
-            p1 = self.point_1
-            p2 = self.point_2
-            p3 = self.point_3
+                pt = self.three_points(p1, p2, p3, d1, d2, d3)
 
-            pt = self.three_points(p1, p2, p3, d1, d2, d3)
+                feat_pt = QgsFeature()
+                feat_pt.setGeometry(QgsGeometry.fromPointXY(pt))
 
-            feat_pt = QgsFeature()
-            feat_pt.setGeometry(QgsGeometry.fromPointXY(pt))
+                vl.startEditing()
+                vl.addFeatures([feat_pt])
+                vl.commitChanges()
+            elif self.two_point_flag:
+                p1 = self.point_1
+                p2 = self.point_2
 
-            vl.startEditing()
-            vl.addFeatures([feat_pt])
-            vl.commitChanges()
-        elif self.two_point_flag:
-            p1 = self.point_1
-            p2 = self.point_2
+                d1 = self.jarak_1
+                d2 = self.jarak_2
+                a, b = self.two_points(p1, p2, d1, d2)
 
-            d1 = self.jarak_1
-            d2 = self.jarak_2
-            a, b = self.two_points(p1, p2, d1, d2)
+                feat_a = QgsFeature()
+                feat_a.setGeometry(QgsGeometry.fromPointXY(a))
+                feat_b = QgsFeature()
+                feat_b.setGeometry(QgsGeometry.fromPointXY(b))
 
-            feat_a = QgsFeature()
-            feat_a.setGeometry(QgsGeometry.fromPointXY(a))
-            feat_b = QgsFeature()
-            feat_b.setGeometry(QgsGeometry.fromPointXY(b))
+                vl.startEditing()
+                vl.addFeatures([feat_a, feat_b])
+                vl.commitChanges()
+            else:
+                print("not enough inputs")
 
-            vl.startEditing()
-            vl.addFeatures([feat_a, feat_b])
-            vl.commitChanges()
-        else:
-            print("not enough inputs")
-
-        QgsProject.instance().addMapLayer(vl)
-        self.clear()
-        self.accept()
+            QgsProject.instance().addMapLayer(vl)
+            self.clear()
+            self.accept()
+        except Exception as e:
+            return
 
     def two_points(self, p1, p2, d1, d2):
         """Calculate two solutions of two points trilateration."""
-        d = math.sqrt(p1.sqrDist(p2))
+        try:
+            d = math.sqrt(p1.sqrDist(p2))
 
-        a = (d1 * d1 - d2 * d2 + d * d) / (2 * d)
-        h = math.sqrt(d1 * d1 - a * a)
+            a = (d1 * d1 - d2 * d2 + d * d) / (2 * d)
+            h = math.sqrt(d1 * d1 - a * a)
 
-        x1 = p1.x()
-        y1 = p1.y()
+            x1 = p1.x()
+            y1 = p1.y()
 
-        x2 = p2.x()
-        y2 = p2.y()
+            x2 = p2.x()
+            y2 = p2.y()
 
-        xo = x1 + a * (x2 - x1) / d
-        yo = y1 + a * (y2 - y1) / d
+            xo = x1 + a * (x2 - x1) / d
+            yo = y1 + a * (y2 - y1) / d
 
-        x3a = xo + h * (y2 - y1) / d
-        y3a = yo - h * (x2 - x1) / d
+            x3a = xo + h * (y2 - y1) / d
+            y3a = yo - h * (x2 - x1) / d
 
-        x3b = xo - h * (y2 - y1) / d
-        y3b = yo + h * (x2 - x1) / d
+            x3b = xo - h * (y2 - y1) / d
+            y3b = yo + h * (x2 - x1) / d
 
-        print(a, h, d)
+            print(a, h, d)
+        except Exception as e:
+            QMessageBox.warning(
+                None, "Peringatan", "Tidak titik yang berpotongan"
+            )
+            return
 
         return QgsPointXY(x3a, y3a), QgsPointXY(x3b, y3b)
 

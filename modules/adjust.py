@@ -48,12 +48,19 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
     def showEvent(self, events):
         self._orig_cursor = self.canvas.cursor()
         self.set_identify_layer()
-        self.activate_selection()
+        valid = self.activate_selection()
+        if(valid == False):
+            print(valid)
+            return
         self.canvas.selectionChanged.connect(self.selection_changed)
 
     def closeEvent(self, events):
-        self.canvas.selectionChanged.disconnect(self.selection_changed)
-        self.canvas.setCursor(self._orig_cursor)
+        try:
+            self.canvas.selectionChanged.disconnect(self.selection_changed)
+            self.canvas.setCursor(self._orig_cursor)
+        except Exception as e:
+            print(str(e))
+            return
 
     def layer_target_not_found(self):
         QtWidgets.QMessageBox.warning(
@@ -84,13 +91,13 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
             if layer.name() == TARGET_LAYER:
                 self._layer = layer
                 return
-        self.layer_target_not_found()
         # self.adjustButton.setEnabled(False)
-        return
+        return 
 
     def activate_selection(self):
         if not self._layer:
             self.layer_target_not_found()
+            return False
         self.canvas.setCursor(QCursor(Qt.PointingHandCursor))
         self.iface.actionSelect().trigger()
 
@@ -100,6 +107,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         ref_layer = self.layer_acuan.layer(selected_layer_index)
         if not ref_layer and not isinstance(self._layer, QgsVectorLayer):
             self.layer_acuan_not_found()
+            return
 
         out = snap_geometries_to_layer(self._layer, ref_layer, tolerance=toleransi, only_selected=True)
 

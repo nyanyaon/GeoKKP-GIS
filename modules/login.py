@@ -1,6 +1,7 @@
 import configparser
 import os
 import json
+from pathlib import Path
 
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
@@ -9,11 +10,11 @@ from qgis.core import Qgis, QgsProject, QgsRectangle
 from qgis.gui import QgsMessageBar
 
 from .utils import (
-    add_pdp_basemap,
+    add_google_basemap,
     get_project_crs,
     set_project_crs_by_epsg,
     storeSetting,
-    logMessage,
+    readSetting,
     dialogBox,
     get_saved_credentials,
     save_credentials,
@@ -22,6 +23,7 @@ from .utils import (
 from .api import endpoints
 from .memo import app_state
 from .postlogin import PostLoginDock
+from .settings.settings_widgets import SettingsDialog
 
 
 FORM_CLASS, _ = uic.loadUiType(
@@ -38,21 +40,17 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
     def __init__(self, parent=iface.mainWindow()):
         self.iface = iface
         self.canvas = iface.mapCanvas()
-        self.project = QgsProject()
         super(LoginDialog, self).__init__(parent)
         self.setupUi(self)
 
-        self.postlogin = PostLoginDock()
+        self.settingPage = SettingsDialog()
         self.bar = QgsMessageBar()
-
-        # self.project.instance().crsChanged.connect(self.set_epsg)
 
         config = configparser.ConfigParser()
         config.read(os.path.join(os.path.dirname(__file__), "..", 'metadata.txt'))
-        version = config.get('general', 'version')    
+        version = config.get('general', 'version')        
         self.teksVersi.setText("<p>Versi <a href='https://github.com/danylaksono/GeoKKP-GIS'> \
             <span style='text-decoration: underline; color:#009da5;'>" + version + "</span></a></p>")
-
         # login action
         self.buttonBoxLogin.clicked.connect(self.doLoginRequest)
 
@@ -77,9 +75,9 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         Login using requests
         API backend: {}/validateUser
         """
-
         username = self.inputUsername.text()
         password = self.inputPassword.text()
+        
         # logMessage(f"{username}, {password}")
         try:
             response = endpoints.login(username, password)
@@ -98,10 +96,32 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 )
                 self.loginChanged.emit()
                 app_state.set("username", username)
-                self.getKantorProfile(username)
-                self.get_user(username)
+                # self.getKantorProfile(username)
+                # self.get_user(username)
+                # daftarUser = readSetting("daftarUser")
+                self.postuserlogin()
+                script_dir = Path(os.path.dirname(__file__)).parents[1]
+                file_path = os.path.join(script_dir, 'file.json')
+                try:
+                    if(os.path.exists(file_path)):
+                        print(file_path,"file_path")
+                        with open(file_path, "r") as outfile:
+                            data = json.load(outfile)
+                            print(data,"datauser")
+                        
+                        result = [a for a in data["data_user"] if a["username"] == username]
+                        if(len(result)==0):
+                            self.settingPage.show()
+                        else:
+                            self.settingPage.get_pagawai(result[0]["kantor"])
+                            self.settingPage.simpan_tm3(result[0]["tm3"])
+                    else:
+                        self.settingPage.show()
+                except Exception as e:
+                    self.settingPage.show()   
+
         except Exception as e:
-            # print(e)
+            print(e)
             dialogBox(
                 "Kesalahan koneksi. Periksa sambungan Anda ke server GeoKKP",
                 "Koneksi Bermasalah",
@@ -135,7 +155,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             response = endpoints.get_entity_by_username(username)
         except Exception as e:
-            logMessage(e)
+            # print(e)
             dialogBox(
                 "Data Pengguna gagal dimuat dari server",
                 "Koneksi Bermasalah",
@@ -155,27 +175,15 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 "Warning",
             )
 
-    def set_epsg(self):
-        epsg = self.project.instance().crs().authid()
-        print("epsg", epsg)
-        if epsg == "EPSG:3857":
-            set_project_crs_by_epsg("EPSG:4326")
-        else:
-            pass
-
-    def zoom_to_id(self):
+    def postuserlogin(self,epsg = "EPSG:4326"):
+        """
+        what to do when user is logged in
+        """   
+        # print(get_project_crs())
+        set_project_crs_by_epsg(epsg)
         rect = QgsRectangle(95.0146, -10.92107, 140.9771, 5.9101)
         self.iface.mapCanvas().setExtent(rect)
         self.iface.mapCanvas().refresh()
-
-    def postuserlogin(self):
-        """
-        what to do when user is logged in
-        """
-        # if not QgsProject.instance().mapLayersByName("Google Satellite"):
-        #     add_pdp_basemap()
-        set_project_crs_by_epsg("EPSG:4326")
-        self.postlogin.show()  # TODO: check saved config first
-        self.zoom_to_id()
         self.accept()
         app_state.set("logged_in", True)
+
