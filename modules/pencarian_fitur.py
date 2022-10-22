@@ -45,8 +45,13 @@ class PencarianFiturDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def populateColumn(self):
         self.currentLayer = self.layerAsal.currentLayer()
-        # print(self.currentLayer)
+        print(self.currentLayer)
+        if(self.currentLayer is None):
+            self.pilihFitur.setEnabled(False)
+        else:
+            self.pilihFitur.setEnabled(True)
         self.kolomLayer.setLayer(self.currentLayer)
+
 
     def populateFieldSearch(self):
         # print(self.kolomLayer.currentField())

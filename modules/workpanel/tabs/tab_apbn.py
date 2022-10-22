@@ -103,11 +103,17 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         self.combo_kegiatan.addItem("*", "")
 
         program = readSetting("listprogram", {})
-        if not program or kantor_id not in program:
-            response = endpoints.get_program_by_kantor(kantor_id)
-            response_json = json.loads(response.content)
-            program[kantor_id] = response_json["PROGRAM"]
-            storeSetting("listprogram", program)
+        try:
+            if not program or kantor_id not in program:
+                response = endpoints.get_program_by_kantor(kantor_id)
+                response_json = json.loads(response.content)
+                program[kantor_id] = response_json["PROGRAM"]
+                storeSetting("listprogram", program)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mengambil data program dari server"
+            )
+            return
 
         for item in program[kantor_id]:
             self.combo_kegiatan.addItem(item["NAMA"], item["PROGRAMID"])
@@ -128,18 +134,23 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         tahun = self.input_tahun.text()
         kegiatan = self.combo_kegiatan.currentData() or ""
 
-        response = endpoints.get_pbt_for_apbn(
-            nomor_pbt,
-            tahun,
-            self._kantor_id,
-            kegiatan,
-            "PBT",
-            self._start,
-            self._limit,
-            self._count,
-        )
-        response_json = json.loads(response.content)
-        print("cari", response_json)
+        try:
+            response = endpoints.get_pbt_for_apbn(
+                nomor_pbt,
+                tahun,
+                self._kantor_id,
+                kegiatan,
+                "PBT",
+                self._start,
+                self._limit,
+                self._count,
+            )
+            response_json = json.loads(response.content)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mengambil berkas pbt dari server"
+            )
+            return
         self._setup_pagination(response_json)
         self._populate_berkas_apbn(response_json["PBTAPBN"])
 
@@ -302,10 +313,16 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         current_nomor_pbt = selected_apbn[1].text()
         current_tahun = selected_apbn[2].text()
 
-        response = endpoints.start_edit_pbt_for_apbn(
-            self._current_document_pengukuran_id, username
-        )
-        response_json = json.loads(response.content)
+        try:
+            response = endpoints.start_edit_pbt_for_apbn(
+                self._current_document_pengukuran_id, username
+            )
+            response_json = json.loads(response.content)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal membuka berkas pbt"
+            )
+            return
         self._pbt = response_json
         print(response_json)
 
@@ -339,11 +356,16 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         self.btn_simpan.setDisabled(False)
 
     def _load_berkas_spasial(self, gugus_ids, riwayat=False):
-        response_spatial_sdo = endpoints.get_spatial_document_sdo(
-            gugus_ids=gugus_ids, include_riwayat=riwayat
-        )
-        response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
-        print(response_spatial_sdo_json)
+        try:
+            response_spatial_sdo = endpoints.get_spatial_document_sdo(
+                gugus_ids=gugus_ids, include_riwayat=riwayat
+            )
+            response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data dari server"
+            )
+            return
 
         if not response_spatial_sdo_json["status"]:
             QtWidgets.QMessageBox.critical(None, "Error", "Proses Unduh Geometri gagal")
@@ -429,13 +451,19 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
                     with open(output, "rb") as f:
                         byte = f.read()
                         base64data = base64.b64encode(byte)
-                        response = endpoints.upload_dxf_pbt_skb(
-                            self._kantor_id,
-                            self._pbt["mitraKerjaId"],
-                            payload["dokumenPengukuranId"],
-                            base64data,
-                        )
-                        response_json = json.loads(response.content)
+                        try:
+                            response = endpoints.upload_dxf_pbt_skb(
+                                self._kantor_id,
+                                self._pbt["mitraKerjaId"],
+                                payload["dokumenPengukuranId"],
+                                base64data,
+                            )
+                            response_json = json.loads(response.content)
+                        except Exception as e:
+                            QtWidgets.QMessageBox.warning(
+                                None, "GeoKKP", "Gagal mengupload berkas pbt"
+                            )
+                            return
                         print(response_json)
         else:
             if payload["autoClosed"]:
@@ -455,10 +483,15 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         link_pbt.show()
 
     def _handle_tutup(self):
-        response = endpoints.stop_pbt(self._current_document_pengukuran_id)
-        print(response.content)
-        stopped = response.content.decode("utf-8") == "true"
+        try:
+            response = endpoints.stop_pbt(self._current_document_pengukuran_id)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal menutup berkas pbt"
+            )
+            return
 
+        stopped = response.content.decode("utf-8") == "true"
         if stopped:
             self._process_available = False
             self._set_button_enabled(False)
@@ -486,9 +519,14 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         if self._submitted_parcels:
             parcels = [str(f) for f in self._submitted_parcels]
             force_mapping = True
-
-            already_mapped = endpoints.cek_mapping(parcels)
-            print(already_mapped.content)
+            
+            try:
+                already_mapped = endpoints.cek_mapping(parcels)
+            except Exception as e:
+                QtWidgets.QMessageBox.warning(
+                 None, "GeoKKP", "Gagal menyelesaikan berkas pbt"
+                )
+                return
 
             if already_mapped.content.lower() != "true":
                 if not force_mapping:
@@ -506,7 +544,13 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
                         "Persil belum dipetakan\nUntuk menyelesaikan berkas lakukan proses Map Placing terlebih dahulu",
                     )
 
-        response = endpoints.finish_pbt(self._current_document_pengukuran_id)
+        try:
+            response = endpoints.finish_pbt(self._current_document_pengukuran_id)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal menutup berkas pbt"
+            )
+            return
         if response.content.decode("utf-8").split(":")[0] == "OK":
             self._process_available = False
             self._set_button_enabled(False)

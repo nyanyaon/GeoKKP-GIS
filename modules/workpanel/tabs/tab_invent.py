@@ -86,8 +86,14 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         self._kantor_id = kantor["kantorID"]
         self._tipe_kantor_id = str(kantor["tipeKantorId"])
 
-        response = endpoints.get_program_invent_by_kantor(self._kantor_id)
-        program_invent = json.loads(response.content)
+        try:
+            response = endpoints.get_program_invent_by_kantor(self._kantor_id)
+            program_invent = json.loads(response.content)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mengambil data dari server"
+            )
+            return
 
         self.cmb_kegiatan.clear()
         self.cmb_kegiatan.addItem("*","")
@@ -110,18 +116,22 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         self.RefreshGrid()
 
     def RefreshGrid(self):
-        
-        response = endpoints.get_pbt_for_apbn(
-            nomor_pbt=self._txtNomor,
-            tahun_pbt=self._txtTahun,
-            kantor_id=self._kantor_id,
-            proyek=self._txtKegiatan,
-            tipe_pbt="PBTI",
-            start=self._start,
-            limit=self._limit,
-            count=self._count)
-        self.dset = json.loads(response.content)
-        print(self.dset,"data")
+        try:
+            response = endpoints.get_pbt_for_apbn(
+                nomor_pbt=self._txtNomor,
+                tahun_pbt=self._txtTahun,
+                kantor_id=self._kantor_id,
+                proyek=self._txtKegiatan,
+                tipe_pbt="PBTI",
+                start=self._start,
+                limit=self._limit,
+                count=self._count)
+            self.dset = json.loads(response.content)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mengambil data dari server"
+            )
+            return
 
         if(self._count == -1):
             self._count = self.dset["JUMLAHTOTAL"][0]["COUNT(1)"]
@@ -275,9 +285,14 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
 
             self._currentDokumenPengukuranId = dataSelect[0]
 
-            response = endpoints.start_edit_pbt_for_apbn(self._currentDokumenPengukuranId,username)
-            self.pbt = json.loads(response.content)
-            print(self.pbt)
+            try:
+                response = endpoints.start_edit_pbt_for_apbn(self._currentDokumenPengukuranId,username)
+                self.pbt = json.loads(response.content)
+            except Exception as e:
+                QtWidgets.QMessageBox.warning(
+                    None, "GeoKKP", "Gagal membuka berkas dari server"
+                )
+                return
 
             if(self.pbt["penggunaSpasial"] is None or self.pbt["penggunaSpasial"] == username):
                 self._processAvailable = True
@@ -313,8 +328,13 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
             )
     
     def _load_berkas_spasial(self, gugus_ids, riwayat=False):
-        response_spatial_sdo = endpoints.get_spatial_document_sdo([gugus_ids],riwayat)
-        response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
+        try:
+            response_spatial_sdo = endpoints.get_spatial_document_sdo([gugus_ids],riwayat)
+            response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mengambil data dari server"
+            )
         print(response_spatial_sdo_json)
         if not response_spatial_sdo_json["status"]:
             QtWidgets.QMessageBox.critical(None, "Error", "Proses Unduh Geometri gagal")
@@ -357,9 +377,14 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         iface.actionZoomToLayer().trigger()
 
     def tutup_proses(self):
-        response = endpoints.stop_pbt(self._currentDokumenPengukuranId)
-        result = json.loads(response.content)
-        return result
+        try:
+            response = endpoints.stop_pbt(self._currentDokumenPengukuranId)
+            result = json.loads(response.content)
+            return result
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal menutup process"
+            )
 
     def stop_proses(self):
         if(self.tutup_proses()):
@@ -392,7 +417,13 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
             parcels = [str(f) for f in self._submitted_parcels]
             force_mapping = True
 
-            already_mapped = endpoints.cek_mapping(parcels)
+            try:
+                already_mapped = endpoints.cek_mapping(parcels)
+            except Exception as e:
+                QtWidgets.QMessageBox.warning(
+                    None, "GeoKKP", "Gagal menyelesaikan berkas"
+                )
+                return
             print(already_mapped.content)
 
             if already_mapped.content.lower() != "true":
@@ -411,7 +442,13 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
                         "Persil belum dipetakan\nUntuk menyelesaikan berkas lakukan proses Map Placing terlebih dahulu",
                     )
 
-        response = endpoints.finish_pbt(self._currentDokumenPengukuranId)
+        try:
+            response = endpoints.finish_pbt(self._currentDokumenPengukuranId)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal menyelesaikan berkas"
+            )
+            return
         if response.content.decode("utf-8").split(":")[0] == "OK":
             self._processAvailable = False
             self.btn_start.setEnabled(True)

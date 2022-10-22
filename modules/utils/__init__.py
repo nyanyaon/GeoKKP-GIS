@@ -426,9 +426,15 @@ def parse_raw_coordinate(coordList):
     for coords in splitted_coords:
         coord_components = coords.split(",")
         if len(coord_components) < 2:
-            raise ValueError(
-                "Coordinate pair must be consist of two number separated by comma"
+            dialogBox(
+                "Format input tidak valid, input harus terdiri dari satu pasangan coordinat yang dipisahkan oleh tanda koma",
+                "Koneksi Bermasalah",
+                "Warning",
             )
+            return
+            # raise ValueError(
+            #     "Coordinate pair must be consist of two number separated by comma"
+            # )
         point = QgsPointXY(float(coord_components[0]), float(coord_components[1]))
         yield point
 
@@ -686,6 +692,7 @@ def snap_geometries_to_layer(
     output="memory",
     only_selected=False,
 ):
+
     if isinstance(layer, str):
         layer = get_layer_by_id(layer)
     is_selected = only_selected or bool(layer.selectedFeatureCount())

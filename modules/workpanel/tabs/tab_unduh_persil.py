@@ -11,7 +11,7 @@ from qgis.PyQt.QtCore import pyqtSignal, QUrl
 from qgis.utils import iface
 from qgis.core import QgsRectangle
 from ...api import endpoints
-from ...utils import readSetting, get_epsg_from_tm3_zone, get_layer_config, sdo_to_layer
+from ...utils import readSetting, get_epsg_from_tm3_zone, get_layer_config, sdo_to_layer,storeSetting
 from ...models.dataset import Dataset
 from ...download_persil_sekitarnya import DownloadPersilSekitar
 
@@ -139,72 +139,118 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
         self._set_cmb_desa()
 
     def _set_cmb_propinsi(self):
-        response = endpoints.get_provinsi_by_kantor(
-            self._kantor_id, self._tipe_kantor_id
-        )
-        prop_dataset = json.loads(response.content)
+        try:
+            prop_dataset = readSetting(f"{self._kantor_id}_provinsi")
+            if(prop_dataset is None):
+                response = endpoints.get_provinsi_by_kantor(
+                    self._kantor_id, self._tipe_kantor_id
+                )
+                prop_dataset = json.loads(response.content)
+                storeSetting(f"{self._kantor_id}_provinsi",prop_dataset)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data provinsi dari server"
+            )
+            return
 
         self.cmb_propinsi.clear()
         for prop in prop_dataset["PROPINSI"]:
             self.cmb_propinsi.addItem(prop["PROPNAMA"], prop["PROPINSIID"])
 
     def _set_cmb_kabupaten(self):
-        selected_prov = self.cmb_propinsi.currentData()
-        response = endpoints.get_kabupaten_by_kantor(
-            self._kantor_id, self._tipe_kantor_id, selected_prov
-        )
-        kabu_dataset = json.loads(response.content)
+        try:
+            selected_prov = self.cmb_propinsi.currentData()
+            kabu_dataset = readSetting(f"{self._kantor_id}_kabupaten_{selected_prov}")
+            if(kabu_dataset is None):
+                response = endpoints.get_kabupaten_by_kantor(
+                    self._kantor_id, self._tipe_kantor_id, selected_prov
+                )
+                kabu_dataset = json.loads(response.content)
+                storeSetting(f"{self._kantor_id}_kabupaten_{selected_prov}",kabu_dataset)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data kabupaten dari server"
+            )
+            return
 
         self.cmb_kabupaten.clear()
         for kab in kabu_dataset["KABUPATEN"]:
             self.cmb_kabupaten.addItem(kab["KABUNAMA"], kab["KABUPATENID"])
 
     def _set_cmb_kecamatan(self):
-        selected_kab = self.cmb_kabupaten.currentData()
-        response = endpoints.get_kecamatan_by_kantor(
-            self._kantor_id, self._tipe_kantor_id, selected_kab
-        )
-        keca_dataset = json.loads(response.content)
+        try:
+            selected_kab = self.cmb_kabupaten.currentData()
+            keca_dataset = readSetting(f"{self._kantor_id}_kecamatan_{selected_kab}")
+            if(keca_dataset is None):
+                response = endpoints.get_kecamatan_by_kantor(
+                    self._kantor_id, self._tipe_kantor_id, selected_kab
+                )
+                keca_dataset = json.loads(response.content)
+                storeSetting(f"{self._kantor_id}_kecamatan_{selected_kab}",keca_dataset)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data kecamatan dari server"
+            )
+            return
 
         self.cmb_kecamatan.clear()
         for kec in keca_dataset["KECAMATAN"]:
             self.cmb_kecamatan.addItem(kec["KECANAMA"], kec["KECAMATANID"])
 
     def _set_cmb_desa(self):
-        selected_kec = self.cmb_kecamatan.currentData()
-        response = endpoints.get_desa_by_kantor(
-            self._kantor_id, self._tipe_kantor_id, selected_kec
-        )
-        desa_dataset = json.loads(response.content)
+        try:
+            selected_kec = self.cmb_kecamatan.currentData()
+            desa_dataset = readSetting(f"{self._kantor_id}_desa_{selected_kec}")
+            if(desa_dataset is None):
+                response = endpoints.get_desa_by_kantor(
+                    self._kantor_id, self._tipe_kantor_id, selected_kec
+                )
+                desa_dataset = json.loads(response.content)
+                storeSetting(f"{self._kantor_id}_desa_{selected_kec}",desa_dataset)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data desa dari server"
+            )
+            return
 
         self.cmb_desa.clear()
         for des in desa_dataset["DESA"]:
             self.cmb_desa.addItem(des["DESANAMA"], des["DESAID"])
 
     def _btn_cari_click(self):
-        print("triggered")
-        self.toolbar_inbox.setDisabled(True)
-        self.btn_cari.setDisabled(True)
-        self.chb_per_kabupaten.setDisabled(True)
-        self.cmb_coordinate_system.setDisabled(True)
-        self.cmb_kecamatan.setDisabled(True)
-        self.cmb_desa.setDisabled(True)
+        try:
+            self.toolbar_inbox.setDisabled(True)
+            self.btn_cari.setDisabled(True)
+            self.chb_per_kabupaten.setDisabled(True)
+            self.cmb_coordinate_system.setDisabled(True)
+            self.cmb_kecamatan.setDisabled(True)
+            self.cmb_desa.setDisabled(True)
 
-        self._start = 0
-        self._count = -1
-        self._txt_nomor = self.txt_nomor.text()
+            self._start = 0
+            self._count = -1
+            self._txt_nomor = self.txt_nomor.text()
 
-        self.btn_first.setDisabled(False)
-        self.btn_last.setDisabled(False)
+            self.btn_first.setDisabled(False)
+            self.btn_last.setDisabled(False)
 
-        self._refresh_grid()
+            self._refresh_grid()
 
-        self.toolbar_inbox.setDisabled(False)
-        self.btn_cari.setDisabled(False)
-        self.chb_per_kabupaten.setDisabled(False)
-        self.cmb_coordinate_system.setDisabled(False)
-        self.cmb_kecamatan.setDisabled(False)
-        self.cmb_desa.setDisabled(False)
+            self.toolbar_inbox.setDisabled(False)
+            self.btn_cari.setDisabled(False)
+            self.chb_per_kabupaten.setDisabled(False)
+            self.cmb_coordinate_system.setDisabled(False)
+            self.cmb_kecamatan.setDisabled(False)
+            self.cmb_desa.setDisabled(False)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mengambil data dari server"
+            )
+            self.toolbar_inbox.setDisabled(False)
+            self.btn_cari.setDisabled(False)
+            self.chb_per_kabupaten.setDisabled(False)
+            self.cmb_coordinate_system.setDisabled(False)
+            self.cmb_kecamatan.setDisabled(False)
+            self.cmb_desa.setDisabled(False)
 
     def _refresh_grid(self):
         str_pattern = r"^([0-9]{1,5}|[0-9]{1,5}-[0-9]{1,5})((,([0-9]{1,5}|[0-9]{1,5}-[0-9]{1,5}))?)*$"
@@ -237,7 +283,7 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
                 str(self._count),
             )
             self._upr = json.loads(response.content)
-
+            print(self._upr,"upr")
             if not self._upr["status"]:
                 QtWidgets.QMessageBox.warning(None, "GeoKKP", self._upr["message"])
                 return
@@ -295,6 +341,15 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
 
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, "GeoKKP", str(e))
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mengambil data dari server"
+            )
+            self.toolbar_inbox.setDisabled(False)
+            self.btn_cari.setDisabled(False)
+            self.chb_per_kabupaten.setDisabled(False)
+            self.cmb_coordinate_system.setDisabled(False)
+            self.cmb_kecamatan.setDisabled(False)
+            self.cmb_desa.setDisabled(False)
             return
 
     def _handle_download_hasil_query(self):
@@ -326,11 +381,10 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
         epsg = get_epsg_from_tm3_zone(zone)
 
         if upr["persils"]:
-            print(upr["persils"][0])
 
             if upr["persils"]:
                 layer_config = get_layer_config("020100")
-                print(layer_config)
+                print(upr["persils"],"upr_persil")
                 layer = sdo_to_layer(
                     upr["persils"],
                     name=layer_config["Nama Layer"],
@@ -366,7 +420,6 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
 
     def _btn_last_click(self):
         self._start = self._count // self._limit * self._limit
-        print(self._start)
         if self._start >= self._count:
             self._start -= self._limit
             self.btn_prev.setEnabled(False)
@@ -457,9 +510,14 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
 
         except Exception as e:
             print(e)
+            self.toolbar_inbox.setEnabled(True)
+            self.btn_cari.setEnabled(True)
+            self.chb_per_kabupaten.setEnabled(True)
+            self.cmb_coordinate_system.setEnabled(True)
+            self.cmb_kecamatan.setEnabled(True)
+            self.cmb_desa.setEnabled(True)
 
     def UpdateStatus(self, _upr, value):
-        print(_upr)
         if value.startswith("Mengunduh"):
             if _upr != None:
                 self._draw(_upr)

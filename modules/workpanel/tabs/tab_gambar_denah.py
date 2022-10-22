@@ -3,7 +3,6 @@ from math import fabs
 import os
 import json
 import re
-from urllib import response
 
 from qgis.PyQt import QtWidgets, uic
 
@@ -16,7 +15,8 @@ from ...utils import (
     sdo_to_layer,
     get_layer_config,
     add_layer,
-    select_layer_by_regex
+    select_layer_by_regex,
+    storeSetting
 )
 
 from ...utils import readSetting
@@ -94,7 +94,6 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self._kantor_id = kantor["kantorID"]
         self._tipe_kantor_id = str(kantor["tipeKantorId"])
 
-
         self._set_cmb_propinsi()
 
     def _cmb_propinsi_selected_index_changed(self, index):
@@ -107,43 +106,79 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self._set_cmb_desa()
 
     def _set_cmb_propinsi(self):
-        response = endpoints.get_provinsi_by_kantor(
-            self._kantor_id, self._tipe_kantor_id
-        )
-        prop_dataset = json.loads(response.content)
+        try:
+            prop_dataset = readSetting(f"{self._kantor_id}_provinsi")
+            if(prop_dataset is None):
+                response = endpoints.get_provinsi_by_kantor(
+                    self._kantor_id, self._tipe_kantor_id
+                )
+                prop_dataset = json.loads(response.content)
+                storeSetting(f"{self._kantor_id}_provinsi",prop_dataset)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data provinsi dari server"
+            )
+            return
 
         self.cmb_propinsi.clear()
         for prop in prop_dataset["PROPINSI"]:
             self.cmb_propinsi.addItem(prop["PROPNAMA"], prop["PROPINSIID"])
 
     def _set_cmb_kabupaten(self):
-        selected_prov = self.cmb_propinsi.currentData()
-        response = endpoints.get_kabupaten_by_kantor(
-            self._kantor_id, self._tipe_kantor_id, selected_prov
-        )
-        kabu_dataset = json.loads(response.content)
+        try:
+            selected_prov = self.cmb_propinsi.currentData()
+            kabu_dataset = readSetting(f"{self._kantor_id}_kabupaten_{selected_prov}")
+            if(kabu_dataset is None):
+                response = endpoints.get_kabupaten_by_kantor(
+                    self._kantor_id, self._tipe_kantor_id, selected_prov
+                )
+                kabu_dataset = json.loads(response.content)
+                storeSetting(f"{self._kantor_id}_kabupaten_{selected_prov}",kabu_dataset)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data kabupaten dari server"
+            )
+            return
 
         self.cmb_kabupaten.clear()
         for kab in kabu_dataset["KABUPATEN"]:
             self.cmb_kabupaten.addItem(kab["KABUNAMA"], kab["KABUPATENID"])
 
     def _set_cmb_kecamatan(self):
-        selected_kab = self.cmb_kabupaten.currentData()
-        response = endpoints.get_kecamatan_by_kantor(
-            self._kantor_id, self._tipe_kantor_id, selected_kab
-        )
-        keca_dataset = json.loads(response.content)
+        try:
+            selected_kab = self.cmb_kabupaten.currentData()
+            keca_dataset = readSetting(f"{self._kantor_id}_kecamatan_{selected_kab}")
+            if(keca_dataset is None):
+                response = endpoints.get_kecamatan_by_kantor(
+                    self._kantor_id, self._tipe_kantor_id, selected_kab
+                )
+                keca_dataset = json.loads(response.content)
+                storeSetting(f"{self._kantor_id}_kecamatan_{selected_kab}",keca_dataset)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data kecamatan dari server"
+            )
+            return
 
         self.cmb_kecamatan.clear()
         for kec in keca_dataset["KECAMATAN"]:
             self.cmb_kecamatan.addItem(kec["KECANAMA"], kec["KECAMATANID"])
 
     def _set_cmb_desa(self):
-        selected_kec = self.cmb_kecamatan.currentData()
-        response = endpoints.get_desa_by_kantor(
-            self._kantor_id, self._tipe_kantor_id, selected_kec
-        )
-        desa_dataset = json.loads(response.content)
+        try:
+            selected_kec = self.cmb_kecamatan.currentData()
+            desa_dataset = readSetting(f"{self._kantor_id}_desa_{selected_kec}")
+            if(desa_dataset is None):
+                response = endpoints.get_desa_by_kantor(
+                    self._kantor_id, self._tipe_kantor_id, selected_kec
+                )
+                desa_dataset = json.loads(response.content)
+                storeSetting(f"{self._kantor_id}_desa_{selected_kec}",desa_dataset)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data desa dari server"
+            )
+            return
 
         self.cmb_desa.clear()
         for des in desa_dataset["DESA"]:
@@ -182,19 +217,23 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
                 )
                 return
         
-        wilayah_id = self.cmb_desa.currentData()
-        response = endpoints.getGambarDenah(
-            wilayah_id,
-            self._kantor_id,
-            self._txtNomor,
-            self._txtTahun,
-            str(self._start),
-            "20",
-            str(self._count))
+        try:
+            wilayah_id = self.cmb_desa.currentData()
+            response = endpoints.getGambarDenah(
+                wilayah_id,
+                self._kantor_id,
+                self._txtNomor,
+                self._txtTahun,
+                str(self._start),
+                "20",
+                str(self._count))
 
-        self.dSet = json.loads(response.content)
-
-        
+            self.dSet = json.loads(response.content)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mengambil data dari server"
+            )
+            return
 
         dataset = Dataset()
         table = dataset.add_table("GAMBARDENAH")
@@ -248,78 +287,76 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
             self.btn_prev.setEnabled(True)
 
     def prepareBerkas(self):
-        self.dgv_GambarDenah.setColumnHidden(0, False)
-        item = self.dgv_GambarDenah.selectedItems()
-        self.dgv_GambarDenah.setColumnHidden(0, True)
-        
-        if(item == []):
+        try:
+            self.dgv_GambarDenah.setColumnHidden(0, False)
+            item = self.dgv_GambarDenah.selectedItems()
+            self.dgv_GambarDenah.setColumnHidden(0, True)
+            
+            if(item == []):
+                QtWidgets.QMessageBox.warning(
+                    None, "GeoKKP", "Pilih Sebuah Gambar Denah Yang Akan Diproses"
+                )
+                return
+
+            row = item[0].row()
+            dataSelect = []
+            self.dgv_GambarDenah.setColumnHidden(0, False)
+            for x in range(self.dgv_GambarDenah.columnCount()):
+                dataSelect.append(self.dgv_GambarDenah.item(row,x).text())
+            self.dgv_GambarDenah.setColumnHidden(0, True)
+
+            username_state = app_state.get("username", "")
+            username = username_state.value
+
+            dokumenPengukuranId = dataSelect[0]
+            response = endpoints.startBerkasSpasialByDokumenPengukuranId(dokumenPengukuranId,self._kantor_id,username)
+            self._bs = json.loads(response.content)
+
+            if(self._bs != None and self._bs["valid"]):
+                self._importGambarDenah = False
+                self.btn_mulai.setEnabled(False)
+                self.btn_informasi.setEnabled(True)
+                self.btn_layout.setEnabled(True)
+                self.btn_tutup.setEnabled(True)
+                self.txt_nomor.setEnabled(False)
+                self.txt_tahun.setEnabled(False)
+                self.btn_cari.setEnabled(False)
+                if(self._bs["newGugusId"]!=""):
+                    self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
+                self.txt_nomor.setText(item[4].text())
+    
+                self.txt_nomor.setEnabled(False)
+                self.txt_tahun.setEnabled(False)
+                self.btn_cari.setEnabled(False)
+                self.btn_mulai.setEnabled(False)
+
+                self.btn_informasi.setEnabled(True)
+                self.btn_layout.setEnabled(True)
+                self.btn_tutup.setEnabled(True)
+
+                self.cmb_propinsi.setEnabled(False)
+                self.cmb_kabupaten.setEnabled(False)
+                self.cmb_kecamatan.setEnabled(False)
+                self.cmb_desa.setEnabled(False)
+            else:
+                QtWidgets.QMessageBox.warning(
+                    None, "GeoKKP", self._bs['errorStack'][0]
+                )
+                return
+        except Exception as e:
             QtWidgets.QMessageBox.warning(
-                None, "GeoKKP", "Pilih Sebuah Gambar Denah Yang Akan Diproses"
+                None, "GeoKKP", "Gagal mengambil data dari server"
             )
-            return
-
-        row = item[0].row()
-        dataSelect = []
-        self.dgv_GambarDenah.setColumnHidden(0, False)
-        for x in range(self.dgv_GambarDenah.columnCount()):
-            dataSelect.append(self.dgv_GambarDenah.item(row,x).text())
-        self.dgv_GambarDenah.setColumnHidden(0, True)
-
-        username_state = app_state.get("username", "")
-        username = username_state.value
-
-        
-
-        dokumenPengukuranId = dataSelect[0]
-        response = endpoints.startBerkasSpasialByDokumenPengukuranId(dokumenPengukuranId,self._kantor_id,username)
-        self._bs = json.loads(response.content)
-
-        print(self._bs,username)
-        
-        # if self._bs['valid'] == False:
-        #     QtWidgets.QMessageBox.warning(
-        #         None, "GeoKKP", self._bs['errorStack'][0]
-        #     )
-        #     return
-        
-        
-
-        if(self._bs != None and self._bs["valid"]):
-            self._importGambarDenah = False
-            self.btn_mulai.setEnabled(False)
-            self.btn_informasi.setEnabled(True)
-            self.btn_layout.setEnabled(True)
-            self.btn_tutup.setEnabled(True)
-            self.txt_nomor.setEnabled(False)
-            self.txt_tahun.setEnabled(False)
-            self.btn_cari.setEnabled(False)
-            if(self._bs["newGugusId"]!=""):
-                self._load_berkas_spasial(self._bs["newGugusId"],riwayat=False)
-            self.txt_nomor.setText(item[4].text())
-   
-            self.txt_nomor.setEnabled(False)
-            self.txt_tahun.setEnabled(False)
-            self.btn_cari.setEnabled(False)
-            self.btn_mulai.setEnabled(False)
-
-            self.btn_informasi.setEnabled(True)
-            self.btn_layout.setEnabled(True)
-            self.btn_tutup.setEnabled(True)
-
-            self.cmb_propinsi.setEnabled(False)
-            self.cmb_kabupaten.setEnabled(False)
-            self.cmb_kecamatan.setEnabled(False)
-            self.cmb_desa.setEnabled(False)
-        else:
-            QtWidgets.QMessageBox.warning(
-                None, "GeoKKP", self._bs['errorStack'][0]
-            )
-            return 
 
     def _load_berkas_spasial(self, gugus_ids, riwayat=False):
-        response_spatial_sdo = endpoints.get_spatial_document_sdo([gugus_ids],riwayat)
-        response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
-        print(response_spatial_sdo_json)
+        try:
+            response_spatial_sdo = endpoints.get_spatial_document_sdo([gugus_ids],riwayat)
+            response_spatial_sdo_json = json.loads(response_spatial_sdo.content)
+        except:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mengambil data dari server"
+            )
+            return
 
         if not response_spatial_sdo_json["status"]:
             QtWidgets.QMessageBox.critical(None, "Error", "Proses Unduh Geometri gagal")
@@ -436,15 +473,21 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         self.refresh_grid()
 
     def StopProcess(self):
-        response = endpoints.stop_berkas(self._bs['nomorBerkas'],self._bs["tahunBerkas"],self._kantor_id)
-        self._bs = None
-        self._importGambarDenah = True
+        try:
+            response = endpoints.stop_berkas(self._bs['nomorBerkas'],self._bs["tahunBerkas"],self._kantor_id)
+            self._bs = None
+            self._importGambarDenah = True
 
-        if(json.loads(response.content) is False):
-            QtWidgets.QMessageBox.information(
-                None,
-                "GeoKKP Web",
-                "Berkas gagal di stop",
+            if(json.loads(response.content) is False):
+                QtWidgets.QMessageBox.information(
+                    None,
+                    "GeoKKP Web",
+                    "Berkas gagal di stop",
+                )
+                return
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal menutup berkas"
             )
             return
 

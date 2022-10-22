@@ -128,7 +128,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         self._txt_tahun = self.txt_tahun.text()
 
         self.btn_first.setDisabled(False)
-        self.btn_first.setDisabled(False)
+        self.btn_last.setDisabled(False)
 
         self._refresh_grid()
 
@@ -155,7 +155,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             else:
                 page = f"{self._start + 1} - {self._start + self._limit} dari {self._count}"
                 self.txt_paging.setText(page)
-                self.btn_next.setDisabled(True)
+                self.btn_next.setDisabled(False)
             if self._d_set["BERKASSPATIAL"]:
                 self._d_set["BERKASSPATIAL"].render_to_qtable_widget(
                     self.dgv_inbox,
@@ -196,23 +196,26 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         self._start = (self._count // self._limit) * self._limit
         if self._start >= self._count:
             self._start -= self._limit
-            self.btn_prev.setDisabled(True)
+            self.btn_prev.setEnabled(False)
         else:
-            self.btn_prev.setDisabled(False)
-
-        self.btn_next.setDisabled(True)
-        self.btn_first.setDisabled(False)
+            self.btn_prev.setEnabled(True)
+        self.btn_next.setEnabled(False)
         self._refresh_grid()
 
     def _prepare_berkas(self):
-        if self._d_set['BERKASSPATIAL'] and self._d_set['BERKASSPATIAL'].get_selected_qtable_widget():
-            selected = self._d_set['BERKASSPATIAL'].get_selected_qtable_widget()
-            self._nomor_berkas = selected[1].text()
-            self._tahun_berkas = selected[2].text()
-            self._tipe_berkas = selected[3].text()
-            self._berkas_id = selected[0].text()
-            self._start_berkas()
-        else:
+        try:
+            if self._d_set['BERKASSPATIAL'] and self._d_set['BERKASSPATIAL'].get_selected_qtable_widget():
+                selected = self._d_set['BERKASSPATIAL'].get_selected_qtable_widget()
+                self._nomor_berkas = selected[1].text()
+                self._tahun_berkas = selected[2].text()
+                self._tipe_berkas = selected[3].text()
+                self._berkas_id = selected[0].text()
+                self._start_berkas()
+            else:
+                QtWidgets.QMessageBox.warning(
+                    None, "Perhatian", "Pilih Sebuah Berkas Yang Akan Diproses"
+                )
+        except Exception as e:
             QtWidgets.QMessageBox.warning(
                 None, "Perhatian", "Pilih Sebuah Berkas Yang Akan Diproses"
             )

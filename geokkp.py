@@ -1372,10 +1372,10 @@ class GeoKKP:
         layer = self.iface.activeLayer()
         if layer is None:
             dialogBox("Pilih salah satu layer vektor pada daftar")
-            pass
+            return
         if not layer.type() == 0:
             dialogBox("Layer aktif bukan vektor")
-            pass
+            return
 
         formConfig = layer.editFormConfig()
         formConfig.setSuppress(1)

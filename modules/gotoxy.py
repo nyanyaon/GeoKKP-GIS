@@ -17,7 +17,7 @@ from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
 # using utils
-from .utils import icon, parse_raw_coordinate
+from .utils import icon, parse_raw_coordinate,dialogBox
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(os.path.dirname(__file__), "../ui/goto.ui"))
 
@@ -57,7 +57,10 @@ class GotoXYDialog(QtWidgets.QDialog, FORM_CLASS):
         return first_point
 
     def zoomtodialog(self):
-        point = self.parse_coordinate()
+        try:
+            point = self.parse_coordinate()
+        except Exception as e:
+            return
         lon = point.x()
         lat = point.y()
         self.zoomTo(self._currentcrs, lat, lon)
@@ -66,7 +69,12 @@ class GotoXYDialog(QtWidgets.QDialog, FORM_CLASS):
         self.canvas.zoomScale(1000)
         canvas_crs = self.canvas.mapSettings().destinationCrs()
         transform = QgsCoordinateTransform(src_crs, canvas_crs, QgsProject.instance())
-        x, y = transform.transform(float(lon), float(lat))
+        
+        try:
+            x, y = transform.transform(float(lon), float(lat))
+        except Exception as e:
+            dialogBox("Kesalahan input koordinat. Periksa urutan x dan y data masukan")
+            return
 
         rect = QgsRectangle(x, y, x, y)
         self.canvas.setExtent(rect)
