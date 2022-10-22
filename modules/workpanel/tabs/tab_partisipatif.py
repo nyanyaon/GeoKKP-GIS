@@ -10,7 +10,7 @@ from qgis.utils import iface
 
 from ...api import endpoints
 from ...memo import app_state
-from ...utils import get_layer_config, get_project_crs, readSetting, sdo_to_layer, get_epsg_from_tm3_zone, select_layer_by_regex
+from ...utils import get_layer_config, get_project_crs, readSetting, sdo_to_layer,storeSetting, get_epsg_from_tm3_zone, select_layer_by_regex
 from ...topology import quick_check_topology
 from ...models.dataset import Dataset
 from ...create_pbt_partisipatif import CreatePBTPartisipatif
@@ -152,9 +152,14 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
 
     def _set_cmb_program(self):
         self._ds_program = {}
-
-        response_participatory = endpoints.get_program_participatory_mapping_by_kantor(self._kantor_id)
-        self._ds_program = json.loads(response_participatory.content)
+        try:
+            response_participatory = endpoints.get_program_participatory_mapping_by_kantor(self._kantor_id)
+            self._ds_program = json.loads(response_participatory.content)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data program dari server"
+            )
+            return
 
         d_row = {"PROGRAMID": "","NAMA": "*"}
         self._ds_program["PROGRAM"].insert(0,d_row)
@@ -176,43 +181,79 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
         self._set_cmb_desa()
 
     def _set_cmb_propinsi(self):
-        response = endpoints.get_provinsi_by_kantor(
-            self._kantor_id, self._tipe_kantor_id
-        )
-        prop_dataset = json.loads(response.content)
+        try:
+            prop_dataset = readSetting(f"{self._kantor_id}_provinsi")
+            if(prop_dataset is None):
+                response = endpoints.get_provinsi_by_kantor(
+                    self._kantor_id, self._tipe_kantor_id
+                )
+                prop_dataset = json.loads(response.content)
+                storeSetting(f"{self._kantor_id}_provinsi",prop_dataset)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data provinsi dari server"
+            )
+            return
 
         self.cmb_propinsi.clear()
         for prop in prop_dataset["PROPINSI"]:
             self.cmb_propinsi.addItem(prop["PROPNAMA"], prop["PROPINSIID"])
 
     def _set_cmb_kabupaten(self):
-        selected_prov = self.cmb_propinsi.currentData()
-        response = endpoints.get_kabupaten_by_kantor(
-            self._kantor_id, self._tipe_kantor_id, selected_prov
-        )
-        kabu_dataset = json.loads(response.content)
+        try:
+            selected_prov = self.cmb_propinsi.currentData()
+            kabu_dataset = readSetting(f"{self._kantor_id}_kabupaten_{selected_prov}")
+            if(kabu_dataset is None):
+                response = endpoints.get_kabupaten_by_kantor(
+                    self._kantor_id, self._tipe_kantor_id, selected_prov
+                )
+                kabu_dataset = json.loads(response.content)
+                storeSetting(f"{self._kantor_id}_kabupaten_{selected_prov}",kabu_dataset)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data kabupaten dari server"
+            )
+            return
 
         self.cmb_kabupaten.clear()
         for kab in kabu_dataset["KABUPATEN"]:
             self.cmb_kabupaten.addItem(kab["KABUNAMA"], kab["KABUPATENID"])
 
     def _set_cmb_kecamatan(self):
-        selected_kab = self.cmb_kabupaten.currentData()
-        response = endpoints.get_kecamatan_by_kantor(
-            self._kantor_id, self._tipe_kantor_id, selected_kab
-        )
-        keca_dataset = json.loads(response.content)
+        try:
+            selected_kab = self.cmb_kabupaten.currentData()
+            keca_dataset = readSetting(f"{self._kantor_id}_kecamatan_{selected_kab}")
+            if(keca_dataset is None):
+                response = endpoints.get_kecamatan_by_kantor(
+                    self._kantor_id, self._tipe_kantor_id, selected_kab
+                )
+                keca_dataset = json.loads(response.content)
+                storeSetting(f"{self._kantor_id}_kecamatan_{selected_kab}",keca_dataset)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data kecamatan dari server"
+            )
+            return
 
         self.cmb_kecamatan.clear()
         for kec in keca_dataset["KECAMATAN"]:
             self.cmb_kecamatan.addItem(kec["KECANAMA"], kec["KECAMATANID"])
 
     def _set_cmb_desa(self):
-        selected_kec = self.cmb_kecamatan.currentData()
-        response = endpoints.get_desa_by_kantor(
-            self._kantor_id, self._tipe_kantor_id, selected_kec
-        )
-        desa_dataset = json.loads(response.content)
+        try:
+            selected_kec = self.cmb_kecamatan.currentData()
+            desa_dataset = readSetting(f"{self._kantor_id}_desa_{selected_kec}")
+            if(desa_dataset is None):
+                response = endpoints.get_desa_by_kantor(
+                    self._kantor_id, self._tipe_kantor_id, selected_kec
+                )
+                desa_dataset = json.loads(response.content)
+                storeSetting(f"{self._kantor_id}_desa_{selected_kec}",desa_dataset)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data desa dari server"
+            )
+            return
 
         self.cmb_desa.clear()
         for des in desa_dataset["DESA"]:

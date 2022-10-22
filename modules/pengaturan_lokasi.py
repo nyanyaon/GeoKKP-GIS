@@ -32,7 +32,7 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
 
-    def __init__(self, parent=iface.mainWindow()):
+    def __init__(self, parent=iface.mainWindow()): 
         self.iface = iface
         self.canvas = iface.mapCanvas()
         super(PengaturanLokasiDialog, self).__init__(parent)
@@ -53,6 +53,7 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
             dialogBox("Data kantor tidak dapat dibaca dari server", type="Warning")
 
         # buttons and forms
+        self.terapkan_btsadmin.setEnabled(False)
         self.cari_propinsi.currentIndexChanged.connect(self.setKabupaten)
         self.cari_kabupaten.currentIndexChanged.connect(self.setEPSG)
         self.terapkan_btsadmin.clicked.connect(self.plot_lokasi)
@@ -97,10 +98,12 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
         edit = QLineEdit(self)
         self.cari_kabupaten.setLineEdit(edit)
         self.cari_kabupaten.setCurrentText("")
+        self.terapkan_btsadmin.setEnabled(False)
         # completer = QCompleter(kabupaten)
         # self.cari_kabupaten.setCompleter(completer)
 
     def setEPSG(self):
+        self.terapkan_btsadmin.setEnabled(True)
         currentKabupaten = self.cari_kabupaten.currentText()
         # print(currentKabupaten)
         driver = ogr.GetDriverByName("TopoJSON")
@@ -132,7 +135,7 @@ class PengaturanLokasiDialog(QtWidgets.QDialog, FORM_CLASS):
 
         layer.setSubsetString(f"WAK = '{currentKabupaten}'")
         set_symbology(layer, "administrasi.qml")
-        self.iface.actionZoomToLayers().trigger()
+        iface.actionZoomToLayer().trigger()
 
         # for feature in layer.getFeatures():
         #    print(feature["WAK"])

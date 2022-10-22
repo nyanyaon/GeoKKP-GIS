@@ -122,7 +122,10 @@ class CoordinateTransformDialog(QDialog, FORM_CLASS):
         return first_point
 
     def transform_clicked(self, button_index):
-        point = self.parse_coordinate(button_index)
+        try:
+            point = self.parse_coordinate(button_index)
+        except Exception as e:
+            return
 
         for i in range(len(self.names)):
             if i != button_index:

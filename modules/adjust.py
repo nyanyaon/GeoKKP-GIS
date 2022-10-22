@@ -49,10 +49,11 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         self._orig_cursor = self.canvas.cursor()
         self.set_identify_layer()
         valid = self.activate_selection()
+        self.canvas.selectionChanged.connect(self.selection_changed)
         if(valid == False):
             print(valid)
             return
-        self.canvas.selectionChanged.connect(self.selection_changed)
+        
 
     def closeEvent(self, events):
         try:
@@ -109,7 +110,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
             self.layer_acuan_not_found()
             return
 
-        out = snap_geometries_to_layer(self._layer, ref_layer, tolerance=toleransi, only_selected=True)
+        out = snap_geometries_to_layer(layer=self._layer,ref_layer= ref_layer, tolerance=toleransi, only_selected=True)
 
         adjusted_layer = QgsVectorLayer(out, "adjusted", "ogr")
         adjusted_features = adjusted_layer.getFeatures()
