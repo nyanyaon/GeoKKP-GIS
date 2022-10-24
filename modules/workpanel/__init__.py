@@ -80,7 +80,7 @@ class Workpanel(QtWidgets.QDockWidget, FORM_CLASS):
     def _setup_workpanel(self):
         self._main_dock = self.stackedWidget.findChild(QtWidgets.QWidget, "main_dock")
         self._main_tab = self._main_dock.findChild(QtWidgets.QWidget, "main_tab")
-        self._main_tab.addTab(TabLokasi(), "Lokasi")
+        # self._main_tab.addTab(TabLokasi(), "Lokasi")
         self._main_tab.addTab(TabRutin(), "Rutin")
         self._main_tab.addTab(TabApbn(), "APBN")
         self._main_tab.addTab(TabInvent(), "Invent")

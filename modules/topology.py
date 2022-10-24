@@ -1,7 +1,7 @@
-from qgis.core import QgsProject, QgsWkbTypes
+from qgis.core import Qgis, QgsProject, QgsWkbTypes
 from qgis.utils import iface
 from qgis.PyQt.QtCore import QObject
-from qgis.PyQt.QtWidgets import QMessageBox, QAction, QLabel, QWidget, QCheckBox
+from qgis.PyQt.QtWidgets import QAction, QLabel, QWidget, QCheckBox
 
 SCOPE = "Topol"
 KEY_LAYER_1 = "layer1"
@@ -52,7 +52,12 @@ class Topology:
         topo_plugin = self._app.findChild(QObject, "qgis_plugin_topolplugin")
 
         if not topo_plugin:
-            QMessageBox.critical(None, "Error", PLUGIN_NOT_FOUND_ERROR_MESSAGE)
+            iface.messageBar().pushMessage(
+                "Peringatan",
+                PLUGIN_NOT_FOUND_ERROR_MESSAGE,
+                level=Qgis.Warning,
+            )
+            # QMessageBox.critical(None, "Error", PLUGIN_NOT_FOUND_ERROR_MESSAGE)
             return
 
         topo_action = topo_plugin.findChild(QAction, "mQActionPointer")

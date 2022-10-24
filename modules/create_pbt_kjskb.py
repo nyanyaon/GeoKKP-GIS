@@ -1,12 +1,11 @@
-from asyncio.windows_events import NULL
+# from asyncio.windows_events import NULL
 from http.client import responses
 import os
 import json
 import hashlib
 from urllib import response
 
-from qgis.PyQt import QtWidgets, uic, QtGui
-from qgis.core import QgsProject, QgsWkbTypes, QgsVectorLayer, QgsPalLayerSettings, QgsVectorLayerSimpleLabeling
+from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 from qgis.utils import iface
 
@@ -14,8 +13,7 @@ FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../ui/create_pbt_kjskb.ui")
 )
 
-from .utils import readSetting, storeSetting
-from .utils.geometry import get_sdo_point, get_sdo_polygon
+from .utils import readSetting
 from .api import endpoints
 from .memo import app_state
 from .models.dataset import Dataset, DataTable
@@ -92,13 +90,17 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
 
         self._kantor_id = kantor["kantorID"]
         self._tipe_kantor_id = str(kantor["tipeKantorId"])
-
-        response = endpoints.get_wilayah_ptsl_skb(self._kantor_id)
+        try:
+            response = endpoints.get_wilayah_ptsl_skb(self._kantor_id)
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mendapatkan data program dari server"
+            )
+            return
         self._ds_program = Dataset(response.content)
         response_json = json.loads(response.content)
 
         # print(response_json)
-
         dt_program = DataTable()
         dt_program.add_column("PROGRAMID")
         dt_program.add_column("PROYEK")
@@ -118,15 +120,13 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
         
         for row in dt_program.rows:
             self.cmb_program.addItem(row["PROYEK"], row["PROGRAMID"])
-        self.cmb_program.setCurrentIndex(-1)
 
+        self.cmb_program.setCurrentIndex(-1)
         tahun = str(date.today().year)
         self.txt_tahun.setText(tahun)
-
         self.dgv_inbox_pbt.clear()
         self.dgv_inbox_pbt.setRowCount(0)
         self.dgv_inbox_pbt.setColumnCount(0)
-        
 
     def _cmb_program_index_changed(self):
         if self.cmb_program.currentIndex() == -1:
@@ -229,19 +229,27 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
         else:
             self._desa_id = self.cmb_desa.currentData()
         
-        response = endpoints.get_tanda_terima_ptsl_skb(
-            self._kantor_id,
-            self.txt_nomor.text(),
-            self.txt_tahun.text(),
-            self._program_id,
-            self._surveyor_id,
-            self._desa_id
-        )
+        try:
+            response = endpoints.get_tanda_terima_ptsl_skb(
+                self._kantor_id,
+                self.txt_nomor.text(),
+                self.txt_tahun.text(),
+                self._program_id,
+                self._surveyor_id,
+                self._desa_id
+            )
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Gagal mengambil data PBT"
+            )
         dset = Dataset(response.content)
 
         if len(dset["TANDATERIMA"].columns) > 0:
             dset.render_to_qtable_widget("TANDATERIMA",self.dgv_inbox_pbt, [0,1,2,3])
         else:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "Data tidak ditemukan"
+            )
             self.dgv_inbox_pbt.clear()
             self.dgv_inbox_pbt.setRowCount(0)
             self.dgv_inbox_pbt.setColumnCount(0)
@@ -341,12 +349,18 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
         pegawai = pegawai_state.value
         user_id = pegawai["userId"] if "userId" in pegawai else ""
 
-        responses = endpoints.tolak_pbt_for_ptsl_skb(
-            user_id,
-            self._kantor_id,
-            self._tandaterima_id,
-            catatan
-        )
+        try:
+            responses = endpoints.tolak_pbt_for_ptsl_skb(
+                user_id,
+                self._kantor_id,
+                self._tandaterima_id,
+                catatan
+            )
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(
+                None, "GeoKKP", "PBT gagal diproses"
+            )
+            return
 
         batal = json.loads(responses.content)
         # print(batal)
@@ -390,13 +404,19 @@ class CreatePBTKJSKB(QtWidgets.QDialog, FORM_CLASS):
             if dr != QtWidgets.QMessageBox.Yes:
                 return
             
-            responses = endpoints.create_new_pbt_for_ptsl_skb(
-                user_id,
-                self._program_id,
-                self._desa_id,
-                self._surveyor_id,
-                self._tandaterima_id
-            )
+            try:
+                responses = endpoints.create_new_pbt_for_ptsl_skb(
+                    user_id,
+                    self._program_id,
+                    self._desa_id,
+                    self._surveyor_id,
+                    self._tandaterima_id
+                )
+            except Exception as e:
+                QtWidgets.QMessageBox.warning(
+                    None, "GeoKKP", "PBT gagal diproses"
+                )
+                return
             pbt = json.loads(responses.content)
             # print(pbt)
             if not pbt["ErrorStack"] and len(pbt["ErrorStack"]) == 0:

@@ -32,12 +32,13 @@ from qgis.core import (
     QgsDxfExport,
     QgsSnappingConfig,
     QgsTolerance,
-    QgsFeatureRequest
+    # QgsFeatureRequest
 )
 from qgis.utils import iface
 from qgis.gui import QgsMapToolIdentifyFeature
 from collections import namedtuple
 from qgis import processing
+
 
 """
 Kumpulan Utilities untuk GeoKKP-QGIS
@@ -46,6 +47,7 @@ Kumpulan Utilities untuk GeoKKP-QGIS
 Variabel global dan modul global untuk digunakan di plugin GeoKKP-GIS
 
 TODO: Pindah variabel & konstanta global ke modul terpisah
+TODO: Buat kelas Utilitas
 """
 
 layer_json_file = os.path.join(os.path.dirname(__file__), "../../config/layers.json")
@@ -129,6 +131,7 @@ SNAP_ANCHOR_NODES = 7
 settings = QgsSettings()
 
 
+
 """
 Definisi Fungsi
 TODO: buat kelas untuk tiap kategori
@@ -196,7 +199,7 @@ def loadXYZ(url, name):
     Memuat layer dalam bentuk XYZ Tile
     """
     encodedUrl = urllib.parse.quote(url)
-    urlString = "type=xyz&zmin=0&zmax=21&url=" + encodedUrl
+    urlString = "type=xyz&zmin=0&zmax=21&crs=EPSG:3857&url=" + encodedUrl
     logMessage("Loaded url: " + urlString)
     rasterLyr = QgsRasterLayer(urlString, name, "wms")
     QgsProject.instance().addMapLayer(rasterLyr)
@@ -204,10 +207,18 @@ def loadXYZ(url, name):
 
 def add_google_basemap():
     """
-    Tambahkan layer basemap default: Google Basemap
+    Tambahkan layer Google Basemap
     """
     url = "https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
     loadXYZ(url, "Google Satellite")
+
+
+def add_pdp_basemap():
+    """
+    Tambahkan layer basemap default: Peta Dasar Pendaftaran
+    """
+    url = "https://bhumi.atrbpn.go.id/tiles/wmts/PDP/webmercator/{z}/{x}/{y}.png"
+    loadXYZ(url, "Peta Dasar Pendaftaran")
 
 
 def deleteLayerbyName(layername):
@@ -215,14 +226,14 @@ def deleteLayerbyName(layername):
     # QgsProject.instance().layerTreeRoot().removeLayer(to_be_deleted)
     QgsProject.instance().removeMapLayer(to_be_deleted.id())
 
-    
+
 def activate_editing(layer):
     """
     Activate layer editing tools
     TODO: fix conflicts with built-in layer editing in QGIS
     """
-    project.instance().setTopologicalEditing(True)
-    project.instance().setAvoidIntersectionsLayers([layer])
+    QgsProject.instance().setTopologicalEditing(True)
+    QgsProject.instance().setAvoidIntersectionsLayers([layer])
     layer.startEditing()
     # iface.layerTreeView().setCurrentLayer(layer)
     iface.actionAddFeature().trigger()
@@ -232,10 +243,15 @@ def activate_editing(layer):
 
 def storeSetting(key, value):
     """
-    Store value to QGIS Settings
+    Store value to QGIS Settings using QGISSettingsManager
     """
-    settings.setValue("geokkp/" + str(key), value)
-    logMessage("Menyimpan data " + str(key) + " pada memory proyek QGIS")
+        # fallback to QGIS settings
+    try:
+        settings.setValue("geokkp/" + str(key), value)
+    except Exception as e:
+        logMessage(f"Error menyimpan data: {e}")
+        return
+    logMessage(f"Menyimpan data {str(key)} pada memory proyek QGIS")
     settings.sync()
 
 
@@ -410,9 +426,15 @@ def parse_raw_coordinate(coordList):
     for coords in splitted_coords:
         coord_components = coords.split(",")
         if len(coord_components) < 2:
-            raise ValueError(
-                "Coordinate pair must be consist of two number separated by comma"
+            dialogBox(
+                "Format input tidak valid, input harus terdiri dari satu pasangan coordinat yang dipisahkan oleh tanda koma",
+                "Koneksi Bermasalah",
+                "Warning",
             )
+            return
+            # raise ValueError(
+            #     "Coordinate pair must be consist of two number separated by comma"
+            # )
         point = QgsPointXY(float(coord_components[0]), float(coord_components[1]))
         yield point
 
@@ -572,7 +594,6 @@ def get_saved_credentials():
         auth_mgr.loadAuthenticationConfig(auth_id, auth_cfg, True)
     return auth_cfg.configMap()
 
-
 def save_credentials(username, password):
     auth_mgr = QgsApplication.authManager()
     auth_id = readSetting("authId")
@@ -671,6 +692,7 @@ def snap_geometries_to_layer(
     output="memory",
     only_selected=False,
 ):
+
     if isinstance(layer, str):
         layer = get_layer_by_id(layer)
     is_selected = only_selected or bool(layer.selectedFeatureCount())

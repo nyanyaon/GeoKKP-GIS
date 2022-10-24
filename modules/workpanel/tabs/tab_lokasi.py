@@ -101,6 +101,7 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
         self.current_kantor = self.list_kantor[index]
         self.current_kantor_id = self.current_kantor["kantorID"]
         self.current_tipe_kantor_id = self.current_kantor["tipeKantorId"]
+        
 
     def simpan_area_kerja(self):
         storeSetting("kantorterpilih", self.current_kantor)
@@ -117,7 +118,7 @@ class TabLokasi(QtWidgets.QWidget, FORM_CLASS):
         response_json = json.loads(response.content)
         # print("get_user_entity_by_username", response_json)
         app_state.set("pegawai", response_json)
-
+        print(response_json,"response_jsonr")
         # add notif for succesful setting loaction
         if response_json["pegawaiID"]:
             QtWidgets.QMessageBox.information(
