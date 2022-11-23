@@ -842,7 +842,7 @@ class GeoKKP:
             add_to_toolbar=True,
             add_to_menu=True,
             parent=self.iface.mainWindow(),
-            need_auth=True,
+            need_auth=False,
         )
         # -------------------------------------------
 

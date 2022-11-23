@@ -4,7 +4,8 @@ from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.utils import iface
-from qgis.core import QgsProject, QgsRasterLayer
+from qgis.core import Qgis, QgsProject, QgsRasterLayer
+from qgis.utils import iface
 from owslib.wms import WebMapService
 
 # using utils
