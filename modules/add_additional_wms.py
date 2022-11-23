@@ -51,10 +51,10 @@ class AddOtherWMSDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             wms = WebMapService(self.capabilitiesLink.text(), version='1.3.0')
         except:
-            QtWidgets.QMessageBox.warning(
-                None,
-                "Link Capabilities Salah",
-                f"Terdapat kesalahan. Periksa link WMS Capabilities: {self.capabilitiesLink.text()}",
+            iface.messageBar().pushMessage(
+                "Peringatan",
+                f"Akses tanpa koneksi VPN. Menu Tambah Layer WMS dinon-aktifkan",
+                level=Qgis.Warning,
             )
         else:
             daftarWMS = {name: metadata.title for (name, metadata) in wms.contents.items()}
