@@ -168,7 +168,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
 
         if self._count == -1:
             self._count = data["JUMLAHTOTAL"][0]["COUNT(1)"]
-        print(self._count, self._start, self._limit)
+        # print(self._count, self._start, self._limit)
 
         if self._count > 0:
             if self._start + self._limit >= self._count:
@@ -211,7 +211,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         self._cari_berkas_apbn()
 
     def _handle_apbn_select(self):
-        print(self.table_apbn.selectedItems())
+        # print(self.table_apbn.selectedItems())
         disabled = len(self.table_apbn.selectedItems()) == 0
         self.btn_mulai.setDisabled(disabled)
 
@@ -259,7 +259,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
             )
             return
 
-        print(pbt_data)
+        # print(pbt_data)
 
         self.input_nomor_pbt.setText(pbt_data["nomor"])
         self.input_tahun.setText(pbt_data["tahun"])
@@ -324,7 +324,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
             )
             return
         self._pbt = response_json
-        print(response_json)
+        # print(response_json)
 
         if (
             response_json["penggunaSpasial"]
@@ -374,7 +374,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         epsg = get_project_crs()
         layer_config = get_layer_config("020100")
 
-        print(layer_config)
+        # print(layer_config)
         if response_spatial_sdo_json["geoKkpPolygons"]:
             layer = sdo_to_layer(
                 response_spatial_sdo_json["geoKkpPolygons"],
@@ -406,7 +406,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
         for layer in self._current_layers:
             try:
                 valid, num = quick_check_topology(layer)
-                print(valid, num)
+                # print(valid, num)
                 if not valid:
                     message = f"Ada {num} topology error di layer {layer.name()}"
                     topo_error_message.append(message)
@@ -464,7 +464,7 @@ class TabApbn(QtWidgets.QWidget, FORM_CLASS):
                                 None, "GeoKKP", "Gagal mengupload berkas pbt"
                             )
                             return
-                        print(response_json)
+                        # print(response_json)
         else:
             if payload["autoClosed"]:
                 self._handle_tutup()

@@ -104,10 +104,10 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                 file_path = os.path.join(script_dir, 'file.json')
                 try:
                     if(os.path.exists(file_path)):
-                        print(file_path,"file_path")
+                        # print(file_path,"file_path")
                         with open(file_path, "r") as outfile:
                             data = json.load(outfile)
-                            print(data,"datauser")
+                            # print(data,"datauser")
                         
                         result = [a for a in data["data_user"] if a["username"] == username]
                         if(len(result)==0):
@@ -121,7 +121,7 @@ class LoginDialog(QtWidgets.QDialog, FORM_CLASS):
                     self.settingPage.show()   
 
         except Exception as e:
-            print(e)
+            logMessage(str(e))
             dialogBox(
                 "Kesalahan koneksi. Periksa sambungan Anda ke server GeoKKP",
                 "Koneksi Bermasalah",

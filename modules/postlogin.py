@@ -144,7 +144,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         )
         response_json = json.loads(response.content)
         kabupaten = None
-        print(len(response_json["KABUPATEN"]))
+        # print(len(response_json["KABUPATEN"]))
         if response_json and len(response_json["KABUPATEN"]):
             kabupaten = response_json["KABUPATEN"][0]
             storeSetting("kabupatenterpilih", kabupaten)
@@ -156,7 +156,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         )
         response_json = json.loads(response.content)
         kecamatan = None
-        print(len(response_json["KECAMATAN"]))
+        # print(len(response_json["KECAMATAN"]))
         if response_json and len(response_json["KECAMATAN"]):
             kecamatan = response_json["KECAMATAN"][0]
             storeSetting("kecamatanterpilih", kecamatan)
@@ -175,7 +175,8 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
         return desa
 
     def simpanSistemKoordinat(self, tm3_zone):
-        print("ZONA TM-3", tm3_zone)
+        # print("ZONA TM-3", tm3_zone)
+        logMessage("Zona TM-3 tersimpan: {tm3_zone}")
         try:
             epsg = get_epsg_from_tm3_zone(tm3_zone)
             set_project_crs_by_epsg(epsg)
@@ -185,7 +186,7 @@ class PostLoginDock(QtWidgets.QDialog, FORM_CLASS):
     def simpanUserSettings(self):
         username = app_state.get("username")
         kantorID = readSetting("kantorterpilih")[0]
-        print(username, kantorID)
+        logMessage(f"{username}, {kantorID}")
         # response = endpoints.get_user_entity_by_username(username.value, kantorID)
         # response_json = json.loads(response.content)
         # print(response_json[0]["nama"])

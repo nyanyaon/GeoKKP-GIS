@@ -184,7 +184,7 @@ class DownloadPersilSekitar(QtWidgets.QDialog, FORM_CLASS):
         lintang = self.cmb_coordinate_system.currentData()
 
         nilaiRadius = float(self.radius.text())
-        print(nilaiRadius)
+        # print(nilaiRadius)
         hitungBawah = 0
         hitungAtas = 0
 
@@ -225,7 +225,7 @@ class DownloadPersilSekitar(QtWidgets.QDialog, FORM_CLASS):
         if upr["persils"]:
             if upr["persils"]:
                 layer_config = get_layer_config("020100")
-                print(layer_config)
+                # print(layer_config)
                 layer = sdo_to_layer(
                     upr["persils"],
                     name=layer_config["Nama Layer"],

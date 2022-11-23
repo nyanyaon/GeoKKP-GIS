@@ -211,7 +211,7 @@ class CreateLayoutDialog(QtWidgets.QDialog, FORM_CLASS):
             map_item.zoomToExtent(extent)
             # set scale
             selected_scale = self.cb_layout_scale.currentData()
-            print(f"selected scale : {selected_scale}")
+            # print(f"selected scale : {selected_scale}")
             map_item.setScale(selected_scale)
         
         # set mata angin path

@@ -10,7 +10,16 @@ from qgis.utils import iface
 
 from ...api import endpoints
 from ...memo import app_state
-from ...utils import get_layer_config, get_project_crs, readSetting, sdo_to_layer,storeSetting, get_epsg_from_tm3_zone, select_layer_by_regex
+from ...utils import ( 
+        get_layer_config, 
+        get_project_crs, 
+        readSetting, 
+        sdo_to_layer,
+        storeSetting, 
+        get_epsg_from_tm3_zone, 
+        select_layer_by_regex,
+        logMessage
+        )
 from ...topology import quick_check_topology
 from ...models.dataset import Dataset
 from ...create_pbt_partisipatif import CreatePBTPartisipatif
@@ -147,7 +156,7 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
             self._tipe_partisipatif = "perorangan"
         elif self.tab_widget.currentIndex() == 1:
             self._tipe_partisipatif = "ptsl"
-        print(self._tipe_partisipatif)
+        # print(self._tipe_partisipatif)
 
 
     def _set_cmb_program(self):
@@ -163,7 +172,7 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
 
         d_row = {"PROGRAMID": "","NAMA": "*"}
         self._ds_program["PROGRAM"].insert(0,d_row)
-        print("ds_program:", self._ds_program)
+        # print("ds_program:", self._ds_program)
 
         self.cmb_program.clear()
         for row in self._ds_program["PROGRAM"]:
@@ -281,7 +290,7 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
 
     def _btn_last_click(self):
         self._start = self._count // self._limit * self._limit
-        print(self._start)
+        # print(self._start)
         if self._start >= self._count:
             self._start -= self._limit
             self.btn_prev.setEnabled(False)
@@ -324,7 +333,7 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
 
         if self.cmb_desa.currentIndex() != -1:
             wilayah_id = self.cmb_desa.currentData()
-            print("wilayah_id:",wilayah_id)
+            # print("wilayah_id:",wilayah_id)
         
         try:
             response_unduh_persil_par_sdo = endpoints.unduh_persil_par_sdo(
@@ -340,7 +349,7 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
                 )
 
             self._upr = json.loads(response_unduh_persil_par_sdo.content)
-            print(self._upr)
+            # print(self._upr)
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, "GeoKKP", f"Error access webservice: {str(e)}")
             return
@@ -381,11 +390,13 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
             _upr_dset.render_to_qtable_widget("persils", self.dgv_inbox, [0,1,5,6,7,8,9,10,13,14])
             # TODO: set header labels for column 2 3 4
         else:
-            print("No Persil")
+            # print("No Persil")
+            logMessage("No Persil")
+            pass
 
     def _refresh_grid_proyek(self):
         program_id = self.cmb_program.currentData()
-        print("program_id :",program_id)
+        # print("program_id :",program_id)
         nomor_tanda_terima = self.txt_no_gugus.text()
         tahun_tanda_terima = str(self.txt_tahun_gugus.text())
 
@@ -400,8 +411,8 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
             )
             dset = Dataset(response.content)
             dset_json2 = json.loads(response.content)
-            print(dset)
-            print(dset_json2)
+            # print(dset)
+            # print(dset_json2)
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, "GeoKKP", f"Error access webservice: {str(e)}")
             return
@@ -409,7 +420,7 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
 
         dset_json = dset.to_json()
         if dset_json["Error"]:
-            print("error:",dset_json["Error"])
+            # print("error:",dset_json["Error"])
             msg = str(dset_json["Error"][0])
             QtWidgets.QMessageBox.critical(self, "GeoKKP", f"Error: {msg}")
             return
@@ -448,7 +459,7 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
         selected_item = self.dgv_inbox.selectedItems()
         for i in [0,1,2,6,8]:
             self.dgv_inbox.setColumnHidden(i,True)
-        print(selected_item)
+        # print(selected_item)
 
         gugus_partisipatif_id = selected_item[2].text()
         nomor_tanda_terima = selected_item[3].text()
@@ -457,7 +468,7 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
         self.txt_tahun_gugus.setText(notts[1])
         username = app_state.get("username").value
         
-        print("gugus id:",gugus_partisipatif_id)
+        # print("gugus id:",gugus_partisipatif_id)
 
         try:
             response_unduh_ptsl = endpoints.unduh_persil_par_ptsl_sdo(
@@ -467,7 +478,7 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
                 srs_name= self._srid_code,
             )
             self._upr = json.loads(response_unduh_ptsl.content)
-            print(self._upr)
+            # print(self._upr)
 
 
         except Exception as e:
@@ -542,7 +553,7 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
     
     def _start_berkas(self):
         selected_item = []
-        print(self.dgv_inbox.horizontalHeaderItem(2).text())
+        # print(self.dgv_inbox.horizontalHeaderItem(2).text())
         if self.dgv_inbox.horizontalHeaderItem(2).text() == "nomor":
         # if self.dgv_inbox.horizontalHeaderItem(0) == "NoHak":
             # perorangan
@@ -551,7 +562,7 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
             selected_item = self.dgv_inbox.selectedItems()
             for i in [0,1,5,6,7,8,9,10,13,14]:
                 self.dgv_inbox.setColumnHidden(i,True) 
-            print("perorangan :",selected_item)
+            # print("perorangan :",selected_item)
 
             self._persil_par_id = selected_item[0].text()
             no_hak = selected_item[2].text()
@@ -572,7 +583,7 @@ class TabPartisipatif(QtWidgets.QWidget, FORM_CLASS):
             selected_item = self.dgv_inbox.selectedItems()
             for i in [0,1,2,6,8]:
                 self.dgv_inbox.setColumnHidden(i,True)
-            print("PTSL :",selected_item)
+            # print("PTSL :",selected_item)
             
             tanda_terima_ptsl_id = selected_item[0].text()
             wilayah_id = selected_item[1].text()

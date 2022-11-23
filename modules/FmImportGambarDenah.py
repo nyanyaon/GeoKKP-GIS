@@ -110,7 +110,7 @@ class FmImportGambarDenah():
             for layer in self._current_layers:
                 try:
                     valid, num = quick_check_topology(layer)
-                    print(valid, num)
+                    # print(valid, num)
                     if not valid:
                         message = f"Ada {num} topology error di layer {layer.name()}"
                         topo_error_message.append(message)

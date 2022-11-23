@@ -122,7 +122,7 @@ class EditGambarUkur(QtWidgets.QWidget, FORM_CLASS):
         )
 
         self._d_set = Dataset(response.content)
-        print(self._d_set["JUMLAHTOTAL"].rows)
+        # print(self._d_set["JUMLAHTOTAL"].rows)
 
         if self._count == -1:
             self._count = int(self._d_set["JUMLAHTOTAL"].rows[0]["COUNT(*)"])

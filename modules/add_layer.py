@@ -51,7 +51,8 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def set_crs(self):
         self._currentcrs = self.selectProj.crs()
-        print(self._currentcrs.description())
+        logMessage(self._currentcrs.description())
+        # print(self._currentcrs.description())
 
     def populateDaftarLayer(self, data):
         items = []
@@ -141,7 +142,9 @@ class AddLayerDialog(QtWidgets.QDialog, FORM_CLASS):
                         fields = json.loads(item.text(3).replace("'", '"'))
                     else:
                         fields = None
-                    print(item.text(0), item.text(1), item.text(2), fields)
+                    # print(item.text(0), item.text(1), item.text(2), fields)
+                    logMessage(f"{item.text(0)}, {item.text(1)}, {item.text(2)}, {fields}")
+                    
                     add_layer(layername, layertype, layersymbology, fields)
         self.cleanup()
         self.accept()

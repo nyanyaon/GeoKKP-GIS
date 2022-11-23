@@ -165,8 +165,8 @@ def quick_check_topology(layer):
         _topology.add_rules(layer, RULES_MUST_NOT_HAVE_DANGLES)
         _topology.add_rules(layer, RULES_MUST_NOT_HAVE_PSEUDOS)
 
-    print(_topology._ready)
+    # print(_topology._ready)
     _topology.validate()
-    print(_topology._ready)
+    # print(_topology._ready)
     is_topo_correct = _topology.is_topology_correct()
     return is_topo_correct

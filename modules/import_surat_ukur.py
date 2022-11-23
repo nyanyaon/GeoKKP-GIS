@@ -18,6 +18,7 @@ from .utils import (
     get_nlp,
     get_nlp_index,
     get_epsg_from_tm3_zone,
+    logMessage
 )
 from .utils.geometry import get_sdo_point, get_sdo_polygon
 from .api import endpoints
@@ -204,9 +205,9 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
             self._refresh_status()
             self._set_context_menu_visiblity()
         
-        print(self._dt_wilayah)
-        print(self._kantor_id)
-        print(self._tipe_kantor_id)
+        # print(self._dt_wilayah)
+        # print(self._kantor_id)
+        # print(self._tipe_kantor_id)
 
         self._set_cmb_propinsi(
             self._kantor_id,
@@ -456,7 +457,7 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
 
             response = endpoints.get_parcels(parcel_ids)
             response_json = json.loads(response.content)
-            print("new_persil", response_json)
+            # print("new_persil", response_json)
             column_defs = DS_COLUMN_MAP[DS_PERSIL_EDIT]
             column_defs_res = list(response_json["PERSILBARU"][0].keys())
             
@@ -472,10 +473,11 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
                 self._ds_persil[DS_PERSIL_EDIT].append(a_row)
 
         else:
-            print("there is no new parcels")
+            logMessage("Tidak ada persil baru")
+            # print("there is no new parcels")
 
     def _fill_persil_data_table_automatically(self):
-        print(f"submit layer : {self._parent._submit_layers}")
+        # print(f"submit layer : {self._parent._submit_layers}")
         for layer in self._parent._submit_layers:
             try:
                 layer.id()
@@ -605,7 +607,7 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
     def _drop_event(self, event):
         row_index_from = self.dgv_parcel.currentRow()
         row_index_to = self.dgv_parcel.rowAt(event.pos().y())
-        print("Drop from " + str(row_index_from) + " into row " + str(row_index_to))
+        # print("Drop from " + str(row_index_from) + " into row " + str(row_index_to))
         # event.accept()
         if not row_index_to == -1 and not row_index_from == row_index_to:
             oid = self.dgv_parcel.item(row_index_from,0).text()
@@ -615,14 +617,14 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
                     )
                 return
             source_parcel = self._select_row(self._ds_persil[self._current_parcel_table], "OID", oid)
-            print(f"source_parcel = {source_parcel}")
+            # print(f"source_parcel = {source_parcel}")
 
             luas = source_parcel["AREA"]
             target_parcel = {}
             geom_t = source_parcel["TEXT"]
 
             reg = str(self.dgv_parcel.item(row_index_from,1).text())
-            print(reg)
+            # print(reg)
             if not (reg == None or reg == "None" or reg == ""):
                 QtWidgets.QMessageBox.warning(
                     None, "GeoKKP","Persil tekstual tidak bisa digabung!"
@@ -648,7 +650,7 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
                 merge_geom["SdoElemInfo"][1 + len(target_parcel["BOUNDARY"]["SdoElemInfo"])] = source_parcel["BOUNDARY"]["SdoElemInfo"][1]
                 merge_geom["SdoElemInfo"][2 + len(target_parcel["BOUNDARY"]["SdoElemInfo"])] = source_parcel["BOUNDARY"]["SdoElemInfo"][2]
                 
-                print(merge_geom["SdoElemInfo"])
+                # print(merge_geom["SdoElemInfo"])
                 merge_geom["SdoGtype"] = 2003
                 merge_geom["SdoSRID"] = source_parcel["BOUNDARY"]["SdoSRID"]
                 merge_geom["SdoSRIDAsInt"] = source_parcel["BOUNDARY"]["SdoSRIDAsInt"]
@@ -661,7 +663,7 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
                     coordinates.append(item)
                 merge_geom["SdoOrdinates"] = coordinates
 
-                print(merge_geom["SdoOrdinates"])
+                # print(merge_geom["SdoOrdinates"])
 
                 geom_t = target_parcel["TEXT"]
                 luas += target_parcel["AREA"]
@@ -679,13 +681,13 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
             target_parcel["ORIENTATION"] = source_parcel["ORIENTATION"]
 
             if "baru" in self._current_parcel_table.lower():
-                print(self._ds_persil[self._current_parcel_table])
+                # print(self._ds_persil[self._current_parcel_table])
                 if self.dgv_parcel.item(row_index_to,1).text():
                     target_parcel["REGID"] = self.dgv_parcel.item(row_index_to,1).text()
                 elif self.dgv_parcel.item(row_index_from,1).text():
                     target_parcel["REGID"] = self.dgv_parcel.item(row_index_from,1).text()
 
-            print(target_parcel)
+            # print(target_parcel)
 
             del source_parcel
             self._ds_persil[self._current_parcel_table].pop(row_index_from)
@@ -803,7 +805,7 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
         sdo_to_submit["Garis"] = lines
         sdo_to_submit["Teks"] = texts
 
-        print(f"sdo_to_submit={sdo_to_submit}")
+        # print(f"sdo_to_submit={sdo_to_submit}")
         
         self._run_integration(sdo_to_submit)
     
@@ -919,7 +921,7 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
         )
         ds = json.loads(response.content)
 
-        print(ds)
+        # print(ds)
 
         if len(ds) == 0:
             sd["status"] = False
@@ -947,12 +949,12 @@ class ImportSuratUkur(QtWidgets.QWidget, FORM_CLASS):
             except RuntimeError:
                 continue
             field_index = layer.fields().indexOf("label")
-            print("field_index", field_index)
+            # print("field_index", field_index)
             features = layer.getFeatures()
             for feature in features:
                 identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
                 objectid = hashlib.md5(identifier).hexdigest().upper()
-                print("objectid", objectid)
+                # print("objectid", objectid)
                 if objectid not in result_oid_map:
                     continue
 

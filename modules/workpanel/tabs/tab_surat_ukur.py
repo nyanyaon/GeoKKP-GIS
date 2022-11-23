@@ -296,7 +296,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
                 )
                 return
 
-            print(d_set)
+            # print(d_set)
             if self._count == -1:
                 self._count = int(d_set["jumlahtotal"].rows[0]["COUNT(1)"])
             
@@ -307,7 +307,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
 
 
         else:
-            print("GD Triggered")
+            # print("GD Triggered")
             try:
                 response = endpoints.getGambarDenah(
                     wilayah_id,
@@ -325,7 +325,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
                 )
                 return
 
-            print(d_set)
+            # print(d_set)
             if self._count == -1:
                 self._count = int(d_set["jumlahtotal"].rows[0]["COUNT(1)"])
             
@@ -374,7 +374,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
 
     def _btn_last_click(self):
         self._start = self._count // self._limit * self._limit
-        print(self._start)
+        # print(self._start)
         if self._start >= self._count:
             self._start -= self._limit
             self.btn_prev.setEnabled(False)
@@ -389,7 +389,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
             selected_item = self.dgv_surat_ukur.selectedItems()
             self.dgv_surat_ukur.setColumnHidden(0,True)
             self._dokumen_pengukuran_id = selected_item[0].text()
-            print("dokumen pengukuran id : ", self._dokumen_pengukuran_id)
+            # print("dokumen pengukuran id : ", self._dokumen_pengukuran_id)
 
             self._txt_tipe = selected_item[1].text()
             nomortahun = selected_item[2].text()
@@ -406,7 +406,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
     def _start_import(self):
         response_start_import = endpoints.start_import_dokumen_pengukuran(self._dokumen_pengukuran_id)
         sdp = json.loads(response_start_import.content)
-        print(sdp)
+        # print(sdp)
         if sdp["Status"]:
             self._dokumen_pengukuran_id = sdp["DokumenPengukuranId"]
             self._tipe_dokumen = sdp["TipeDokumen"]
@@ -588,7 +588,7 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
         topo_error_message = []
         for layer in self._submit_layers:
             valid, num = quick_check_topology(layer)
-            print(valid, num)
+            # print(valid, num)
             if not valid:
                 message = f"Ada {num} topology error di layer {layer.name()}"
                 topo_error_message.append(message)        
@@ -601,12 +601,12 @@ class TabSuratUkut(QtWidgets.QWidget, FORM_CLASS):
         
         # TODO: handle topology logic as layer
         
-        print("submiting")
+        # print("submiting")
 
         parameter_name = "BidangTanah"
         if self._old_apartment:
             parameter_name = "Apartemen"
-        print(parameter_name)
+        # print(parameter_name)
         
         sud = DesainSuratUkur(
             self,

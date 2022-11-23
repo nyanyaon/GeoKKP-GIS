@@ -261,7 +261,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             self.cmb_desa.addItem(des["DESANAMA"], des["DESAID"])
 
     def _detect_nib(self, value, is_persil_id=False):
-        print("detect NIB")
+        # print("detect NIB")
         wilayah_id = ""
         if self.chb_per_kabupaten.isChecked():
             wilayah_id = self.cmb_kabupaten.currentData()
@@ -279,15 +279,15 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             )
             return
 
-        print(json.loads(response.content))
+        # print(json.loads(response.content))
         d_set = Dataset(response.content)
 
         if not is_persil_id:
             self.cmb_nib.clear()
             if d_set["PERSIL"].rows:
                 for row in d_set["PERSIL"].rows:
-                    print(row.keys())
-                    print(row)
+                    # print(row.keys())
+                    # print(row)
                     self.cmb_nib.addItem(row["NOMOR"], row["PERSILID"])
 
                 selected_persil = self.cmb_nib.currentData(
@@ -313,7 +313,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
                 self.txt_alamat.setText("")
                 self.txt_validator.setText("")
 
-        print(d_set.keys())
+        # print(d_set.keys())
         if "SERTIPIKAT" in d_set and d_set["SERTIPIKAT"].rows:
             self.cmb_hak.clear()
             for row in d_set["SERTIPIKAT"].rows:
@@ -345,9 +345,9 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             self.txt_berlaku_surat_ukur.setText("")
 
     def _detect_su(self, txt_su):
-        print("detect SU")
+        # print("detect SU")
         str_array = txt_su.split(".")
-        print(str_array)
+        # print(str_array)
         if len(str_array) != 2:
             QtWidgets.QMessageBox.warning(
                 None, "GeoKKP Web", "Penulisan text gu/su tidak benar"
@@ -415,7 +415,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             return
 
         d_set = Dataset(response.content)
-        print(response.content)
+        # print(response.content)
 
         # TODO: check response then refactor the if d_set:
 
@@ -639,7 +639,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             self._txt = self._current_layer
         else:
             self._txt = None
-        print("current:",self._current_layer,"txt:",self._txt)
+        # print("current:",self._current_layer,"txt:",self._txt)
 
     def _listen_feature_select(self):
         if not self._current_layer:
@@ -673,7 +673,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
         feature = selected_feature[0]
 
         layer_name = self._current_layer.name()
-        print("here")
+        # print("here")
         if layer_name.startswith("(080201)") or layer_name.startswith("(080202)") or layer_name.startswith("(080203)"):
             label = feature.attribute("label") if feature.attribute("label") else ""
             self.tabWidget.setCurrentIndex(0)
@@ -692,7 +692,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
                 self.toolbar_import_bidang.setDisabled(False)
             else:
                 self.toolbar_import_bidang.setDisabled(True)
-            print("here it is")
+            # print("here it is")
             self._toggle_select_feature(False)
             self._current_layer = None
             # self._txt = None
@@ -768,7 +768,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             )
             return
         else:
-            print("new nib")
+            # print("new nib")
 
             poly = selected_poly[0]
             point = selected_point[0]
@@ -845,7 +845,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             )
             return
 
-        print(layers)
+        # print(layers)
 
         processing.run("qgis:selectbylocation", {
             "INPUT": layers[0],
@@ -870,7 +870,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
             point_geom = point.geometry().asPoint()
 
             persil_id = str(self.cmb_nib.currentData())
-            print("persil_ID:",persil_id)
+            # print("persil_ID:",persil_id)
 
             crs_index = self.cmb_coordinate_system.currentIndex()
             epsg = self._srid_code[crs_index]
@@ -978,7 +978,7 @@ class TabPemetaanPersil(QtWidgets.QWidget, FORM_CLASS):
                 nib = strspl[1]
 
                 field_index = self._txt.fields().indexOf("label")
-                print("field_index", field_index)
+                # print("field_index", field_index)
                 features = self._txt.getFeatures()
 
                 txt_pos = []

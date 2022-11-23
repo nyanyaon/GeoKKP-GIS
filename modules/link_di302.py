@@ -50,7 +50,7 @@ class LinkDI302(QtWidgets.QDialog, FORM_CLASS):
         persil_response = endpoints.get_parcel_not_linked_to_302(
             self._berkas_id, pengukuran_ulang
         )
-        print(json.loads(persil_response.content))
+        # print(json.loads(persil_response.content))
         persil_dataset = Dataset(persil_response.content)
         persil_dataset.render_to_qtable_widget(
             table_name="PERSIL", table_widget=self.table_persil, hidden_index=[0]
@@ -111,7 +111,7 @@ class LinkDI302(QtWidgets.QDialog, FORM_CLASS):
             id302 = selected_link[1].text()
             response = endpoints.remove_parcel_from_di302(id302)
             response_str = response.content.decode("utf-8")
-            print(response_str)
+            # print(response_str)
             if response_str != "OK":
                 QtWidgets.QMessageBox.critical(self, "GeoKKP Web", response_str)
             else:

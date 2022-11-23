@@ -154,7 +154,7 @@ class UploadPersilMasif(QtWidgets.QDialog, FORM_CLASS):
 
     def _cmb_desa_selected_index_changed(self):
         row = self.cmb_desa.currentData()
-        print("row desa:",row)
+        # print("row desa:",row)
         self.cmb_coordinate_system.setDisabled(False)
         if row:
             if "ZONATM3" in row and row["ZONATM3"]:
@@ -256,7 +256,7 @@ class UploadPersilMasif(QtWidgets.QDialog, FORM_CLASS):
                 result = response.content.decode("utf-8")
                 mp["keterangan"] = "LinkSu"
 
-            print(result)
+            # print(result)
 
             if result == "OK":
                 # TODO: bintang
@@ -314,7 +314,7 @@ class UploadPersilMasif(QtWidgets.QDialog, FORM_CLASS):
             for feature in features:
                 oid = get_feature_object_id(layer_id, feature.id())
                 point = feature.geometry().asPoint()
-                print(point.x(), point.y())
+                # print(point.x(), point.y())
                 if point.x() < 32000 or point.x() > 368000 or point.y() < 282000 or point.y() > 2166000:
                     QtWidgets.QMessageBox.warning(
                         None, "Perhatian", "Koordinat diluar range TM-3"

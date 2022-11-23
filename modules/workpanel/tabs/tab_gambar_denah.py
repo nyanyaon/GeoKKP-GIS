@@ -269,7 +269,7 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         dataset.render_to_qtable_widget("GAMBARDENAH", self.dgv_GambarDenah,[0,1,2,7])
     
         if (self._count > 0 ):
-            print(self._start,self._count,self._limit)
+            # print(self._start,self._count,self._limit)
             if(self._start + self._limit >= self._count):
                 self.txt_paging.setText(str(self._start)+" - " + str(self._count) + " dari " + str(self._count))
                 self.btn_next.setEnabled(False)
@@ -404,7 +404,7 @@ class TabGambarDenah(QtWidgets.QWidget, FORM_CLASS):
         for layer in self._current_layers:
             try:
                 valid, num = quick_check_topology(layer)
-                print(valid, num)
+                # print(valid, num)
                 if not valid:
                     message = f"Ada {num} topology error di layer {layer.name()}"
                     topo_error_message.append(message)

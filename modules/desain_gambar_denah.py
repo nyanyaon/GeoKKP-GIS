@@ -244,10 +244,10 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         self._layer = layers[0]
 
         features = self._layer.getFeatures()
-        print(features,"features")
+        # print(features,"features")
 
         field_index = self._layer.fields().indexOf("key")
-        print("field_index", field_index)
+        # print("field_index", field_index)
 
         dataset = Dataset()
         table = dataset.add_table("ApartemenBaru")
@@ -264,7 +264,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         for feature in features:
             identifier = f"{self._layer.id()}|{feature.id()}".encode("utf-8")
             objectid = hashlib.md5(identifier).hexdigest().upper()
-            print(identifier)
+            # print(identifier)
     
             self._layer.changeAttributeValue(
                 feature.id(), field_index, objectid
@@ -325,9 +325,9 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
     def FillNewApartments(self):
         try:
             self._layer = QgsProject.instance().mapLayersByName("(020110) Apartemen")[0]
-            print(self._layer,"layer")
+            # print(self._layer,"layer")
             features = self._layer.getFeatures()
-            print(features,"features")
+            # print(features,"features")
         except:
             QtWidgets.QMessageBox.warning(
                 None, "GeoKKP", "Layer (020110) Apartemen tidak ditemukan"
@@ -338,10 +338,10 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             _apartemens = []
             for x in range(len(self._newApartments)):
                 _apartemens.append(str(self._newApartments[x]))
-            print(_apartemens,"apartemen")
+            # print(_apartemens,"apartemen")
             response = endpoints.get_apartments(_apartemens[0])
             dsApartemen = json.loads(response.content)
-            print(dsApartemen) 
+            # print(dsApartemen) 
 
             # replacing_qgisproject
             layers = select_layer_by_regex(r"^\(020110\)*")
@@ -353,7 +353,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             layer = layers[0]
 
             features = layer.getFeatures()
-            print(features,"features")
+            # print(features,"features")
 
             dataset = Dataset()
             table = dataset.add_table("ApartemenEdit")
@@ -415,7 +415,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                         items = self.dgv_GambarDenah.findItems(key,QtCore.Qt.MatchExactly)
                         if(items != []):
                             row = items[0].row()
-                            print(row)
+                            # print(row)
                             self.dgv_GambarDenah.setItem(row,0,QtWidgets.QTableWidgetItem(objectid))
                             self.dgv_GambarDenah.setItem(row,4,QtWidgets.QTableWidgetItem(label))
                             self.dgv_GambarDenah.setItem(row,5,QtWidgets.QTableWidgetItem(luas_round))
@@ -428,7 +428,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                             total_row = self.dgv_GambarDenah.rowCount()
                             self.dgv_GambarDenah.insertRow(total_row)
                             self._jumlahBerkasBaru += 1
-                            print(total_row)
+                            # print(total_row)
                             self.dgv_GambarDenah.setItem(total_row,0,QtWidgets.QTableWidgetItem(objectid))
                             self.dgv_GambarDenah.setItem(total_row,1,QtWidgets.QTableWidgetItem(""))
                             self.dgv_GambarDenah.setItem(total_row,2,QtWidgets.QTableWidgetItem(""))
@@ -504,7 +504,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             else:
                 msg = "Koordinat diluar area penggambaran"
         
-        print(self._jumlahBerkasBaru,len(self._newApartments),self._newApartmentNumber)
+        # print(self._jumlahBerkasBaru,len(self._newApartments),self._newApartmentNumber)
         if(self._newApartmentNumber > 0):
             if(self._jumlahBerkasBaru + len(self._newApartments) > self._newApartmentNumber):
                 sisa = self._newApartmentNumber - len(self._newApartments)
@@ -548,7 +548,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         ymin = ext.yMinimum()
         ymax = ext.yMaximum()
 
-        print(xmin,xmax,ymin,ymax)
+        # print(xmin,xmax,ymin,ymax)
 
         if(self.chb_Sistem_Koordinat.isChecked()):
             if(xmin<32000 or xmax > 368000  or ymin < 282000  or ymax > 2166000  ):
@@ -590,7 +590,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         self.dgv_GambarDenah.setColumnHidden(0, False)
 
         if(self.cmb_lihat_data.currentText() == "Apartemen Baru"):
-            print(self.dgv_GambarDenah.rowCount())
+            # print(self.dgv_GambarDenah.rowCount())
             for x in range(self.dgv_GambarDenah.rowCount()):
                 boundary =  str(self.dgv_GambarDenah.item(x,3).text())
                 text = str(self.dgv_GambarDenah.item(x,4).text())
@@ -670,7 +670,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
                 self._sts,
             )
         ds = json.loads(response.content)
-        print(ds)
+        # print(ds)
 
         if not ds:
             QtWidgets.QMessageBox.critical(
@@ -696,11 +696,11 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
         field_index = self._layer.fields().indexOf("label")
         key = self._layer.fields().indexOf("key")
         features = self._layer.getFeatures()
-        print(features)
+        # print(features)
         for feature in features:
             self._layer.startEditing()
             for apartemen in ds["PersilBaru"]:
-                print(feature.attributes()[key],apartemen["oid"],"persil")
+                # print(feature.attributes()[key],apartemen["oid"],"persil")
                 if(feature.attributes()[key] == apartemen["oid"]):
                     self._layer.changeAttributeValue(
                         feature.id(), field_index, apartemen["nib"]
@@ -708,7 +708,7 @@ class DesainGambarDenah(QtWidgets.QDialog, FORM_CLASS):
             self._layer.commitChanges()
 
         response = endpoints.stop_berkas(self._nomorBerkas,self._tahunBerkas,self._kantor_id)
-        print(json.loads(response.content))
+        # print(json.loads(response.content))
 
         QtWidgets.QMessageBox.information(
                 None,

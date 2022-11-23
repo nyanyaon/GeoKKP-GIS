@@ -305,7 +305,7 @@ def set_symbology(layer, qml):
     Set layer symbology based on QML files in ./styles folder
     """
     uri = os.path.join(os.path.dirname(__file__), "../styles/" + qml)
-    print(uri)
+    # print(uri)
     try:
         layer.loadNamedStyle(uri)
     except Exception as e:
@@ -660,7 +660,7 @@ def set_project_crs_by_epsg(epsg):
         QgsProject.instance().setCrs(crs)
         # print(epsg)
     except Exception as e:
-        print(e)
+        logMessage(str(e))
 
 
 def get_project_crs(epsg=True):

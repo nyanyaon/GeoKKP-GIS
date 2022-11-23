@@ -109,7 +109,8 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
                     "Warning",
                 )
         except Exception as e:
-            print(e)
+            # print(e)
+            logMessage(str(e))
             dialogBox(
                 "Data Pengguna gagal dimuat dari server",
                 "Koneksi Bermasalah",
@@ -143,7 +144,8 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
             self.save_user(username,self.current_kantor,self.combo_tm3.currentText())
             self.close()
         except Exception as e:
-            print(e)
+            # print(e)
+            logMessage(str(e))
             dialogBox("Gagal mengatur CRS Project dan kantor")
         
 
@@ -182,9 +184,9 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             if(os.path.exists(file_path)):
                 with open(file_path, "r") as outfile:
-                    print(outfile)
+                    # print(outfile)
                     data = json.load(outfile)
-                    print(data)
+                    # print(data)
                 isSame = False
                 for index,data in enumerate(data["data_user"]):
                     if(data["username"] == username):
@@ -234,7 +236,7 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
     def simpan_tm3(self,tm3):
         selectedTM3 = get_epsg_from_tm3_zone(tm3)
         try:
-            print(selectedTM3)
+            # print(selectedTM3)
             set_project_crs_by_epsg(selectedTM3)
         except Exception as e:
             logMessage("pengaturan CRS Project Gagal", str(e))
@@ -290,7 +292,7 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
     
     def pengaturanBasemap(self):
         dirkonfig = readSetting("pengaturan/direktorikonfigurasi")
-        print(dirkonfig)
+        # print(dirkonfig)
         if not dirkonfig:
             dirkonfig = folder_config
             logMessage("Mengambil pengaturan basemap dari folder default plugin")
@@ -313,7 +315,7 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def pengaturanLayer(self):
         dirkonfig = readSetting("pengaturan/direktorikonfigurasi")
-        print(dirkonfig)
+        # print(dirkonfig)
         if not dirkonfig:
             dirkonfig = folder_config
             logMessage("Mengambil pengaturan layer dari folder default plugin")
@@ -336,7 +338,7 @@ class SettingsDialog(QtWidgets.QDialog, FORM_CLASS):
 
     def pengaturanKantor(self):
         dirkonfig = readSetting("pengaturan/direktorikonfigurasi")
-        print(dirkonfig)
+        # print(dirkonfig)
         if not dirkonfig:
             dirkonfig = folder_config
             logMessage("Mengambil pengaturan kantor dari folder default plugin")
