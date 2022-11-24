@@ -18,6 +18,7 @@ from .utils import (
     dialogBox,
     get_saved_credentials,
     save_credentials,
+    logMessage
 )
 
 from .api import endpoints

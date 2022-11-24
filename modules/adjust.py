@@ -51,7 +51,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         valid = self.activate_selection()
         self.canvas.selectionChanged.connect(self.selection_changed)
         if(valid == False):
-            logMessage(valid)
+            logMessage("Not valid")
             return
         
 
