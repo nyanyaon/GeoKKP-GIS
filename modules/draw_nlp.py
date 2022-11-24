@@ -129,10 +129,10 @@ class DrawNLPDialog(QtWidgets.QDialog, FORM_CLASS):
     def check_is_tm3(self):
         if int(self.epsg.split(":")[1]) in range(23830, 23846):
             return True
-            print("EPSG Tercatat", self.epsg.split(":")[1])
+            # print("EPSG Tercatat", self.epsg.split(":")[1])
         else:
             dialogBox("Anda belum mengatur sistem proyeksi TM-3 Project")
-            print("EPSG Tercatat", self.epsg.split(":")[1])
+            # print("EPSG Tercatat", self.epsg.split(":")[1])
             self.ambil_titik.checked = False
             return False
 

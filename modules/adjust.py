@@ -14,7 +14,7 @@ except ImportError:
     from qgis.core import QgsMapLayerProxyModel
 
 # using utils
-from .utils import icon, snap_geometries_to_layer
+from .utils import icon, snap_geometries_to_layer, logMessage
 
 FORM_CLASS, _ = uic.loadUiType(
     os.path.join(os.path.dirname(__file__), "../ui/adjust.ui")
@@ -51,7 +51,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
         valid = self.activate_selection()
         self.canvas.selectionChanged.connect(self.selection_changed)
         if(valid == False):
-            print(valid)
+            logMessage("Not valid")
             return
         
 
@@ -60,7 +60,7 @@ class AdjustDialog(QtWidgets.QDialog, FORM_CLASS):
             self.canvas.selectionChanged.disconnect(self.selection_changed)
             self.canvas.setCursor(self._orig_cursor)
         except Exception as e:
-            print(str(e))
+            logMessage(str(e))
             return
 
     def layer_target_not_found(self):

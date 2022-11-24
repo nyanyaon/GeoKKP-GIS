@@ -97,5 +97,5 @@ class DesainPBT(QtWidgets.QDialog, FORM_CLASS):
         self.tabWidget.setCurrentIndex(index)
 
     def _handle_processed(self, payload):
-        print("desain processd", payload)
+        # print("desain processd", payload)
         self.processed.emit(payload)

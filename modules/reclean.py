@@ -111,6 +111,7 @@ class CleanTopologyDialog(QtWidgets.QDialog, FORM_CLASS):
             set_symbology(cleaned_layer, "persil_cleaned.qml")
             self.project.instance().addMapLayer(cleaned_layer)
         except Exception as e:
-            print(e)
+            logMessage(str(e))
+            
 
 

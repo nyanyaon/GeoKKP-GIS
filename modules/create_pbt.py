@@ -85,7 +85,7 @@ class CreatePBT(QtWidgets.QDialog, FORM_CLASS):
 
     def _populate_kabupaten(self):
         provinsi_id = self.combo_provinsi.currentData()
-        print("provinsi_id", provinsi_id)
+        # print("provinsi_id", provinsi_id)
         kantor_id = self._current_kantor_id
         tipe_kantor_id = self._current_tipe_kantor_id
         self.combo_kabupaten.clear()
@@ -120,7 +120,7 @@ class CreatePBT(QtWidgets.QDialog, FORM_CLASS):
                 )
 
                 response_json = json.loads(response.content)
-                print(response_json)
+                # print(response_json)
                 payload = {"PBT": response_json}
                 self.processed.emit({"myPBT": payload})
             else:
@@ -132,7 +132,7 @@ class CreatePBT(QtWidgets.QDialog, FORM_CLASS):
                     self._tipe_pbt,
                 )
                 response_json = json.loads(response.content)
-                print(response_json)
+                # # print(response_json)
                 payload = {"PBT": response_json}
                 self.processed.emit({"myPBT": payload})
         except Exception as err:

@@ -250,7 +250,7 @@ class CreatePBTPartisipatif(QtWidgets.QDialog, FORM_CLASS):
             a_row["STATUS"] = "Ditolak"
         
     def _fill_persil_partisipatif(self):
-        print(f"validate layer : {self._parent._validate_layers}")
+        # print(f"validate layer : {self._parent._validate_layers}")
         for layer in self._parent._validate_layers:
             try:
                 layer.id()
@@ -259,7 +259,7 @@ class CreatePBTPartisipatif(QtWidgets.QDialog, FORM_CLASS):
             
             # TODO: filter for layer batas persil
             if not layer.name().startswith("(020100)"):
-                print("not batas persil")
+                # print("not batas persil")
                 continue
 
             if not "nomor" in [i.name() for i in layer.fields()]:
@@ -271,10 +271,10 @@ class CreatePBTPartisipatif(QtWidgets.QDialog, FORM_CLASS):
                 objectid = hashlib.md5(identifier).hexdigest().upper()
 
                 nomor = feature.attribute("nomor")
-                print(nomor,type(nomor))
+                # print(nomor,type(nomor))
                 try:
                     nomor_int = int(nomor)
-                    print("NUB INTEGER :",nomor_int)
+                    # print("NUB INTEGER :",nomor_int)
                 except:
                     QtWidgets.QMessageBox.warning(
                         None, "GeoKKP", "Nomor Urut Bidang harus angka!"
@@ -296,16 +296,16 @@ class CreatePBTPartisipatif(QtWidgets.QDialog, FORM_CLASS):
                     else 0
                 )
 
-                print("poli:",poli)
+                # print("poli:",poli)
                 if poli["batas"]:
                     dr = {}
                     if self._ent_dataset["PersilPartisipatif"].rows:
                         for index, row in enumerate(self._ent_dataset["PersilPartisipatif"].rows):
-                            print("NUB :",row["NUB"],type(row["NUB"]))
-                            print("nomor :",nomor,type(nomor))
+                            # print("NUB :",row["NUB"],type(row["NUB"]))
+                            # print("nomor :",nomor,type(nomor))
                             if row["NUB"] == nomor:
                                 dr = row
-                        print(dr)
+                        # print(dr)
                     
                     luas_round = str(round(poli["luas"], 3))
 
@@ -400,7 +400,7 @@ class CreatePBTPartisipatif(QtWidgets.QDialog, FORM_CLASS):
         
         lspb = []
         for drow in self._ent_dataset["PersilPartisipatif"].rows:
-            print(drow)
+            # print(drow)
             spb = {}
             if drow["STATUS"] == "Diterima":
                 spb["OID"] = drow["OID"]
@@ -432,7 +432,7 @@ class CreatePBTPartisipatif(QtWidgets.QDialog, FORM_CLASS):
                 self._sts,
             )
             self._ds_result_submit = json.loads(response.content)
-            print(self._ds_result_submit)
+            # print(self._ds_result_submit)
 
         except Exception as e:
             QtWidgets.QMessageBox.critical(self, "GeoKKP", f"Spatial servis error: {str(e)}")
@@ -466,12 +466,12 @@ class CreatePBTPartisipatif(QtWidgets.QDialog, FORM_CLASS):
                 except RuntimeError:
                     continue
                 field_index = layer.fields().indexOf("label")
-                print("field_index", field_index)
+                # print("field_index", field_index)
                 features = layer.getFeatures()
                 for feature in features:
                     identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
                     objectid = hashlib.md5(identifier).hexdigest().upper()
-                    print("objectid", objectid)
+                    # print("objectid", objectid)
                     if objectid not in result_oid_map:
                         continue
 

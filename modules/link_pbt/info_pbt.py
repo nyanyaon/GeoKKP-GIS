@@ -62,7 +62,7 @@ class InfoPBT(QtWidgets.QWidget, FORM_CLASS):
             response_landuse = endpoints.get_landuse_data()
             self._ds_land_use = json.loads(response_landuse.content)
             storeSetting("landusedata", self._ds_land_use)
-        print(self._ds_land_use)
+        # print(self._ds_land_use)
 
         self.cmb_umum.clear()
         for item in self._ds_land_use["TIPELANDGENERIK"]:
@@ -82,7 +82,7 @@ class InfoPBT(QtWidgets.QWidget, FORM_CLASS):
 
     def _set_cmb_khusus(self, landuse_id):
         self.cmb_khusus.clear()
-        print(self.cmb_umum.currentIndex(), self.cmb_umum.currentData())
+        # print(self.cmb_umum.currentIndex(), self.cmb_umum.currentData())
         if self.cmb_umum.currentIndex() >= 0:
             selected = -1
             for index, item in enumerate(self._ds_land_use["TIPELANDUSE"]):
@@ -102,7 +102,7 @@ class InfoPBT(QtWidgets.QWidget, FORM_CLASS):
             self._current_parcel = selected_row[0].text()
             response_pset = endpoints.get_parcel_info(self._current_parcel)
             p_set = json.loads(response_pset.content)
-            print(p_set)
+            # print(p_set)
             response_pp = endpoints.get_parcel_property_for_apbn(self._current_parcel)
             pp = Dataset(response_pp.content)
             if "InfoUmum" in pp:
@@ -140,7 +140,7 @@ class InfoPBT(QtWidgets.QWidget, FORM_CLASS):
         nama_jalan = self.txt_nama_jalan.text()
         penggunaan = self.cmb_khusus.currentIndex()
 
-        print(nama_jalan, penggunaan)
+        # print(nama_jalan, penggunaan)
         if len(nama_jalan) < 5 or penggunaan < 0:
             QtWidgets.QMessageBox.warning(
                 self, "Perhatian", "Alamat dan penggunaan harus diisi!"

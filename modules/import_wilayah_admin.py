@@ -175,7 +175,7 @@ class ImportWilayahAdmin(QtWidgets.QDialog, FORM_CLASS):
         srs = str(self._srid_code[srid])
         response = endpoints.unduh_wilayah_sdo(wilayah_id, srs, "Kabupaten")
         response_json = json.loads(response.content)
-        print(response_json)
+        # print(response_json)
 
         zone = srs.replace("TM3-", "")
         epsg = get_epsg_from_tm3_zone(zone)

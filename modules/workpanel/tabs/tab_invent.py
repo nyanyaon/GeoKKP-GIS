@@ -97,7 +97,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
 
         self.cmb_kegiatan.clear()
         self.cmb_kegiatan.addItem("*","")
-        print(program_invent)
+        # print(program_invent)
         for program in program_invent["PROGRAM"]:
             self.cmb_kegiatan.addItem(program["NAMA"],program["PROGRAMID"])
 
@@ -196,7 +196,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
 
     def _btn_last_click(self):
         self._start = self._count // self._limit * self._limit
-        print(self._start)
+        # print(self._start)
         if self._start >= self._count:
             self._start -= self._limit
             self.btn_prev.setEnabled(False)
@@ -211,7 +211,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
         self.pbti.processed.connect(self.createPBTHandler)
 
     def createPBTHandler(self,payload):
-        print(payload)
+        # print(payload)
         if(payload["myPBT"]["PBT"]["errorStack"] is None or len(payload["myPBT"]["PBT"]["errorStack"])):
             self.txt_nomor.setText(payload["myPBT"]["PBT"]["nomor"])
             self.txt_tahun.setText(payload["myPBT"]["PBT"]["tahun"])
@@ -297,7 +297,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
             if(self.pbt["penggunaSpasial"] is None or self.pbt["penggunaSpasial"] == username):
                 self._processAvailable = True
                 gugus_ids = self.pbt["gugusId"]
-                print(gugus_ids)
+                # print(gugus_ids)
                 if(gugus_ids != ""):
                     self._load_berkas_spasial(gugus_ids, False)
                 disable_link = bool(self.pbt["mitraKerjaid"])
@@ -335,7 +335,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
             QtWidgets.QMessageBox.warning(
                 None, "GeoKKP", "Gagal mengambil data dari server"
             )
-        print(response_spatial_sdo_json)
+        # print(response_spatial_sdo_json)
         if not response_spatial_sdo_json["status"]:
             QtWidgets.QMessageBox.critical(None, "Error", "Proses Unduh Geometri gagal")
             return
@@ -424,7 +424,7 @@ class TabInvent(QtWidgets.QWidget, FORM_CLASS):
                     None, "GeoKKP", "Gagal menyelesaikan berkas"
                 )
                 return
-            print(already_mapped.content)
+            # print(already_mapped.content)
 
             if already_mapped.content.lower() != "true":
                 if not force_mapping:

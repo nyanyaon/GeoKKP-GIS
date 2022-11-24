@@ -161,10 +161,10 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             self.label_kelurahan.hide()
             self.label_kelurahan.hide()
 
-        print(self._dt_wilayah)
+        # print(self._dt_wilayah)
 
         if self._desa_id and len(self._dt_wilayah) == 4:
-            print("populate otomatis")
+            # print("populate otomatis")
             provinsi = [f for f in self._dt_wilayah if f["TIPEWILAYAHID"] == 1]
             if provinsi:
                 self.combo_provinsi.addItem(
@@ -252,7 +252,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             combo[i].blockSignals(False)
 
     def _populate_provinsi(self, kantor_id, tipe_kantor_id):
-        print("populate provinsi")
+        # print("populate provinsi")
         self._clear_combobox(4)
         if (
             kantor_id in self._provinsi_by_kantor.keys()
@@ -385,7 +385,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
         response = endpoints.get_rincikan_by_pbt(self._dokumen_pengukuran_id)
         response_json = json.loads(response.content)
         self.rowEdit = []
-        print(response_json)
+        # print(response_json)
         self._jml_rincikan = len(response_json["RINCIKANBARU"])
         for data in response_json["RINCIKANBARU"]:
             row = {
@@ -409,7 +409,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             return
         features = self.layer.getFeatures()
         for feature in features:
-            print(feature.geometry())
+            # print(feature.geometry())
             identifier = f"{self.layer.id()}|{feature.id()}".encode("utf-8")
             objectid = hashlib.md5(identifier).hexdigest().upper()
 
@@ -435,7 +435,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             )
 
             if poli["batas"]:
-                print(self.rowEdit,teks)
+                # print(self.rowEdit,teks)
                 row = {}
                 if len(self.rowEdit):
                     filtered = [
@@ -447,7 +447,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                     if filtered:
                         row = filtered[0]
                 luas_round = str(round(poli["luas"], 3))
-                print(feature.geometry())
+                # print(feature.geometry())
                 if row != {}:
                     row[DS_PERSIL_INVENTARIS_COLUMNS[0]] = objectid
                     row[DS_PERSIL_INVENTARIS_COLUMNS[1]] = row["REGID"]
@@ -495,7 +495,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
 
         jml_all = self.tabel_desain.rowCount()
         status = f"Jumlah {self.combo_lihat_data.currentText()} {jml_all}"
-        print(status)
+        # print(status)
         self.writeRightStatus.emit(status)
 
     def _fill_new_persil(self):
@@ -505,7 +505,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
         parcels = [str(f) for f in self._new_parcels]
         response = endpoints.get_parcels(parcels)
         response_json = json.loads(response.content)
-        print("respon get parcel:",response_json)
+        # print("respon get parcel:",response_json)
 
         for persil in response_json["PERSILBARU"]:
             columns = list(persil.keys())
@@ -559,7 +559,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                     else 0
                 )
 
-                print(self._ent_dataset["PersilEdit"])
+                # print(self._ent_dataset["PersilEdit"])
                 if poli["batas"]:
                     row = {}
                     if len(self._ent_dataset["PersilEdit"]):
@@ -573,12 +573,12 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                     luas_round = str(round(poli["luas"], 3))
 
                     sheet_number = get_nlp("250", point.x(), point.y())
-                    print("1 >>", sheet_number, point.x(), point.y())
+                    # print("1 >>", sheet_number, point.x(), point.y())
                     box_number = ""
                     if len(sheet_number) == 15:
                         sheet_number = sheet_number[0:11]
                         box_number = get_nlp_index("1000", point.x(), point.y())
-                    print("2 >>", sheet_number, box_number)
+                    # print("2 >>", sheet_number, box_number)
 
                     if row:
                         row[DS_PERSIL_EDIT_COLUMNS[0]] = objectid
@@ -593,7 +593,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                         row[DS_PERSIL_EDIT_COLUMNS[12]] = box_number
                         # self._ent_dataset["PersilEdit"].append(row)
                     else:
-                        print("jalan persil baru")
+                        # print("jalan persil baru")
                         row[DS_PERSIL_BARU_COLUMNS[0]] = objectid
                         row[DS_PERSIL_BARU_COLUMNS[1]] = nib
                         row[DS_PERSIL_BARU_COLUMNS[2]] = luas_round
@@ -787,7 +787,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
         ymin = ext.yMinimum()
         ymax = ext.yMaximum()
 
-        print(xmin,xmax,ymin,ymax)
+        # print(xmin,xmax,ymin,ymax)
 
         if(xmin<32000 or xmax > 368000  or ymin < 282000  or ymax > 2166000  ):
             retval = False
@@ -941,7 +941,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             str(jml_persil),
         )
         response_json = json.loads(response.content)
-        print(response_json)
+        # print(response_json)
         if not response_json:
             pd["wilayahId"] = self._desa_id
             pd["status"] = False
@@ -994,12 +994,12 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
                     except RuntimeError:
                         continue
                     field_index = layer.fields().indexOf("label")
-                    print("field_index", field_index)
+                    # print("field_index", field_index)
                     features = layer.getFeatures()
                     for feature in features:
                         identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
                         objectid = hashlib.md5(identifier).hexdigest().upper()
-                        print("objectid", objectid)
+                        # print("objectid", objectid)
                         if objectid not in result_oid_map:
                             continue
 
@@ -1045,7 +1045,7 @@ class ImportPetaBidang(QtWidgets.QWidget, FORM_CLASS):
             for feature in features:
                 identifier = f"{layer.id()}|{feature.id()}".encode("utf-8")
                 objectid = hashlib.md5(identifier).hexdigest().upper()
-                print(feature,"point")
+                # print(feature,"point")
                 point = get_sdo_point(feature)
 
                 label = feature.attribute("label") if feature.attribute("label") else ""

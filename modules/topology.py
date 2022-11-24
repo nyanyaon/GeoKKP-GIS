@@ -43,25 +43,24 @@ class Topology:
         self._action_topo_plugin = None
         self._action_topo_validate_all = None
         self._action_topo_validate_extent = None
-
         self._ready = False
 
         self._setup()
 
     def _setup(self):
-        topo_plugin = self._app.findChild(QObject, "qgis_plugin_topolplugin")
+        topo_plugin = False
+        # topo_plugin = self._app.findChild(QObject, "qgis_plugin_topolplugin")
+        # for action in self._app.findChildren(QAction):
+        #     if action.text() == "Topology Checker":
+        #         topo_plugin = True
 
-        if not topo_plugin:
+        topo_action = self._app.findChild(QAction, "mQActionPointer")
+        if not topo_action:
             iface.messageBar().pushMessage(
                 "Peringatan",
                 PLUGIN_NOT_FOUND_ERROR_MESSAGE,
                 level=Qgis.Warning,
             )
-            # QMessageBox.critical(None, "Error", PLUGIN_NOT_FOUND_ERROR_MESSAGE)
-            return
-
-        topo_action = topo_plugin.findChild(QAction, "mQActionPointer")
-        if not topo_action:
             return
         topo_action.trigger()
         topo_panel = self._app.findChild(QWidget, "checkDock")
@@ -166,8 +165,8 @@ def quick_check_topology(layer):
         _topology.add_rules(layer, RULES_MUST_NOT_HAVE_DANGLES)
         _topology.add_rules(layer, RULES_MUST_NOT_HAVE_PSEUDOS)
 
-    print(_topology._ready)
+    # print(_topology._ready)
     _topology.validate()
-    print(_topology._ready)
+    # print(_topology._ready)
     is_topo_correct = _topology.is_topology_correct()
     return is_topo_correct

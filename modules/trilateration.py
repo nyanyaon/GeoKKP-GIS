@@ -18,7 +18,7 @@ from qgis.gui import QgsVertexMarker, QgsMessageBar, QgsRubberBand
 from .maptools import MapTool
 
 # using utils
-from .utils import icon
+from .utils import icon, logMessage
 
 
 FORM_CLASS, _ = uic.loadUiType(
@@ -220,7 +220,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
         event.accept()
 
     def rejected(self):
-        print("cancel triggered")
+        # print("cancel triggered")
         self.clear()
         self.reject()
 
@@ -266,7 +266,8 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
                 vl.addFeatures([feat_a, feat_b])
                 vl.commitChanges()
             else:
-                print("not enough inputs")
+                logMessage("Not enough inputs!")
+                # print("not enough inputs")
 
             QgsProject.instance().addMapLayer(vl)
             self.clear()
@@ -297,7 +298,7 @@ class TrilaterationDialog(QtWidgets.QDialog, FORM_CLASS):
             x3b = xo - h * (y2 - y1) / d
             y3b = yo + h * (x2 - x1) / d
 
-            print(a, h, d)
+            # print(a, h, d)
         except Exception as e:
             QMessageBox.warning(
                 None, "Peringatan", "Tidak titik yang berpotongan"

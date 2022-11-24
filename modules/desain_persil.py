@@ -303,9 +303,9 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
             ]
         )
 
-        print(edit_null_count, induk_null_count)
-        print(self._ds_parcel[DS_PERSIL_EDIT])
-        print(self._ds_parcel[DS_PERSIL_INDUK])
+        # print(edit_null_count, induk_null_count)
+        # print(self._ds_parcel[DS_PERSIL_EDIT])
+        # print(self._ds_parcel[DS_PERSIL_INDUK])
 
         if edit_null_count > 0 or induk_null_count > 0:
             self.label_status_l.setText("Ada kesalahan, cek error log")
@@ -487,7 +487,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
 
         response = endpoints.get_wilayah_prior(kelurahan_id)
         self._wilayah_prior = json.loads(response.content)
-        print("_wilayah_prior", self._wilayah_prior)
+        # print("_wilayah_prior", self._wilayah_prior)
         return self._wilayah_prior
 
     def _autofill_persil_data(self):
@@ -699,7 +699,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
 
         response = endpoints.get_parcels(persil_ids)
         response_json = json.loads(response.content)
-        print("new_persil", response_json)
+        # print("new_persil", response_json)
         column_defs = DS_COLUMN_MAP[DS_PERSIL_EDIT]
         column_defs_res = list(response_json["PERSILBARU"][0].keys())
 
@@ -720,7 +720,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         persil_ids = [str(p) for p in self._old_parcels]
         response = endpoints.get_parcels(persil_ids)
         response_json = json.loads(response.content)
-        print("old_persil", response_json)
+        # print("old_persil", response_json)
         column_defs = DS_COLUMN_MAP[name]
         column_defs_res = list(response_json["PERSILBARU"][0].keys())
 
@@ -742,7 +742,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
 
         response = endpoints.get_apartments(apartment_ids)
         response_json = json.loads(response.content)
-        print("new_apartments", response_json)
+        # print("new_apartments", response_json)
         column_defs = DS_COLUMN_MAP[DS_APARTEMEN_EDIT]
         column_defs_res = list(response_json["APARTEMENBARU"][0].keys())
 
@@ -764,7 +764,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
 
         response = endpoints.get_apartments(apartment_ids)
         response_json = json.loads(response.content)
-        print("new_apartments", response_json)
+        # print("new_apartments", response_json)
         column_defs = DS_COLUMN_MAP[DS_APARTEMEN_EDIT]
         column_defs_res = list(response_json["APARTEMENBARU"][0].keys())
 
@@ -1042,7 +1042,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
         if self._new_parcels or self._old_parcels:
             for row in self._ds_parcel[DS_PERSIL_EDIT]:
                 if not row["BOUNDARY"]:
-                    print(self._ds_parcel)
+                    # print(self._ds_parcel)
                     valid = False
                     msg = "Ada Persil Edit yang tidak memiliki geometri!"
                     break
@@ -1147,7 +1147,7 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                     user_id,
                 )
                 response_json = json.loads(response.content)
-                print("ganti desa", response_json)
+                # print("ganti desa", response_json)
 
                 if len(response_json["Error"]) > 0:
                     msg = response_json["Error"][0]["message"]
@@ -1222,9 +1222,9 @@ class DesainPersil(QtWidgets.QDialog, FORM_CLASS):
                 if "NIB" not in p.keys() or not p["NIB"]
             ]
         )
-        print(checked, edit_null_count, induk_null_count)
-        print(self._ds_parcel[DS_PERSIL_EDIT])
-        print(self._ds_parcel[DS_PERSIL_INDUK])
+        # print(checked, edit_null_count, induk_null_count)
+        # print(self._ds_parcel[DS_PERSIL_EDIT])
+        # print(self._ds_parcel[DS_PERSIL_INDUK])
 
         if edit_null_count > 0 or induk_null_count > 0:
             if checked:

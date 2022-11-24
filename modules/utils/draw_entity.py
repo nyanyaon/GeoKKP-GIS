@@ -8,7 +8,7 @@ class DrawEntity:
     def __init__(self, gugus_id, get_riwayat):
         response = endpoints.get_spatial_document_sdo(gugus_id, get_riwayat)
         self._udr = json.loads(response.content)
-        print(self._udr)
+        # print(self._udr)
 
     def draw(self):
         if self._udr["status"] == False:

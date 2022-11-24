@@ -842,7 +842,7 @@ class GeoKKP:
             add_to_toolbar=True,
             add_to_menu=True,
             parent=self.iface.mainWindow(),
-            need_auth=True,
+            need_auth=False,
         )
         # -------------------------------------------
 
@@ -946,7 +946,8 @@ class GeoKKP:
             self.workpanel.show()
             self.workpanel.setVisible(True)
         except Exception as e:
-            print(e)
+            # print(e)
+            logMessage(str(e))
 
     def logout_user(self):
         login_state = app_state.get("logged_in")
@@ -1257,7 +1258,8 @@ class GeoKKP:
                 dialogBox("Layer aktif bukan vektor")
                 pass
         except Exception as e:
-            print(str(e))
+            # print(str(e))
+            logMessage(str(e))
             return
 
         basename = layer.name()
@@ -1314,7 +1316,8 @@ class GeoKKP:
 
             # self.project.instance().addMapLayer(cleaned_layer)
         except Exception as e:
-            print(str(e))
+            # print(str(e))
+            logMessage(str(e))
 
     def edit_parcel_attribute(self):
         layer = self.iface.activeLayer()

@@ -11,7 +11,14 @@ from qgis.PyQt.QtCore import pyqtSignal, QUrl
 from qgis.utils import iface
 from qgis.core import QgsRectangle
 from ...api import endpoints
-from ...utils import readSetting, get_epsg_from_tm3_zone, get_layer_config, sdo_to_layer,storeSetting
+from ...utils import (
+    readSetting, 
+    get_epsg_from_tm3_zone, 
+    get_layer_config, 
+    sdo_to_layer,
+    storeSetting, 
+    logMessage
+)
 from ...models.dataset import Dataset
 from ...download_persil_sekitarnya import DownloadPersilSekitar
 
@@ -254,7 +261,7 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
 
     def _refresh_grid(self):
         str_pattern = r"^([0-9]{1,5}|[0-9]{1,5}-[0-9]{1,5})((,([0-9]{1,5}|[0-9]{1,5}-[0-9]{1,5}))?)*$"
-        print("triggered2")
+        # print("triggered2")
 
         txt_nomor = self.txt_nomor.text()
         if txt_nomor:
@@ -283,7 +290,8 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
                 str(self._count),
             )
             self._upr = json.loads(response.content)
-            print(self._upr,"upr")
+            # print(self._upr,"upr")
+            logMessage(self._upr)
             if not self._upr["status"]:
                 QtWidgets.QMessageBox.warning(None, "GeoKKP", self._upr["message"])
                 return
@@ -384,7 +392,8 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
 
             if upr["persils"]:
                 layer_config = get_layer_config("020100")
-                print(upr["persils"],"upr_persil")
+                logMessage(upr["persils"])
+                # print(upr["persils"],"upr_persil")
                 layer = sdo_to_layer(
                     upr["persils"],
                     name=layer_config["Nama Layer"],
@@ -509,7 +518,8 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
             self.UpdateStatus(upr, "Mengunduh Selesai")
 
         except Exception as e:
-            print(e)
+            # print(e)
+            logMessage(str(e))
             self.toolbar_inbox.setEnabled(True)
             self.btn_cari.setEnabled(True)
             self.chb_per_kabupaten.setEnabled(True)
@@ -522,7 +532,7 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
             if _upr != None:
                 self._draw(_upr)
             if value != "Mengunduh Selesai":
-                print(value)
+                # print(value)
                 self.toolbar_inbox.setEnabled(False)
                 self.btn_cari.setEnabled(False)
                 self.chb_per_kabupaten.setEnabled(False)

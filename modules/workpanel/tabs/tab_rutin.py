@@ -231,7 +231,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
             username
         )
         bs = json.loads(response.content)
-        print(bs)
+        # print(bs)
         if bs["valid"]:
             lanjut_blanko = True
             response = endpoints.get_is_e_sertifikat(self._kantor_id)
@@ -738,7 +738,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
         if self._tipe_berkas == "SUB" or self._tipe_berkas == "NPG":
             response = endpoints.check_peta_tematik(self._berkas_id)
             d_table = json.loads(response.content)
-            print(d_table)
+            # print(d_table)
             jumlah_persil_tanpa_ptbt = int(d_table[0]["JUMLAHPERSILTANPAPTBT"])
 
             if jumlah_persil_tanpa_ptbt != 0 and d_table[0]["KODESPOPP"] in ("SPOPP-3.13", "SPOPP-3.12.1"):
@@ -842,7 +842,7 @@ class TabRutin(QtWidgets.QWidget, FORM_CLASS):
     # TODO insert layout variable
     def _create_layout(self):
         parcel_to_plot = self._new_parcels
-        print(self._new_parcels)
+        # print(self._new_parcels)
         if self._tipe_berkas != "SUB" and self._tipe_berkas != "UNI" and self._tipe_berkas != "VPG" and self._tipe_berkas != "SPL":
             parcel_to_plot.extend(self._old_parcels)
         

@@ -4,7 +4,8 @@ from qgis.PyQt.QtGui import QStandardItemModel, QStandardItem
 from qgis.PyQt import QtWidgets, uic
 from qgis.PyQt.QtCore import Qt, pyqtSignal
 from qgis.utils import iface
-from qgis.core import QgsProject, QgsRasterLayer
+from qgis.core import Qgis, QgsProject, QgsRasterLayer
+from qgis.utils import iface
 from owslib.wms import WebMapService
 
 # using utils
@@ -51,10 +52,10 @@ class AddOtherWMSDialog(QtWidgets.QDialog, FORM_CLASS):
         try:
             wms = WebMapService(self.capabilitiesLink.text(), version='1.3.0')
         except:
-            QtWidgets.QMessageBox.warning(
-                None,
-                "Link Capabilities Salah",
-                f"Terdapat kesalahan. Periksa link WMS Capabilities: {self.capabilitiesLink.text()}",
+            iface.messageBar().pushMessage(
+                "Peringatan",
+                "Akses tanpa koneksi VPN. Menu Tambah Layer WMS dinon-aktifkan",
+                level=Qgis.Warning,
             )
         else:
             daftarWMS = {name: metadata.title for (name, metadata) in wms.contents.items()}

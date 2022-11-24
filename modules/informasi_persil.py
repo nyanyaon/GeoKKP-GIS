@@ -83,7 +83,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
             self._gambar_ukur,
         )
         process_info = json.loads(response.content)
-        print("process_info", process_info)
+        # print("process_info", process_info)
         self._data_spasial = process_info
 
         flattened_ds = {}
@@ -157,7 +157,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
             response = endpoints.get_landuse_data()
             landuse_data = json.loads(response.content)
             storeSetting("landusedata", landuse_data)
-        print("landuse_data", landuse_data)
+        # print("landuse_data", landuse_data)
         self._landuse_data = landuse_data
         return landuse_data
 
@@ -167,7 +167,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
             response = endpoints.get_alat_ukur()
             alat_ukur = json.loads(response.content)
             storeSetting("alatukur", alat_ukur)
-        print("alat_ukur", alat_ukur)
+        # print("alat_ukur", alat_ukur)
         self._alat_ukur = alat_ukur
         return alat_ukur
 
@@ -177,14 +177,14 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
             response = endpoints.get_metode_ukur()
             metode_ukur = json.loads(response.content)
             storeSetting("metodeukur", metode_ukur)
-        print("metode_ukur", metode_ukur)
+        # print("metode_ukur", metode_ukur)
         self._metode_ukur = metode_ukur
         return metode_ukur
 
     def _fetch_persil(self, persil_ids):
         response = endpoints.get_parcels(persil_ids)
         response_json = Dataset(response.content)
-        print("data spasial persil", response_json)
+        # print("data spasial persil", response_json)
         self._ds_parcels = response_json
         return response_json
 
@@ -285,7 +285,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
 
         response = endpoints.get_parcel_info(self._current_persil)
         response_json = Dataset(response.content)
-        print("parcel info", response_json)
+        # print("parcel info", response_json)
 
         self.input_nama_jalan.setText(response_json["PERSILBARU"].rows[0]["NAMAJALAN"])
         self.input_nomor.setText(response_json["PERSILBARU"].rows[0]["NOMORBANGUNAN"])
@@ -301,10 +301,10 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
         self.input_nomor_kotak.setText(response_json["PERSILBARU"].rows[0]["KOTAK"])
 
         landuse_id = response_json["PERSILBARU"].rows[0]["GUNATANAHKHUSUSID"]
-        print("landuse_id", landuse_id)
+        # print("landuse_id", landuse_id)
         if landuse_id:
             guna_tanah_umum_id = response_json["PERSILBARU"].rows[0]["GUNATANAHUMUMID"]
-            print("guna_tanah_umum_id", guna_tanah_umum_id)
+            # print("guna_tanah_umum_id", guna_tanah_umum_id)
             for index, row in enumerate(self._landuse_data["TIPELANDGENERIK"]):
                 if row["TIPEUSECODE"] == guna_tanah_umum_id:
                     self.combo_penggunaan_umum.setCurrentIndex(index)
@@ -389,7 +389,7 @@ class InformasiPersil(QtWidgets.QDialog, FORM_CLASS):
         )
 
         response = endpoints.update_persil(data)
-        print(response.content)
+        # print(response.content)
         response_str = response.content.decode("UTF-8")
         if response_str.split(":")[0] == "OK":
             QtWidgets.QMessageBox.information(self, "Sukses", "Persil telah di simpan")

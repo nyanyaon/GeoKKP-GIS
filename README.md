@@ -25,11 +25,11 @@ Untuk berkontribusi pada plugin ini, silahkan melakukan komunikasi dengan Pusdat
 
 ## Prosedur untuk Release
 Berikut adalah tahapan untuk melakukan release versi baru.
-1. _Merge branch_ develop ke _master_
+1. _Merge branch_ develop ke _main_
 2. Pastikan versi di metadata.txt sudah diperbaharusi, misalnya `version=1.0.1`
-3. _Checkout master branch_. Contoh: `git checkout origin/master`
-4. Buat _tag_ pada _master branch_ tersebut dengan versi sebagai tag-nya. Misal untuk versi 1.0.1 menggunakan tag `version-1_0_1`. Contoh: `git tag version-1_0_1`
-5. Push _tag_ tersebut ke Github. Contoh: `git push version-1_0_1`
+3. _Checkout main branch_. Contoh: `git checkout origin/main`
+4. Buat _tag_ pada _main branch_ tersebut dengan versi sebagai tag-nya. Misal untuk versi 1.0.1 menggunakan tag `version-1_0_1`. Contoh: `git tag version-1_0_1`
+5. Push _tag_ tersebut ke Github. Contoh: `git push origin version-1_0_1`
 6. Buat release baru di Github: [Release Baru](https://github.com/danylaksono/GeoKKP-GIS/releases/new), dengan menggunakan tag tersebut.
 7. Berikan keterangan pada release versi tersebut (Changelog)
 8. Tekan tombol _Publish release_
@@ -37,6 +37,10 @@ Berikut adalah tahapan untuk melakukan release versi baru.
 10. Unduh berkas terkompresi tersebut, dan _extract_ isinya
 11. Ubah nama folder menjadi GeoKKP-GIS, dan kompres kembali
 12. Upload berkas terkompresi tersebut ke [Plugin QGIS](https://plugins.qgis.org/) agar pengguna bisa mengunduhnya.
+
+## Packaging (Experimental)
+1. Jalankan script `./package.sh`
+2. Berkas yang dihasilkan `GeoKKP-GIS.zip` bisa diunggah ke QGIS Plugin Repository 
 
 ## Lisensi
 Lisensi aplikasi GeoKKP-GIS berada di bawah naungan **GNU-AGPLv3** sebagai berikut:

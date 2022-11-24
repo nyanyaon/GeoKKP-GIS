@@ -66,12 +66,12 @@ class OAMDialog(QtWidgets.QDialog, FORM_CLASS):
     def parse_capabilities(self):
         self.url = self.OAMLink.text()
         capabilities_url = self.url + "?"
-        print("capab", capabilities_url)
+        # print("capab", capabilities_url)
         tree = ET.parse(capabilities_url)
         root = tree.getroot()
         layers = root.findall("ows:Title")
-        for title in layers:
-            print(title.text)
+        # for title in layers:
+            # print(title.text)
 
 
 # uri="url=https://tiles.openaerialmap.org/5da45f5336266f000578cc3a/0/5da45f5336266f000578cc3b/{z}/{x}/{y}&zmax=19&zmin=0"  # noqa 121
