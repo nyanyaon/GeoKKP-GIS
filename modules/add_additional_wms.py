@@ -54,7 +54,7 @@ class AddOtherWMSDialog(QtWidgets.QDialog, FORM_CLASS):
         except:
             iface.messageBar().pushMessage(
                 "Peringatan",
-                f"Akses tanpa koneksi VPN. Menu Tambah Layer WMS dinon-aktifkan",
+                "Akses tanpa koneksi VPN. Menu Tambah Layer WMS dinon-aktifkan",
                 level=Qgis.Warning,
             )
         else:
