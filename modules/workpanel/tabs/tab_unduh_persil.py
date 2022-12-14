@@ -291,7 +291,7 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
             )
             self._upr = json.loads(response.content)
             # print(self._upr,"upr")
-            logMessage(self._upr)
+            # logMessage(self._upr)
             if not self._upr["status"]:
                 QtWidgets.QMessageBox.warning(None, "GeoKKP", self._upr["message"])
                 return
@@ -392,7 +392,7 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
 
             if upr["persils"]:
                 layer_config = get_layer_config("020100")
-                logMessage(upr["persils"])
+                # logMessage(upr["persils"])
                 # print(upr["persils"],"upr_persil")
                 layer = sdo_to_layer(
                     upr["persils"],
@@ -519,7 +519,7 @@ class TabUnduhPersil(QtWidgets.QWidget, FORM_CLASS):
 
         except Exception as e:
             # print(e)
-            logMessage(str(e))
+            # logMessage(str(e))
             self.toolbar_inbox.setEnabled(True)
             self.btn_cari.setEnabled(True)
             self.chb_per_kabupaten.setEnabled(True)
