@@ -1211,7 +1211,7 @@ class GeoKKP:
 
     def import_csv(self):
         if self.import_from_file_widget is None:
-            self.import_from_file_widget = ImportGeomFromFile()
+            self.import_from_file_widget = ImportGeomFromFile(self)
         self.import_from_file_widget.show()
 
     def import_dxf(self):
